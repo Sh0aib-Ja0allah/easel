@@ -39,19 +39,53 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      EASEL_DATA: ${{ github.workspace }}/../easel data
+      EASEL_GOLDEN_MISSING: write
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-      - name: Engine unit tests
-        run: npm --prefix plugins/easel-core/engine test
+      - name: Install ffmpeg
+        run: |
+          case "$RUNNER_OS" in
+            Linux) sudo apt-get update -q && sudo apt-get install -y -q ffmpeg ;;
+            macOS) brew install ffmpeg ;;
+            Windows) choco install ffmpeg -y --no-progress ;;
+          esac
+          ffmpeg -version | head -1
+      - name: Cache engine data (npm packages + Chromium)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/../easel data
+          key: easel-data-${{ runner.os }}-${{ hashFiles('plugins/easel-core/engine/package.json') }}
+      - name: doctor --install (into a data folder with a space)
+        run: node plugins/easel-core/engine/cli.mjs doctor --install
+      - name: Engine tests (render tests must not be skipped)
+        run: |
+          npm --prefix plugins/easel-core/engine test 2>&1 | tee engine-test.txt
+          test "${PIPESTATUS[0]}" -eq 0
+          grep -q 'skipped 0' engine-test.txt
       - name: MCP smoke (initialize + tools/list over stdio)
-        shell: bash
         run: |
           printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
             | node plugins/easel-core/engine/server.mjs | tee mcp.out
           grep -q '"protocolVersion":"2025-06-18"' mcp.out
-          grep -q '"name":"doctor"' mcp.out
-      - name: doctor report
-        run: node plugins/easel-core/engine/cli.mjs doctor
+          grep -q '"name":"render_video"' mcp.out
+      - name: CLI smoke (1 s video from the GSAP fixture)
+        run: |
+          printf '{"file":"plugins/easel-core/engine/test/fixtures/anim-gsap.html","duration":1,"outDir":"smoke-out","preset":"ultrafast"}' > smoke.json
+          node plugins/easel-core/engine/cli.mjs render_video --json @smoke.json
+          ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=nb_read_frames,width,height -of csv=p=0 smoke-out/video.mp4 | tee probe.txt
+          grep -q '640,360,30' probe.txt
+      - name: Upload candidate goldens (new OS only)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: goldens-${{ runner.os }}
+          path: plugins/easel-core/engine/test/golden/
+          if-no-files-found: ignore

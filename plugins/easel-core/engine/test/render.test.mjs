@@ -30,12 +30,14 @@ before(async () => {
 });
 after(async () => { if (browser) await browser.close(); if (out) rmSync(out, { recursive: true, force: true }); });
 
-test('golden frame matches (light and dark)', { skip }, async () => {
+test('golden frame matches (light and dark)', { skip }, async (t) => {
   const r = await mod.renderStill({ file: fx('still.html'), outDir: out, name: 'golden', width: 640, height: 360, theme: 'both' }, { browser });
   assert.equal(r.files.length, 2);
   for (const f of r.files) {
     const g = golden(`still-${f.theme}-${process.platform}.png`);
     if (process.env.EASEL_UPDATE_GOLDEN === '1') { copyFileSync(f.file, g); continue; }
+    // CI on a new OS: write a candidate golden for a person to review, and say so loudly.
+    if (!existsSync(g) && process.env.EASEL_GOLDEN_MISSING === 'write') { copyFileSync(f.file, g); t.diagnostic(`CANDIDATE GOLDEN WRITTEN: ${g} (review by eye, then commit)`); continue; }
     assert.ok(existsSync(g), `missing golden ${g} (generate with EASEL_UPDATE_GOLDEN=1 and review it)`);
     const cmp = await mod.compareImages(browser, f.file, g);
     assert.ok(cmp.sameSize, JSON.stringify(cmp));
