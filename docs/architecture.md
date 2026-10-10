@@ -92,7 +92,9 @@ Reference: <https://code.claude.com/docs/en/plugins/manifest-reference>
 4. **The same engine also runs as a CLI** (`node …/engine/cli.mjs`) for long jobs and scripting.
 5. **Shared rulebooks** (`craft/`, `rubrics/`, `schemas/`) are read through an MCP resource or tool (`easel.craft(name)`), not by file path. That way they work from any plugin.
 
-> ⚠️ **To verify in the spike (task T0.3):** the docs don't explicitly say whether one plugin's MCP tools are visible to another plugin's skills in the same session. MCP servers are expected to be session-wide. If they aren't, fall back to having each plugin bundle a small shim that calls the core CLI found through `${CLAUDE_PLUGIN_DATA}`.
+> ✅ **Verified by spike T0.3 (2026-10-11, Windows):** a skill in `easel-motion` called `mcp__plugin_easel-core_easel__ping` and got its result. Plugin MCP servers are session-wide, so the CLI-shim fallback is not needed. Plugin MCP tools are deferred, so every skill names the full tool name in its body. Details: [spikes/cross-plugin-mcp.md](spikes/cross-plugin-mcp.md).
+
+6. **The MCP layer has no npm dependencies** (decision D9). Installed plugins are copied into a cache without `node_modules`, so `engine/server.mjs` speaks MCP's stdio JSON-RPC directly and starts on a fresh install. Heavy dependencies (Playwright) are installed by `doctor` into `${CLAUDE_PLUGIN_DATA}` and loaded from there.
 
 ## 4. Render engine (`easel-core/engine`)
 

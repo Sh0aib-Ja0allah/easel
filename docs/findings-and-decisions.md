@@ -184,3 +184,13 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 3. `roadmap.md`: build phases and milestones.
 4. `tasks.md`: a task list for each phase.
 5. `THIRD_PARTY_NOTICES.md` draft: one entry per adapted source.
+
+## 4. Decisions made during the build
+
+### D9. Engine MCP server has no npm dependencies ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** `easel-core/engine/server.mjs` implements the MCP stdio transport (JSON-RPC 2.0, one message per line) itself instead of using `@modelcontextprotocol/sdk`.
+- **Reason:** installed plugins are copied into a cache without `node_modules`. A server that imports the SDK cannot start until something installs it, and the `doctor` tool that would install it is served by that same server. The stdio protocol needs about 80 lines. Heavy dependencies (Playwright) are installed by `doctor` into `${CLAUDE_PLUGIN_DATA}` and imported from there.
+- **Deviates from:** HANDOFF.md T0.3 step 2, which suggested the SDK.
+- **Evidence:** spike T0.3, [spikes/cross-plugin-mcp.md](spikes/cross-plugin-mcp.md).
+
