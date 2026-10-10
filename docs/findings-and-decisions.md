@@ -150,7 +150,7 @@ Round 2 received (#6–13). Design, illustration and drawing are now covered.
 ### D6. Repo name and license
 
 - [x] Name: **Easel** (repo `easel`, plugins `easel-*`). ✅ Decided 2026-10-11.
-- [ ] License: **MIT (recommended)** for our own code. Apache-2.0 material keeps its license, with LICENSE and NOTICE files included. Both licenses can sit in one repo.
+- [x] License: **MIT** for our own code. ✅ Decided 2026-10-11 (`LICENSE` added). Apache-2.0 material keeps its license, with LICENSE and NOTICE files included. Both licenses can sit in one repo.
 
 ### D7. Render engine: build our own, or build on HyperFrames? (new)
 

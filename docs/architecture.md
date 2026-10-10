@@ -30,7 +30,7 @@ easel/
 │   └── easel-pixel/
 ├── evals/                        # claude plugin eval suites, one folder per plugin
 ├── docs/                         # planning docs (this folder)
-├── LICENSE                       # TBD (MIT recommended)
+├── LICENSE                       # MIT
 ├── THIRD_PARTY_NOTICES.md        # from docs/third-party-notices-draft.md
 └── README.md
 ```
@@ -72,7 +72,7 @@ Reference: <https://code.claude.com/docs/en/plugins/manifest-reference>
   "description": "Code-drawn animation and video, style catalog, UI motion",
   "author": { "name": "Sh0aib-Ja0allah" },
   "repository": "https://github.com/Sh0aib-Ja0allah/easel",
-  "license": "TBD",
+  "license": "MIT",
   "keywords": ["animation", "video", "motion-graphics"],
   "dependencies": ["easel-core"]
 }

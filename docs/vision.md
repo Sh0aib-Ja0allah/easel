@@ -33,7 +33,7 @@ Anyone using Claude Code who wants to produce visual or motion output (designers
 ## Open questions
 
 - [x] Project and repo name: **Easel** (decided 2026-10-11).
-- [ ] License: MIT recommended for our code; Apache-2.0 material keeps its own license (see [findings-and-decisions.md](findings-and-decisions.md), D6).
+- [x] License: MIT for our code (decided 2026-10-11); Apache-2.0 material keeps its own license (see [findings-and-decisions.md](findings-and-decisions.md), D6).
 - [x] External tools: Node + Playwright + ffmpeg as the base; HyperFrames to be spiked as the engine (D7); Aseprite and paid AI APIs only in optional plugins.
 - [x] Distribution: own marketplace in this repo with several plugins (D1).
 

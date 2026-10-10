@@ -48,4 +48,6 @@ Easel adapts work from several open-source projects. Each one is listed with its
 
 ## License
 
-To be decided.
+Easel's own code and docs are released under the [MIT License](LICENSE).
+
+Adapted third-party material keeps its original license. Apache-2.0 material, for example, will ship with its license text and notices, as listed in [docs/third-party-notices-draft.md](docs/third-party-notices-draft.md).
