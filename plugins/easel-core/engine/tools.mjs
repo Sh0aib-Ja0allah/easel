@@ -3,6 +3,7 @@
 import { doctor } from './lib/doctor.mjs';
 import { renderStill, outputDir } from './lib/render.mjs';
 import { contactSheet } from './lib/contact.mjs';
+import { renderVideo, filmstrip } from './lib/video.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -75,5 +76,42 @@ export const tools = {
       additionalProperties: false,
     },
     run: (args) => contactSheet(args),
+  },
+  render_video: {
+    description:
+      'Render an animated page to MP4 (H.264, yuv420p). The page animates through window.renderAt(t), a paused GSAP timeline at window.__timelines[<data-composition-id>] (HyperFrames format), or CSS animations; every frame is seeked to t = n / fps, so output is deterministic. ' +
+      'Duration, fps and size default to the composition root (data-duration, data-fps, data-width, data-height). aspects renders extra formats (16:9, 9:16, 1:1, 4:5) from the same page, which must lay itself out responsively. audio muxes a track. Review the result with filmstrip.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        html: { type: 'string' }, file: { type: 'string', description: 'Path to the composition .html file.' },
+        name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+        duration: { type: 'number', minimum: 0.04, maximum: 600 }, fps: { type: 'number', minimum: 1, maximum: 120 },
+        width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
+        aspects: { type: 'array', maxItems: 4, items: { enum: ['16:9', '9:16', '1:1', '4:5'] } },
+        audio: { type: 'string', description: 'Path to an audio file to mux (trimmed to the video length).' },
+        crf: { type: 'integer', minimum: 0, maximum: 51, description: 'x264 quality, lower is better (default 18).' },
+        preset: { enum: ['ultrafast', 'veryfast', 'fast', 'medium', 'slow'] },
+        theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => renderVideo(args),
+  },
+  filmstrip: {
+    description:
+      'Capture an animated page at several times and lay the frames out on one sheet with timestamps, so you can look at the motion before or after rendering video. Give times (seconds) or count (evenly spaced over the duration).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        html: { type: 'string' }, file: { type: 'string' }, name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+        times: { type: 'array', maxItems: 48, items: { type: 'number', minimum: 0 } }, count: { type: 'integer', minimum: 1, maximum: 48 },
+        duration: { type: 'number', minimum: 0.04 }, width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
+        columns: { type: 'integer', minimum: 1, maximum: 12 }, cellWidth: { type: 'integer', minimum: 64, maximum: 1920 }, title: { type: 'string' },
+        theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => filmstrip(args),
   },
 };

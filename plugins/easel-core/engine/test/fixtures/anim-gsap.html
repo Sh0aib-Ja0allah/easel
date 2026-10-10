@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8">
+<script src="https://easel.local/lib/gsap.min.js"></script>
+<style>
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4efe6;font-family:Inter,sans-serif}
+  #root{position:relative;width:100%;height:100%}
+  .box{position:absolute;left:8%;top:30%;width:18vmin;height:18vmin;border-radius:3vmin;background:#d1603d}
+  .ring{position:absolute;right:10%;top:20%;width:30vmin;height:30vmin;border:1.5vmin dashed #335c67;border-radius:50%;animation:spin 5s linear both}
+  @keyframes spin{to{transform:rotate(180deg)}}
+  h1{position:absolute;left:8%;bottom:10%;margin:0;font:700 7vmin 'Space Grotesk',sans-serif;color:#1d2a33}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="5" data-width="640" data-height="360" data-fps="30">
+  <div class="box"></div><div class="ring"></div><h1>Easel</h1>
+</div>
+<script>
+  const tl = gsap.timeline({ paused: true });
+  tl.to('.box', { x: '45vw', rotation: 180, duration: 3, ease: 'power2.inOut' }, 0)
+    .from('h1', { opacity: 0, y: 30, duration: 1 }, 0.5)
+    .to('.box', { backgroundColor: '#335c67', duration: 1 }, 3.5);
+  window.__timelines = window.__timelines || {};
+  window.__timelines.main = tl;
+  window.__ready = true;
+</script>
+</body>
+</html>

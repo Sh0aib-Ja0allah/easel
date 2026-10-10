@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8">
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101820}canvas{display:block;width:100%;height:100%}</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-duration="5" data-fps="30" data-width="640" data-height="360">
+  <canvas id="c"></canvas>
+</div>
+<script>
+  // renderAt(t) contract: draw the exact state for time t; no clocks, seeded randomness only.
+  const c = document.getElementById('c');
+  const g = c.getContext('2d');
+  const dots = Array.from({ length: 40 }, () => [Math.random(), Math.random(), 4 + Math.random() * 10]);
+  window.renderAt = (t) => {
+    const W = (c.width = innerWidth), H = (c.height = innerHeight);
+    g.fillStyle = '#101820'; g.fillRect(0, 0, W, H);
+    for (const [x, y, r] of dots) {
+      g.fillStyle = 'rgba(242,170,76,0.8)';
+      g.beginPath(); g.arc(((x + t * 0.08) % 1) * W, y * H, r, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = '#f2aa4c'; g.fillRect(0, H - 16, (t / 5) * W, 16);
+    g.font = "700 48px 'Space Grotesk'"; g.fillStyle = '#ffffff'; g.fillText('t = ' + t.toFixed(2), 32, 72);
+  };
+  document.fonts.load("700 48px 'Space Grotesk'").then(() => { window.renderAt(0); window.__ready = true; });
+</script>
+</body>
+</html>
