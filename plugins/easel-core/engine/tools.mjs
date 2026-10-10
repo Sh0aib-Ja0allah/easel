@@ -4,6 +4,7 @@ import { doctor } from './lib/doctor.mjs';
 import { renderStill, outputDir } from './lib/render.mjs';
 import { contactSheet } from './lib/contact.mjs';
 import { renderVideo, filmstrip } from './lib/video.mjs';
+import { qa } from './lib/qa.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -113,5 +114,26 @@ export const tools = {
       additionalProperties: false,
     },
     run: (args) => filmstrip(args),
+  },
+  qa: {
+    description:
+      'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images). ' +
+      'Media checks: stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
+      'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. Contrast is a hard gate when mode is "ui".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        html: { type: 'string' }, file: { type: 'string', description: 'Page to check (.html or .svg).' },
+        video: { type: 'string' }, audio: { type: 'string' }, image: { type: 'string' },
+        width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
+        times: { type: 'array', maxItems: 24, items: { type: 'number', minimum: 0 }, description: 'For animated pages: check at these times.' },
+        mode: { enum: ['ui', 'graphic', 'video'] }, theme: { enum: ['light', 'dark'] },
+        checks: { type: 'array', items: { enum: ['text_clipping', 'contrast', 'stillness', 'colour_cast', 'loudness'] } },
+        stillSeconds: { type: 'number', minimum: 0.1 }, castMaxRatio: { type: 'number', minimum: 0, maximum: 1 },
+        lufsMin: { type: 'number' }, lufsMax: { type: 'number' }, slug: { type: 'string' }, outDir: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => qa(args),
   },
 };
