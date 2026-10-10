@@ -10,7 +10,7 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 | --- | --- | --- | --- |
 | T0.1 | ✅ Done 2026-10-11: MIT `LICENSE` added and README updated. `licenses/Apache-2.0.txt` will be added with the first Apache-derived file. | `LICENSE` committed; README updated | |
 | T0.2 | ✅ Done (`68c062e`). Repo skeleton: `.claude-plugin/marketplace.json`, six `plugins/easel-*/.claude-plugin/plugin.json` (with `dependencies: ["easel-core"]` on the others), placeholder READMEs | `claude plugin validate . --strict` passes locally | T0.1 |
-| T0.3 | **Spike: cross-plugin MCP visibility.** Core exposes a dummy MCP tool; a skill in `easel-motion` calls it by full name | Written result in `docs/spikes/cross-plugin-mcp.md`; architecture §3 updated | T0.2 |
+| T0.3 | ✅ Done (`647e91f`). **Spike: cross-plugin MCP visibility.** Core exposes a dummy MCP tool; a skill in `easel-motion` calls it by full name | Written result in `docs/spikes/cross-plugin-mcp.md`; architecture §3 updated | T0.2 |
 | T0.4 | **Spike: HyperFrames** on Windows. Render one animate canvas style and one SVG/CSS animation as compositions, and install it as a pinned npm dependency | `docs/spikes/hyperframes.md` with timings, Windows notes and a recommendation; D7 decided | |
 | T0.5 | **Spike: Windows toolchain.** Playwright Chromium install into `${CLAUDE_PLUGIN_DATA}`, ffmpeg detection, font loading, long paths | `docs/spikes/windows.md` | T0.2 |
 | T0.6 | CI: GitHub Actions running `claude plugin validate --strict` on push | Green check on `main` | T0.2 |
