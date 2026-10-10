@@ -20,7 +20,7 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 
 | ID | Task | Done when | Needs |
 | --- | --- | --- | --- |
-| T1.1 | Engine skeleton: MCP server (stdio) + CLI sharing one module; `doctor` tool | `doctor` reports Node/Chromium/ffmpeg status on Windows/macOS/Linux | T0.3, T0.5 |
+| T1.1 | ✅ Done (`3cd9ed8`, CI 38094001682). Engine skeleton: MCP server (stdio) + CLI sharing one module; `doctor` tool | `doctor` reports Node/Chromium/ffmpeg status on Windows/macOS/Linux | T0.3, T0.5 |
 | T1.2 | `render_still` + `contact_sheet` (sizes, light and dark) | Golden image test passes | T1.1 |
 | T1.3 | `render_video` + `filmstrip` (our own Playwright loop, D7 = B) | 5 s, 30 fps MP4 from a `renderAt(t)` page and from a GSAP timeline page | T1.1, T0.4 |
 | T1.4 | `qa` checks: text clipping, contrast, stillness, colour-cast, loudness | Each check has a failing and a passing fixture | T1.2, T1.3 |

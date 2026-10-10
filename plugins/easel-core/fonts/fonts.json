@@ -1,0 +1,13 @@
+{
+  "comment": "Bundled OFL fonts, served to rendered pages at https://easel.local/fonts/<file>. The engine injects @font-face rules for every face listed here.",
+  "faces": [
+    { "family": "Inter", "file": "inter/inter-latin-400-normal.woff2", "weight": 400 },
+    { "family": "Inter", "file": "inter/inter-latin-700-normal.woff2", "weight": 700 },
+    { "family": "Source Serif 4", "file": "source-serif-4/source-serif-4-latin-400-normal.woff2", "weight": 400 },
+    { "family": "Source Serif 4", "file": "source-serif-4/source-serif-4-latin-700-normal.woff2", "weight": 700 },
+    { "family": "JetBrains Mono", "file": "jetbrains-mono/jetbrains-mono-latin-400-normal.woff2", "weight": 400 },
+    { "family": "JetBrains Mono", "file": "jetbrains-mono/jetbrains-mono-latin-700-normal.woff2", "weight": 700 },
+    { "family": "Space Grotesk", "file": "space-grotesk/space-grotesk-latin-400-normal.woff2", "weight": 400 },
+    { "family": "Space Grotesk", "file": "space-grotesk/space-grotesk-latin-700-normal.woff2", "weight": 700 }
+  ]
+}

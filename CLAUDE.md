@@ -122,6 +122,12 @@ Gates - run before every commit, never commit red:
 
 - `git rev-parse --show-toplevel` -> `C:/Users/shoib/Desktop/Collection/Animation`
 - `node --check <file>` on every changed `.mjs` / `.js` file
+- `claude plugin validate . --strict` and `claude plugin validate plugins/<each> --strict` (since T0.2)
+- `npm --prefix plugins/easel-core/engine test` (since T1.1). Render tests need Playwright and
+  Chromium in the data dir (`node plugins/easel-core/engine/cli.mjs doctor --install`, or set
+  `EASEL_DATA` to a folder where doctor installed them); without them they are skipped, so a
+  local run must show 0 skipped before a render change is committed.
+- CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`
 until green. A green local run is not enough once CI exists.

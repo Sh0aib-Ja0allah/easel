@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Easel engine CLI: the same tools as the MCP server, for long jobs and scripting.
 // Usage: node cli.mjs <tool> [--json '{"key":"value"}'] [--key value ...]
+//        node cli.mjs <tool> --json @args.json     (read arguments from a file; easiest on Windows)
 //        node cli.mjs list
+import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { tools } from './tools.mjs';
 import { validateArgs } from './lib/validate.mjs';
@@ -15,6 +17,15 @@ function coerce(v) {
   return v;
 }
 
+function parseJson(value) {
+  const text = typeof value === 'string' && value.startsWith('@') ? readFileSync(value.slice(1), 'utf8').replace(/^\uFEFF/, '') : value;
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    throw new Error(`--json is not valid JSON (${err.message}). Windows PowerShell 5.1 drops the double quotes inside arguments; put the JSON in a file and pass --json @file.json`);
+  }
+}
+
 export function parseArgs(argv) {
   const [name, ...rest] = argv;
   let args = {};
@@ -24,14 +35,20 @@ export function parseArgs(argv) {
     const key = a.slice(2);
     const next = rest[i + 1];
     const value = next !== undefined && !next.startsWith('--') ? (i++, next) : undefined;
-    if (key === 'json') args = { ...args, ...JSON.parse(value) };
+    if (key === 'json') args = { ...args, ...parseJson(value) };
     else args[key.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = coerce(value);
   }
   return { name, args };
 }
 
 export async function main(argv = process.argv.slice(2)) {
-  const { name, args } = parseArgs(argv);
+  let name, args;
+  try {
+    ({ name, args } = parseArgs(argv));
+  } catch (err) {
+    process.stderr.write(`${err.message}\n`);
+    return 2;
+  }
   if (!name || name === 'list' || name === '--help') {
     process.stdout.write(Object.entries(tools).map(([n, t]) => `${n.padEnd(16)} ${t.description.split('. ')[0]}`).join('\n') + '\n');
     return 0;
