@@ -6,6 +6,7 @@ import { contactSheet } from './lib/contact.mjs';
 import { renderVideo, filmstrip } from './lib/video.mjs';
 import { qa } from './lib/qa.mjs';
 import { KINDS, loadSchema, validateData, validateFile } from './lib/schemas.mjs';
+import { craft } from './lib/craft.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -158,5 +159,20 @@ export const tools = {
       const problems = args.file ? validateFile(args.kind, args.file) : validateData(args.kind, args.data);
       return { kind: args.kind, valid: problems.length === 0, problems };
     },
+  },
+  craft: {
+    description:
+      'Read Easel\'s shared rulebooks and critique rubrics. With no name it lists them. name returns one (craft: anti-generic, typography, colour, accessibility, motion; rubric: design, motion, illustration, pixel, social). ' +
+      'for returns every entry that applies to a domain (e.g. "video", "ui", "illustration"). Read the relevant ones before designing and before critiquing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        kind: { enum: ['craft', 'rubric'] },
+        name: { type: 'string', pattern: '^[a-z0-9-]+$' },
+        for: { type: 'string', pattern: '^[a-z0-9-]+$' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => craft(args),
   },
 };
