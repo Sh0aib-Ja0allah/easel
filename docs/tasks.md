@@ -24,7 +24,7 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 | T1.2 | ✅ Done (`f5de4e3`, CI 38094643853). `render_still` + `contact_sheet` (sizes, light and dark) | Golden image test passes | T1.1 |
 | T1.3 | ✅ Done (`44f2159`, CI 38094979188). `render_video` + `filmstrip` (our own Playwright loop, D7 = B) | 5 s, 30 fps MP4 from a `renderAt(t)` page and from a GSAP timeline page | T1.1, T0.4 |
 | T1.4 | ✅ Done (`459ec0c`, CI 38095269491). `qa` checks: text clipping, contrast, stillness, colour-cast, loudness | Each check has a failing and a passing fixture | T1.2, T1.3 |
-| T1.5 | Schemas: `brand.md`, `brief.json`, `beats.json`, `cues.json`, `provenance.json` + validators | JSON Schema files + tests | T1.1 |
+| T1.5 | ✅ Done (`ec6df72`, CI 38095553577). Schemas: `brand.md`, `brief.json`, `beats.json`, `cues.json`, `provenance.json` + validators | JSON Schema files + tests | T1.1 |
 | T1.6 | Cross-OS CI smoke tests for the engine | Windows/macOS/Linux jobs green | T1.3 |
 | T1.7 | Craft rulebooks (anti-generic, typography, colour, a11y, motion), merged from open-design `craft/`, huashu gates and the anti-average ideas (rewritten) | Files in `craft/` with attribution headers; `craft` tool serves them | T1.1 |
 | T1.8 | Skills: `setup`, `brief`, `brand`, `critique` + `critic` agent + rubrics | Routing evals pass (≥ 3 cases each) | T1.2–T1.7 |
