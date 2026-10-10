@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/Sh0aib-Ja0allah/easel/schemas/cues.schema.json",
+  "title": "Easel cue sheet",
+  "description": "Timing shared by picture and sound: fps, tempo, key and named moments. easel-motion:animate writes it; easel-core:score reads it so music and effects land on the cuts.",
+  "type": "object",
+  "required": ["version", "fps", "durationSec", "cues"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "fps": { "type": "number", "minimum": 1, "maximum": 120 },
+    "durationSec": { "type": "number", "minimum": 0.1, "maximum": 3600 },
+    "bpm": { "type": "number", "minimum": 20, "maximum": 300 },
+    "key": { "type": "string", "pattern": "^[A-G](#|b)?( ?(major|minor|maj|min|m))?$" },
+    "cues": {
+      "type": "array", "maxItems": 2000,
+      "items": {
+        "type": "object", "required": ["name", "frame", "kind"], "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "frame": { "type": "integer", "minimum": 0 },
+          "kind": { "enum": ["scene", "beat", "hit", "caption", "sfx", "music-start", "music-stop", "voice"] },
+          "label": { "type": "string" },
+          "sfx": { "type": "string", "description": "Effect name for kind sfx, e.g. whoosh, pop, click." }
+        }
+      }
+    }
+  }
+}

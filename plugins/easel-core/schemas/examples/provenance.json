@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "file": "logo/mark.svg",
+      "created": "2026-10-11T09:30:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        { "kind": "user", "name": "brief.json", "license": "user-owned" },
+        { "kind": "font", "name": "Space Grotesk 700", "url": "https://github.com/floriankarsten/space-grotesk", "license": "OFL-1.1" }
+      ]
+    }
+  ]
+}

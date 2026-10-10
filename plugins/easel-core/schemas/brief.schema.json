@@ -1,0 +1,67 @@
+{
+  "$id": "https://github.com/Sh0aib-Ja0allah/easel/schemas/brief.schema.json",
+  "title": "Easel brief",
+  "description": "Intake answers for a creative job, written by easel-core:brief before anything expensive is made. Lives at ./easel-out/<slug>/brief.json.",
+  "type": "object",
+  "required": ["version", "slug", "subject", "audience", "formats", "checkins"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "maxLength": 64 },
+    "subject": { "type": "string", "minLength": 3, "description": "What the piece is about, in one or two sentences." },
+    "audience": { "type": "string", "minLength": 2 },
+    "goal": { "type": "string", "description": "What the audience should think, feel or do afterwards." },
+    "formats": {
+      "type": "array", "minItems": 1, "maxItems": 12,
+      "items": {
+        "type": "object", "required": ["kind"], "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["video", "still", "social", "poster", "deck", "logo", "illustration", "ui", "animation-loop", "pixel"] },
+          "aspect": { "type": "string", "pattern": "^\\d+:\\d+$" },
+          "width": { "type": "integer", "minimum": 16 },
+          "height": { "type": "integer", "minimum": 16 },
+          "durationSec": { "type": "number", "minimum": 0.5, "maximum": 3600 },
+          "platform": { "type": "string" }
+        }
+      }
+    },
+    "look": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "style": { "type": "string", "description": "A style id from a style library, or a short description." },
+        "mood": { "type": "array", "items": { "type": "string" }, "maxItems": 8 },
+        "references": { "type": "array", "items": { "type": "string" }, "maxItems": 12 },
+        "antiReferences": { "type": "array", "items": { "type": "string" }, "maxItems": 12 },
+        "palette": { "type": "array", "items": { "type": "string", "pattern": "^(#[0-9a-fA-F]{6}|oklch\\(.+\\))$" }, "maxItems": 12 }
+      }
+    },
+    "voice": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "tone": { "type": "string" },
+        "language": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)?$" },
+        "narration": { "enum": ["none", "text-on-screen", "voice-over", "both"] }
+      }
+    },
+    "music": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "wanted": { "type": "boolean" },
+        "mood": { "type": "string" },
+        "track": { "type": "string", "description": "Path to a user-supplied track, if any." }
+      }
+    },
+    "constraints": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
+    "brand": { "type": "string", "description": "Path to the brand file, normally .easel/brand.md." },
+    "checkins": {
+      "type": "object", "required": ["story", "look", "storyboard"], "additionalProperties": false,
+      "description": "The three cheap check-ins, in order: story, then look, then storyboard.",
+      "properties": {
+        "story": { "$ref": "#/$defs/approval" },
+        "look": { "$ref": "#/$defs/approval" },
+        "storyboard": { "$ref": "#/$defs/approval" }
+      }
+    }
+  },
+  "$defs": { "approval": { "enum": ["pending", "approved", "changes-requested", "skipped"] } }
+}

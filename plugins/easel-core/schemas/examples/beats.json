@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "arc": "problem-solution",
+  "grammar": "storytime",
+  "totalSec": 12,
+  "beats": [
+    { "id": "hook", "text": "Your roof gets sunlight all day.", "visual": "A house under a rising sun, rays reaching the roof", "durationSec": 4, "approval": "approved" },
+    { "id": "convert", "text": "Panels turn it into electricity.", "visual": "Panel cells light up; a current line flows down the wall", "durationSec": 4, "approval": "approved" },
+    { "id": "use", "text": "Your home uses it first.", "visual": "Lamps, fridge and laptop glow as the line reaches them", "durationSec": 4, "approval": "pending" }
+  ]
+}

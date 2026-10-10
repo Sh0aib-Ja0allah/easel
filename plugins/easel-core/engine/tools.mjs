@@ -5,6 +5,7 @@ import { renderStill, outputDir } from './lib/render.mjs';
 import { contactSheet } from './lib/contact.mjs';
 import { renderVideo, filmstrip } from './lib/video.mjs';
 import { qa } from './lib/qa.mjs';
+import { KINDS, loadSchema, validateData, validateFile } from './lib/schemas.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -135,5 +136,27 @@ export const tools = {
       additionalProperties: false,
     },
     run: (args) => qa(args),
+  },
+  validate: {
+    description:
+      'Validate an Easel data file: brief (brief.json), beats (beats.json), cues (cues.json), provenance (provenance.json) or brand (.easel/brand.md in DESIGN.md sections). ' +
+      'Pass file (a path) or data (the JSON object, or the markdown text for brand). Set schema: true to get the schema or brand template back instead.',
+    inputSchema: {
+      type: 'object',
+      required: ['kind'],
+      properties: {
+        kind: { enum: KINDS },
+        file: { type: 'string' },
+        data: { type: ['object', 'string'] },
+        schema: { type: 'boolean' },
+      },
+      additionalProperties: false,
+    },
+    async run(args) {
+      if (args.schema) return { kind: args.kind, schema: loadSchema(args.kind) };
+      if (!args.file && args.data === undefined) throw new Error('Give file or data (or schema: true).');
+      const problems = args.file ? validateFile(args.kind, args.file) : validateData(args.kind, args.data);
+      return { kind: args.kind, valid: problems.length === 0, problems };
+    },
   },
 };

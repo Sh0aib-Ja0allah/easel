@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "fps": 30,
+  "durationSec": 12,
+  "bpm": 100,
+  "key": "D major",
+  "cues": [
+    { "name": "hook", "frame": 0, "kind": "scene" },
+    { "name": "convert", "frame": 120, "kind": "scene" },
+    { "name": "spark", "frame": 132, "kind": "sfx", "sfx": "pop" },
+    { "name": "use", "frame": 240, "kind": "scene" },
+    { "name": "end", "frame": 359, "kind": "music-stop" }
+  ]
+}

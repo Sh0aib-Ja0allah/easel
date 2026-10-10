@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "slug": "solar-explainer",
+  "subject": "How rooftop solar panels turn sunlight into power for a home.",
+  "audience": "Homeowners with no technical background",
+  "goal": "Understand the three steps and feel it is simple",
+  "formats": [{ "kind": "video", "aspect": "16:9", "durationSec": 45 }, { "kind": "video", "aspect": "9:16", "durationSec": 45, "platform": "reels" }],
+  "look": { "style": "cut-paper", "mood": ["warm", "friendly"], "antiReferences": ["blue-purple tech gradients"] },
+  "voice": { "tone": "calm and plain", "language": "en", "narration": "text-on-screen" },
+  "music": { "wanted": true, "mood": "light acoustic" },
+  "constraints": ["no real brand logos"],
+  "brand": ".easel/brand.md",
+  "checkins": { "story": "approved", "look": "approved", "storyboard": "pending" }
+}
