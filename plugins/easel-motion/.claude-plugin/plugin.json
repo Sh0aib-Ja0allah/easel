@@ -1,0 +1,21 @@
+{
+  "name": "easel-motion",
+  "displayName": "Easel Motion",
+  "version": "0.0.1",
+  "description": "Code-drawn animation and video, a style catalog, explainer grammars and UI motion",
+  "author": {
+    "name": "Sh0aib-Ja0allah"
+  },
+  "homepage": "https://github.com/Sh0aib-Ja0allah/easel",
+  "repository": "https://github.com/Sh0aib-Ja0allah/easel",
+  "license": "MIT",
+  "keywords": [
+    "animation",
+    "video",
+    "motion-graphics",
+    "gsap"
+  ],
+  "dependencies": [
+    "easel-core"
+  ]
+}

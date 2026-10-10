@@ -1,0 +1,22 @@
+{
+  "name": "easel-design",
+  "displayName": "Easel Design",
+  "version": "0.0.1",
+  "description": "Graphic, UI, social, posters, decks, design systems, logos, icons and brand identity",
+  "author": {
+    "name": "Sh0aib-Ja0allah"
+  },
+  "homepage": "https://github.com/Sh0aib-Ja0allah/easel",
+  "repository": "https://github.com/Sh0aib-Ja0allah/easel",
+  "license": "MIT",
+  "keywords": [
+    "design",
+    "ui",
+    "logo",
+    "branding",
+    "social"
+  ],
+  "dependencies": [
+    "easel-core"
+  ]
+}

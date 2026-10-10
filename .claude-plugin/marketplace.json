@@ -1,0 +1,13 @@
+{
+  "name": "easel",
+  "owner": { "name": "Sh0aib-Ja0allah" },
+  "description": "Claude Code plugins for animation, illustration, drawing, video and design",
+  "plugins": [
+    { "name": "easel-core", "source": "./plugins/easel-core", "description": "Shared foundation: planning check-ins, brand context, render engine, audio, critic agent, craft rules" },
+    { "name": "easel-motion", "source": "./plugins/easel-motion", "description": "Code-drawn animation and video, a style catalog, explainer grammars and UI motion" },
+    { "name": "easel-design", "source": "./plugins/easel-design", "description": "Graphic, UI, social, posters, decks, design systems, logos, icons and brand identity" },
+    { "name": "easel-illustrate", "source": "./plugins/easel-illustrate", "description": "SVG illustration and characters, concept illustration with a mascot, generative art" },
+    { "name": "easel-ai-media", "source": "./plugins/easel-ai-media", "description": "AI images, video and voice using your own API keys" },
+    { "name": "easel-pixel", "source": "./plugins/easel-pixel", "description": "Pixel art in Aseprite (optional; Aseprite is a paid app)" }
+  ]
+}

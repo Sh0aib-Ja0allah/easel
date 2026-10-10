@@ -1,0 +1,21 @@
+{
+  "name": "easel-illustrate",
+  "displayName": "Easel Illustrate",
+  "version": "0.0.1",
+  "description": "SVG illustration and characters, concept illustration with a mascot, and generative art",
+  "author": {
+    "name": "Sh0aib-Ja0allah"
+  },
+  "homepage": "https://github.com/Sh0aib-Ja0allah/easel",
+  "repository": "https://github.com/Sh0aib-Ja0allah/easel",
+  "license": "MIT",
+  "keywords": [
+    "illustration",
+    "svg",
+    "generative-art",
+    "drawing"
+  ],
+  "dependencies": [
+    "easel-core"
+  ]
+}
