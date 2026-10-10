@@ -8,7 +8,7 @@
 ## Vidyard's fork: ignore it
 
 | Commit | Change |
-|---|---|
+| --- | --- |
 | `f6a8cd3` | Adds Vidyard's house brand (`design-systems/construction-yard/DESIGN.md`) and makes it the default. Deletes the "no Tailwind indigo" anti-AI-slop rule, because Vidyard's brand is indigo. |
 | `e2c4c94` | Adds AWS Bedrock as a bring-your-own-key option in the app's daemon and web UI. |
 | `c506e70` | Automated dependency bump. |
@@ -37,7 +37,7 @@ The HyperFrames render step, which is hardwired to `$OD_BIN media generate`.
 ### Size
 
 | Content | Count |
-|---|---|
+| --- | --- |
 | Skills | 163 |
 | Design templates | 115 |
 | Design systems | 153 |
@@ -106,7 +106,7 @@ This is essentially the **same design as our planned Node + Playwright + ffmpeg 
 - **Per-skill licenses:**
 
 | License | Skills |
-|---|---|
+| --- | --- |
 | MIT | Leonxlnx skills (brandkit, brutalist, taste, minimalist, redesign, image-to-code, imagegen-*), Matt Pocock (emil-design-eng, review-animations), Vercel Labs (web-design-guidelines), web-clone, guizang-ppt |
 | Apache-2.0 | frontend-design, hatch-pet (upstream: openai/skills) |
 

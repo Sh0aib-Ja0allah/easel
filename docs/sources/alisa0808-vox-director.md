@@ -45,7 +45,7 @@ Takes one topic and produces a finished paper-collage explainer or ad video in t
 The repo's own estimates:
 
 | Item | Cost |
-|------|------|
+| --- | --- |
 | Keyframe | about $0.08 |
 | Video | about $0.13/s |
 | Host clips | about $0.36/s |

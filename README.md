@@ -15,7 +15,7 @@ It brings together and adapts the best open-source Claude Code plugins and skill
 ## Planned plugins
 
 | Plugin | What it does | Needs |
-|---|---|---|
+| --- | --- | --- |
 | `easel-core` | Planning, brand context, render engine, audio, critic, craft rules, AI provider layer | Node, Playwright, ffmpeg |
 | `easel-motion` | Code-drawn animation and video, style catalog, explainer formats, UI motion | `easel-core` |
 | `easel-design` | Graphics, UI, social, posters, decks, design systems, logos and icons | `easel-core` |
@@ -36,6 +36,11 @@ Once released, installing will look like this:
 - [Vision](docs/vision.md): what Easel is, who it's for, goals and non-goals.
 - [Sources](docs/sources.md): every repo we draw from, with its license and how we plan to use it. One detailed note per repo is in [docs/sources/](docs/sources/).
 - [Findings and decisions](docs/findings-and-decisions.md): overlaps between sources, gaps, legal items, and the decisions made so far.
+- [Skill catalog](docs/skill-catalog.md): every planned skill, agent and shared library for each plugin, with its sources.
+- [Architecture](docs/architecture.md): repo layout, manifests, how plugins share code, the render engine, the provider layer, data formats, and Windows requirements.
+- [Roadmap](docs/roadmap.md): phases 0–5, from foundations and spikes to v1.0.0.
+- [Tasks](docs/tasks.md): tasks for each phase, with IDs, completion checks and dependencies.
+- [Third-party notices (draft)](docs/third-party-notices-draft.md): copyright lines and obligations for each source.
 
 ## Credits
 

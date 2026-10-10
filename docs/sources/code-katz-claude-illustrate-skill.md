@@ -26,7 +26,7 @@ It makes brand assets: logos, wordmarks, favicons, icon sets, illustrations and 
 ### Raster backends (documented)
 
 | Backend | Access | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Recraft | Remote MCP, OAuth | Paid per image. The only one that returns true vector paths. |
 | Hugging Face | MCP, anonymous or `HF_TOKEN` | FLUX via Spaces. Free tier is rate-limited. Weak at text. |
 | Canva | MCP, OAuth | Brand kits and autofill need Canva Enterprise. |

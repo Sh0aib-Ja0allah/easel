@@ -18,7 +18,7 @@
 ## The 15 styles
 
 | # | Style | Tech |
-|---|-------|------|
+| --- | --- | --- |
 | 01 | flat-vector | SVG, hand-coded easing |
 | 02 | line-art | SVG stroke-dashoffset, pen-following camera |
 | 03 | isometric | Three.js orthographic + AO |

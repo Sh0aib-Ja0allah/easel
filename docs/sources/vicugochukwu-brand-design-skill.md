@@ -20,7 +20,7 @@ It makes on-brand LinkedIn graphics: carousels, banners and article images.
 ### LinkedIn format specs
 
 | Format | Size (px) |
-|---|---|
+| --- | --- |
 | Carousel | 1080 × 1080 |
 | Article image | 1080 × 607 |
 | Banner | 1584 × 396 |

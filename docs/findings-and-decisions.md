@@ -11,7 +11,7 @@
 > code draws each frame deterministically → headless Chromium captures each frame → ffmpeg encodes → audio is synthesized in code
 
 | | animate | huashu-art-motion | mg-styles-15 | HyperFrames (via open-design) |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Language | Node | Python (uv) + JS | Node + Python | Node |
 | Browser driver | Playwright | Playwright | puppeteer-core | Puppeteer |
 | Frame contract | STYLE hooks | `--spec` JSON / scene JS | `window.renderAt(t)` | paused GSAP timeline `window.__timelines.main` + `data-*` timing |
@@ -28,7 +28,7 @@
 ### 1.2 Two ways to make media, and many image backends
 
 | Path | Sources | Cost | Output character |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Procedural** (code draws everything: canvas, SVG, WebGL) | animate, huashu, mg-styles, svg skills, open-design (p5.js, shaders, Three.js) | Free, local | Precise, stylized, deterministic |
 | **Generative** (AI models make images and clips) | vox-director (Atlas), designskills (Gemini), peanut (Codex built-in), b1rdmania (Gemini/Replicate/OpenAI), illustrate (Recraft/HF MCP), open-design (fal, Replicate, Venice, Sora, MiniMax) | Paid API | Photographic, organic, less controllable |
 
@@ -37,7 +37,7 @@ Every generative source is tied to a different vendor. That makes D3 (bring-your
 ### 1.3 Overlaps that need one owner
 
 | Topic | Appears in | Proposed owner |
-|---|---|---|
+| --- | --- | --- |
 | Story / beat planning + human check-ins | animate, vox, huashu | **One planning stage**: vox's `beats.json` format + animate's 3 check-ins |
 | Brand context | designskills (`.agents/design-context.md`), open-design and b1rdmania (`DESIGN.md`), code-katz (brief), vox (theme presets) | **One brand-context file** for the whole marketplace: designskills' auto-detect + open-design's `DESIGN.md` sections |
 | Render → look → fix loop | animate, huashu, upbrew (cairosvg), code-katz (Chromium), designskills (Playwright), aseprite (`look`) | **The shared engine** does all rendering; skills call it |
@@ -55,7 +55,7 @@ Every generative source is tied to a different vendor. That makes D3 (bring-your
 ### 1.4 Coverage against the vision (after round 2)
 
 | Domain | Coverage | Main sources |
-|---|---|---|
+| --- | --- | --- |
 | Animation | Strong | animate, huashu, mg-styles, HyperFrames/GSAP, aseprite |
 | Video | Strong | procedural engine + vox (generative) |
 | Design | **Strong** | designskills, code-katz, open-design, brand ideas |
@@ -124,7 +124,7 @@ Many sources assume macOS or Linux:
 One repo, one `marketplace.json`, several plugins. **Proposed split (to confirm in the skill catalog):**
 
 | Plugin | Contents | Extra requirements |
-|---|---|---|
+| --- | --- | --- |
 | `easel-core` | Planning stage, brand context, render engine, audio, critic, craft rules, provider layer | Node, Playwright, ffmpeg |
 | `easel-motion` | Procedural animation and video, style catalog, explainer grammars, GSAP/UI motion | core |
 | `easel-design` | Graphic, UI, social, posters, decks, design systems, logos/icons/brand | core |
@@ -169,7 +169,9 @@ HyperFrames does what we planned to build. It's open source under Apache-2.0, ha
 - [x] **A. Generic styles only.** ✅ Decided 2026-10-10. Brutalism, editorial, glassmorphism, and so on, using open-design's `DESIGN.md` format. Users can create their own brand file.
 - [ ] B. Also ship the brand-inspired systems, renamed. This still carries trademark risk.
 
-## 3. Next planning docs (after D6)
+## 3. Planning docs written (2026-10-11)
+
+The five docs below are now written. Their links: [skill-catalog.md](skill-catalog.md), [architecture.md](architecture.md), [roadmap.md](roadmap.md), [tasks.md](tasks.md), [third-party-notices-draft.md](third-party-notices-draft.md). Each was planned as follows:
 
 1. `skill-catalog.md`: the merged list of skills, grouped by plugin, each with a trigger description and its source mapping.
 2. `architecture.md`, covering:

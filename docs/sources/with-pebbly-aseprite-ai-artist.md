@@ -32,7 +32,7 @@ After every change it calls `look` to see the result.
 ### Agents
 
 | Agent | Model | Role |
-|-------|-------|------|
+| --- | --- | --- |
 | `animation-director` | sonnet | Key poses and timing |
 | `palette-smith` | sonnet | Palettes |
 | `rig-builder` | sonnet | Splits a character into layers |

@@ -35,7 +35,7 @@ Claude writes Canvas JS that paints in a chosen art style. Headless Chromium ren
 ### 35 art styles
 
 | Group | Styles |
-|-------|--------|
+| --- | --- |
 | Ancient | Cave, Egyptian, Greek black-figure, Pompeii mosaic |
 | Medieval to Renaissance | Gothic illuminated, Renaissance sfumato, Rembrandt |
 | 19th century and modernism | Impressionism, Monet, Seurat, Van Gogh, Munch, Mucha Nouveau, Klimt, Cubism, Bauhaus, Constructivism, Matisse cut-outs, Picasso Blue, Dalí, Hopper |
@@ -72,7 +72,7 @@ Kurzgesagt, Vox collage, Whiteboard/RSA, Storytime, Kinetic type, 3Blue1Brown, K
 ## Translation effort: heavy
 
 | Content | Size | Notes |
-|---------|------|-------|
+| --- | --- | --- |
 | Markdown (Chinese) | about 520 KB | 460 KB of it is references |
 | JS/Python | about 2.8 MB across 210 files | Chinese comments, CLI messages and file names |
 | Fonts | about 20 MB | Mostly CJK. Can be dropped for an English-first plugin. |
