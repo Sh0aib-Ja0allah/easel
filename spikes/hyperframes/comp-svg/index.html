@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<!-- Spike T0.4: original SVG piece animated by a paused GSAP timeline plus one CSS @keyframes animation. -->
+<script src="gsap.min.js"></script>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: #10141f; }
+  #ring { transform-origin: 640px 360px; transform-box: view-box; animation: spin 5s linear both; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(180deg); } }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="5" data-width="1280" data-height="720" data-fps="30">
+  <svg class="clip" data-start="0" data-duration="5" data-track-index="0" width="1280" height="720" viewBox="0 0 1280 720">
+    <g id="ring" fill="none" stroke="#3d5a80" stroke-width="6" stroke-dasharray="30 22">
+      <circle cx="640" cy="360" r="250"/>
+    </g>
+    <circle id="dotA" cx="390" cy="360" r="38" fill="#ee6c4d"/>
+    <circle id="dotB" cx="890" cy="360" r="38" fill="#98c1d9"/>
+    <path id="wave" d="M 240 560 C 420 480, 560 640, 740 560 S 1040 480, 1040 560" fill="none" stroke="#e0fbfc" stroke-width="8" stroke-linecap="round"/>
+    <rect id="bar" x="240" y="140" width="10" height="24" rx="5" fill="#e0fbfc"/>
+  </svg>
+</div>
+<script>
+  const len = document.getElementById('wave').getTotalLength();
+  gsap.set('#wave', { strokeDasharray: len, strokeDashoffset: len });
+  const tl = gsap.timeline({ paused: true });
+  tl.to('#wave', { strokeDashoffset: 0, duration: 2.5, ease: 'power2.inOut' }, 0)
+    .to('#dotA', { attr: { cx: 890 }, duration: 2, ease: 'back.inOut(1.7)' }, 0.5)
+    .to('#dotB', { attr: { cx: 390 }, duration: 2, ease: 'back.inOut(1.7)' }, 0.5)
+    .to('#bar', { attr: { width: 800 }, duration: 4, ease: 'none' }, 0.5)
+    .to(['#dotA', '#dotB'], { attr: { r: 60 }, duration: 0.6, yoyo: true, repeat: 3 }, 2.6);
+  window.__timelines = window.__timelines || {};
+  window.__timelines.main = tl;
+  tl.seek(0);
+  window.__ready = true;
+</script>
+</body>
+</html>

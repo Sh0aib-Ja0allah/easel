@@ -5,3 +5,4 @@ evals/results/
 *.log
 .DS_Store
 Thumbs.db
+spikes/hyperframes/comp-*/gsap.min.js

@@ -105,13 +105,12 @@ Every visual artifact is a web page that can be put into an exact state at any t
 - **Stills** (SVG, HTML layouts, canvas art): rendered once at `t = 0`.
 - **Animation**, either of two forms:
   - `window.renderAt(t)` (the mg-styles-15 contract, also used by the animate kits), or
-  - a paused GSAP timeline at `window.__timelines.main` (the HyperFrames contract).
+  - the HyperFrames composition contract: a root element with `data-composition-id`, `data-start`, `data-duration`, `data-width`, `data-height` (optional `data-fps`), and a paused GSAP timeline at `window.__timelines[<composition id>]`. CSS animations and transitions on the page are seeked through the Web Animations API (`animation.currentTime`).
 - `window.__ready = true` signals that fonts and assets have loaded.
 
-### Implementation options (decision D7)
+### Implementation (decision D7 = B, 2026-10-11)
 
-- **Option A: HyperFrames as a pinned dependency.** Our MCP tools wrap its render. Canvas styles drive drawing from the timeline's `onUpdate`.
-- **Option B: our own capture loop.** Playwright launches Chromium, seeks each frame, and screenshots it. Frames are piped to ffmpeg. Motion blur comes from sub-frame sampling.
+**Our own capture loop.** Playwright launches Chromium's headless shell from `${CLAUDE_PLUGIN_DATA}`, opens the page, waits for `__ready` and `document.fonts.ready`, and for each frame `n` seeks to `t = n / fps` (`renderAt(t)`, else every `__timelines` entry with `seek(t, false)`, then every Web Animation's `currentTime`). It screenshots each frame and pipes the frames to ffmpeg. Motion blur, if wanted, comes from sub-frame sampling. HyperFrames was evaluated and not adopted; see [spikes/hyperframes.md](spikes/hyperframes.md). Its composition format is supported so compositions stay portable.
 
 ### MCP tools (draft)
 
@@ -149,7 +148,7 @@ Every visual artifact is a web page that can be put into an exact state at any t
 | Piece | How | Notes |
 | --- | --- | --- |
 | Aseprite bridge | `easel-pixel/.mcp.json` → `npx -y @pebbly/aseprite-ai-artist@<pinned> serve` | The user installs the Lua extension once (`npx @pebbly/aseprite-ai-artist install-extension`). Their hook matchers are rewritten for our tool names. |
-| HyperFrames | npm dependency of `engine/`, pinned (if D7 = A) | Apache-2.0; include its NOTICE |
+| HyperFrames | Not a dependency (D7 = B). Users may install it themselves; Easel compositions follow its format | Apache-2.0; credited for the composition-format idea |
 | Image/video/voice APIs | Provider layer (§6) | Bring your own key |
 | Figma / Canva / Recraft / Hugging Face MCP | Documented as optional backends in `easel-ai-media:providers` | No bundled config; the user installs these themselves |
 

@@ -152,7 +152,7 @@ Round 2 received (#6–13). Design, illustration and drawing are now covered.
 - [x] Name: **Easel** (repo `easel`, plugins `easel-*`). ✅ Decided 2026-10-11.
 - [x] License: **MIT** for our own code. ✅ Decided 2026-10-11 (`LICENSE` added). Apache-2.0 material keeps its license, with LICENSE and NOTICE files included. Both licenses can sit in one repo.
 
-### D7. Render engine: build our own, or build on HyperFrames? (new)
+### D7. Render engine: build our own, or build on HyperFrames? ✅ (2026-10-11)
 
 HyperFrames does what we planned to build. It's open source under Apache-2.0, has about 60k stars, and is actively maintained by HeyGen.
 
@@ -162,7 +162,9 @@ HyperFrames does what we planned to build. It's open source under Apache-2.0, ha
   - Check that it can be installed as a pinned npm dependency.
 
   If it passes, depend on it, the same way we depend on aseprite's npm package. If not, build our own engine using its contract as the model.
-- [ ] B. Build our own engine (Node + Playwright) with a `renderAt(t)` contract, borrowing from animate and mg-styles.
+- [x] **B.** Build our own engine (Node + Playwright) with a `renderAt(t)` contract, borrowing from animate and mg-styles.
+
+  ✅ **Decided by Claude for the owner, 2026-10-11, after spike T0.4: B.** Our own Playwright capture loop, which also reads the HyperFrames composition format (`data-composition-id`, `data-start`/`data-duration`, `window.__timelines.<id>`) besides `window.renderAt(t)`. Reasons: HyperFrames turns on telemetry by default and writes to `~/.hyperframes` (conflicts with D3); its CSS-animation output differed run to run (35.7 dB) while ours was bit-identical; it adds Puppeteer and 112 MB of native dependencies beside D2's Playwright; its API is pre-1.0 and marked experimental. Our loop was also faster on the test laptop. Evidence: [spikes/hyperframes.md](spikes/hyperframes.md).
 
 ### D8. Design systems (new)
 
