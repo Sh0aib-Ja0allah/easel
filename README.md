@@ -33,6 +33,7 @@ Once released, installing will look like this:
 
 ## Planning docs
 
+- **[Handoff](docs/HANDOFF.md): start here if you're picking up the work.** It covers current state, decisions, hard rules, verified plugin facts and the next tasks.
 - [Vision](docs/vision.md): what Easel is, who it's for, goals and non-goals.
 - [Sources](docs/sources.md): every repo we draw from, with its license and how we plan to use it. One detailed note per repo is in [docs/sources/](docs/sources/).
 - [Findings and decisions](docs/findings-and-decisions.md): overlaps between sources, gaps, legal items, and the decisions made so far.
