@@ -13,8 +13,8 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 | T0.3 | ✅ Done (`647e91f`). **Spike: cross-plugin MCP visibility.** Core exposes a dummy MCP tool; a skill in `easel-motion` calls it by full name | Written result in `docs/spikes/cross-plugin-mcp.md`; architecture §3 updated | T0.2 |
 | T0.4 | ✅ Done (`fcc7dda`; D7 = B, own loop). **Spike: HyperFrames** on Windows. Render one animate canvas style and one SVG/CSS animation as compositions, and install it as a pinned npm dependency | `docs/spikes/hyperframes.md` with timings, Windows notes and a recommendation; D7 decided | |
 | T0.5 | ✅ Done (`7caf801`). **Spike: Windows toolchain.** Playwright Chromium install into `${CLAUDE_PLUGIN_DATA}`, ffmpeg detection, font loading, long paths | `docs/spikes/windows.md` | T0.2 |
-| T0.6 | ✅ Done (`2f2cce4`, CI run 38092771392 green). CI: GitHub Actions running `claude plugin validate --strict` on push | Green check on `main` | T0.2 |
-| T0.7 | `CONTRIBUTING.md`: skill authoring rules (frontmatter, routing lines, render → look → critique ending, attribution header for adapted files) | File committed | T0.2 |
+| T0.6 | ✅ Done (`2f2cce4`; workflow updated in `59b017e`, CI run 38092897533 green). CI: GitHub Actions running `claude plugin validate --strict` on push | Green check on `main` | T0.2 |
+| T0.7 | ✅ Done (`59b017e`). `CONTRIBUTING.md`: skill authoring rules (frontmatter, routing lines, render → look → critique ending, attribution header for adapted files) | File committed | T0.2 |
 
 ## Phase 1: easel-core MVP
 
@@ -22,7 +22,7 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 | --- | --- | --- | --- |
 | T1.1 | Engine skeleton: MCP server (stdio) + CLI sharing one module; `doctor` tool | `doctor` reports Node/Chromium/ffmpeg status on Windows/macOS/Linux | T0.3, T0.5 |
 | T1.2 | `render_still` + `contact_sheet` (sizes, light and dark) | Golden image test passes | T1.1 |
-| T1.3 | `render_video` + `filmstrip` (HyperFrames wrapper or our own loop, per D7) | 5 s, 30 fps MP4 from a `renderAt(t)` page and from a GSAP timeline page | T1.1, T0.4 |
+| T1.3 | `render_video` + `filmstrip` (our own Playwright loop, D7 = B) | 5 s, 30 fps MP4 from a `renderAt(t)` page and from a GSAP timeline page | T1.1, T0.4 |
 | T1.4 | `qa` checks: text clipping, contrast, stillness, colour-cast, loudness | Each check has a failing and a passing fixture | T1.2, T1.3 |
 | T1.5 | Schemas: `brand.md`, `brief.json`, `beats.json`, `cues.json`, `provenance.json` + validators | JSON Schema files + tests | T1.1 |
 | T1.6 | Cross-OS CI smoke tests for the engine | Windows/macOS/Linux jobs green | T1.3 |

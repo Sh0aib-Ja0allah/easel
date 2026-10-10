@@ -166,6 +166,8 @@ HyperFrames does what we planned to build. It's open source under Apache-2.0, ha
 
   ✅ **Decided by Claude for the owner, 2026-10-11, after spike T0.4: B.** Our own Playwright capture loop, which also reads the HyperFrames composition format (`data-composition-id`, `data-start`/`data-duration`, `window.__timelines.<id>`) besides `window.renderAt(t)`. Reasons: HyperFrames turns on telemetry by default and writes to `~/.hyperframes` (conflicts with D3); its CSS-animation output differed run to run (35.7 dB) while ours was bit-identical; it adds Puppeteer and 112 MB of native dependencies beside D2's Playwright; its API is pre-1.0 and marked experimental. Our loop was also faster on the test laptop. Evidence: [spikes/hyperframes.md](spikes/hyperframes.md).
 
+  **Deviates from** the rule recorded with option A above ("if it passes on Windows, depend on it"): HyperFrames did render on Windows, but failed the determinism and no-tracking requirements. The owner was asked to confirm on 2026-10-11; B is the default until they answer.
+
 ### D8. Design systems (new)
 
 - [x] **A. Generic styles only.** ✅ Decided 2026-10-10. Brutalism, editorial, glassmorphism, and so on, using open-design's `DESIGN.md` format. Users can create their own brand file.
@@ -195,4 +197,9 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 - **Reason:** installed plugins are copied into a cache without `node_modules`. A server that imports the SDK cannot start until something installs it, and the `doctor` tool that would install it is served by that same server. The stdio protocol needs about 80 lines. Heavy dependencies (Playwright) are installed by `doctor` into `${CLAUDE_PLUGIN_DATA}` and imported from there.
 - **Deviates from:** HANDOFF.md T0.3 step 2, which suggested the SDK.
 - **Evidence:** spike T0.3, [spikes/cross-plugin-mcp.md](spikes/cross-plugin-mcp.md).
+
+### D10. Never bundle GSAP ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** Easel does not commit or redistribute GSAP. The engine's `doctor` installs `gsap` (pinned) from npm into `${CLAUDE_PLUGIN_DATA}` on the user's machine, and the render engine serves that local copy to compositions (no CDN at render time). The engine itself does not depend on GSAP; `renderAt(t)` compositions need no library.
+- **Reason:** GSAP is free to use but under Webflow's "Standard" license, not an OSI license, with use restrictions. Easel's own code stays MIT and the user obtains GSAP from npm under its own terms. `ui-motion` teaches GSAP for the user's own projects. Found by QA review B-2 #3.
 

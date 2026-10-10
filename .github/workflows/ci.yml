@@ -13,8 +13,8 @@ jobs:
     name: validate plugins
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - name: Install Claude Code CLI (pinned)
@@ -31,3 +31,27 @@ jobs:
       - name: node --check every script
         run: |
           find . -type f \( -name '*.mjs' -o -name '*.js' \) -not -path '*/node_modules/*' -print0 | xargs -0 -r -n1 node --check
+
+  engine:
+    name: engine (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Engine unit tests
+        run: npm --prefix plugins/easel-core/engine test
+      - name: MCP smoke (initialize + tools/list over stdio)
+        shell: bash
+        run: |
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | node plugins/easel-core/engine/server.mjs | tee mcp.out
+          grep -q '"protocolVersion":"2025-06-18"' mcp.out
+          grep -q '"name":"doctor"' mcp.out
+      - name: doctor report
+        run: node plugins/easel-core/engine/cli.mjs doctor

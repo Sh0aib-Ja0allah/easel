@@ -2,7 +2,11 @@
   "mcpServers": {
     "easel": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/engine/server.mjs"]
+      "args": ["${CLAUDE_PLUGIN_ROOT}/engine/server.mjs"],
+      "env": {
+        "EASEL_DATA": "${CLAUDE_PLUGIN_DATA}",
+        "EASEL_ROOT": "${CLAUDE_PLUGIN_ROOT}"
+      }
     }
   }
 }

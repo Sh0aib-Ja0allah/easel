@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Spike T0.4 option B: our own capture loop (Playwright + ffmpeg).
 // Usage: node own-loop.mjs <playwright-core dir> <composition dir> <out dir> [fps] [seconds]
+// Needs playwright-core 1.64.0 installed somewhere (the T0.5 spike installs it into a data dir;
+// pass that node_modules/playwright-core folder) and ffmpeg on PATH. Not in package.json on purpose.
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';

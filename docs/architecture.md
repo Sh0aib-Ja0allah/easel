@@ -141,7 +141,7 @@ Every visual artifact is a web page that can be put into an exact state at any t
 ### Setup and caching
 
 - **First run:** `doctor` installs engine `node_modules` and Playwright Chromium into `${CLAUDE_PLUGIN_DATA}`. That directory survives plugin updates; `${CLAUDE_PLUGIN_ROOT}` changes on every update.
-- **ffmpeg:** we check for it on the system rather than bundling it. `doctor` prints install commands, including `winget install ffmpeg` on Windows.
+- **ffmpeg:** we check for it on the system rather than bundling it. `doctor` prints install commands, including `winget install --id Gyan.FFmpeg -e` on Windows.
 
 ## 5. Optional external pieces
 
