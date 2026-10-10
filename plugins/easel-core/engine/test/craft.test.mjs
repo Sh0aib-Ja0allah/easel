@@ -43,3 +43,15 @@ test('craft tool lists, gets, filters and refuses traversal', async () => {
   await assert.rejects(craft({ name: '../package' }), /Invalid/);
   await assert.rejects(craft({ name: 'nope' }), /Available: /);
 });
+
+test('the five rubrics exist, share the README scale, and carry attribution headers', async () => {
+  const list = (await craft({ kind: 'rubric' })).available.map((e) => e.name).sort();
+  assert.deepEqual(list, ['design', 'illustration', 'motion', 'pixel', 'social']);
+  for (const n of list) {
+    const text = await craft({ kind: 'rubric', name: n });
+    assert.match(text, /Written for Easel \(MIT\)/i, n);
+    assert.match(text, /@ [0-9a-f]{40}/, n);
+    assert.match(text, /\| Dimension \|/, n);
+    assert.doesNotMatch(text, BANNED, n);
+  }
+});

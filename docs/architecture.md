@@ -28,7 +28,7 @@ easel/
 │   ├── easel-illustrate/
 │   ├── easel-ai-media/
 │   └── easel-pixel/
-├── evals/                        # claude plugin eval suites, one folder per plugin
+├── plugins/<plugin>/evals/       # claude plugin eval suites live inside each plugin (the CLI's default)
 ├── docs/                         # planning docs (this folder)
 ├── LICENSE                       # MIT
 ├── THIRD_PARTY_NOTICES.md        # from docs/third-party-notices-draft.md
@@ -217,7 +217,7 @@ Every visual skill ends with the same loop:
 ## 10. Testing
 
 - **`claude plugin validate . --strict`:** run in CI on every push. See <https://code.claude.com/docs/en/plugins/cli-reference>.
-- **`claude plugin eval`:** for each plugin, cases in `evals/<plugin>/<case>/prompt.md` with graders. See <https://code.claude.com/docs/en/plugin-evals>.
+- **`claude plugin eval`:** for each plugin, cases in `plugins/<plugin>/evals/<case>/prompt.md` with `graders/*.md`; engine tools are answered by mocks in `plugins/<plugin>/evals/mocks/easel/`. See <https://code.claude.com/docs/en/plugin-evals>.
   - Routing cases check that the right skill triggers, using the `tool_used` grader.
   - Output cases check `file_exists`, plus a regex or llm judge.
   - A baseline run without the plugin shows what the plugin adds.

@@ -26,6 +26,9 @@ jobs:
           for d in plugins/*/; do
             echo "::group::$d"
             claude plugin validate "$d" --strict
+            for sub in skills agents commands; do
+              if [ -d "$d$sub" ]; then claude plugin validate "$d$sub" --strict; fi
+            done
             echo "::endgroup::"
           done
       - name: node --check every script
