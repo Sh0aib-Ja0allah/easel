@@ -147,7 +147,8 @@ step('dependency: installing easel-motion alone into another empty config pulls 
   claudeIn(configDep, undefined, 'plugin', 'install', 'easel-motion@easel');
   const core = (installedRecords(configDep)['easel-core@easel'] || [])[0];
   if (!core || !existsSync(join(core.installPath, '.claude-plugin', 'plugin.json'))) throw new Error('easel-core was not installed as a dependency');
-  // a dependency resolves against the release tags (easel-core--v<version>), not the marketplace head
+  // CI run 38139487971 (Claude Code 2.1.296): the dependency came from the marketplace head, with the
+  // ^1.0.0 range checked against its version
   return { easelCore: core.resolvedVersion || core.version, from: String(core.gitCommitSha).slice(0, 12) };
 });
 
