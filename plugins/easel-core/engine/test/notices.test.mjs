@@ -4,6 +4,7 @@
 // every plugin carries LICENSE and NOTICE.md. Pure Node; runs from the repository (not an installed copy).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,6 +49,19 @@ test('Apache-2.0 material: every file says Modified by Easel, and its plugin shi
   }
   assert.ok(n >= 12, `${n} Apache-derived files`);
   assert.ok(existsSync(join(REPO, 'licenses', 'Apache-2.0.txt')));
+});
+
+// Apache-2.0 4(a) asks for "a copy of this License": the exact text from
+// https://www.apache.org/licenses/LICENSE-2.0.txt (sha256 below, line endings normalised), not an
+// edited copy. v1.0.0 shipped one with altered sections 6 and 9.
+const APACHE_SHA256 = 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30';
+test('every shipped Apache-2.0.txt is the official licence text', { skip }, () => {
+  const copies = [join(REPO, 'licenses', 'Apache-2.0.txt'), ...readdirSync(PLUGINS).map((p) => join(PLUGINS, p, 'licenses', 'Apache-2.0.txt')).filter((f) => existsSync(f))];
+  assert.ok(copies.length >= 4, `${copies.length} copies`);
+  for (const f of copies) {
+    const text = readFileSync(f, 'utf8').replace(/\r\n/g, '\n');
+    assert.equal(createHash('sha256').update(text).digest('hex'), APACHE_SHA256, relative(REPO, f));
+  }
 });
 
 test('every plugin carries LICENSE (MIT) and NOTICE.md; the MIT text and the trademark notes are in THIRD_PARTY_NOTICES.md', { skip }, () => {

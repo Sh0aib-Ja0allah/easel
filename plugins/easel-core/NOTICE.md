@@ -19,25 +19,30 @@ The `.easel/brand.md` section layout follows open-design's `DESIGN.md` format.
 | Source | Copyright | Used in easel-core | Upstream commit |
 |---|---|---|---|
 | referodesign/refero_skill | Copyright (c) 2026 Refero | reached through open-design's craft rulebooks, which adapt it | `a9b54a3e62a6391f5f5ab7a20e4ddb32fb79a27d` |
-| alchaincyf/huashu-art-motion | Copyright (c) 2026 alchaincyf | ideas for the film gates in `qa` and the motion rulebook | `9ff59339f934e08483ba0a5b1db20f4c2c421b35` |
+| alchaincyf/huashu-art-motion | Copyright (c) 2026 alchaincyf (花叔 · 花生) | ideas for the film gates in `qa` and the motion rulebook | `9ff59339f934e08483ba0a5b1db20f4c2c421b35` |
 | ArnavPuri/designskills | Copyright (c) 2026 Arnav Puri | critique procedure ideas in the rubrics and the critique skill | `c7873015add8571ca95043febad0d9e6c97ee5c6` |
 | Vincentwei1021/mg-styles-15 | Copyright (c) 2026 Vincentwei1021 | rubric ideas; the `renderAt(t)` contract and cue sheet ideas | `49052d80bfaf9fa8412cc9710530e5e95a3b8d8c` |
 | with-pebbly/aseprite-ai-artist | Copyright (c) 2026 with-pebbly | critic agent ideas | `f51fe6908223ef9ac476de1568234c699594722d` |
-| cth9191/animate | Copyright (c) 2026 cth9191 | the `renderFrame(t)` page contract; `engine/lib/canvastext.mjs` (canvas_text, beat_grid), `refs.mjs` (measure_image, compare_images) and the `audio_score` synth in `score.mjs`; the brief skill's check-ins | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
+| cth9191/animate | Copyright (c) 2026 cth9191 | the `renderFrame(t)` page contract and its test fixture `engine/test/fixtures/anim-renderframe.html`; `engine/lib/canvastext.mjs` (canvas_text, beat_grid), `refs.mjs` (measure_image, compare_images) and the `audio_score` synth in `score.mjs`; the brief skill's check-ins | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
 
 ## Bundled fonts (SIL Open Font License 1.1)
 
 Inter, Newsreader, JetBrains Mono, Space Grotesk, Caveat, STIX Two Text and Noto Sans Math, in
-`fonts/`, each folder with its `OFL.txt` and copyright line (see `fonts/README.md`).
+`fonts/`, each folder with its `OFL.txt` and copyright line (see `fonts/README.md`). STIX Two
+Text: Copyright 2001-2021 The STIX Fonts Project Authors (https://github.com/stipub/stixfonts),
+with Reserved Font Name "TM Math" (not used by these files).
 
 ## Installed at run time, not redistributed
 
-`doctor` installs `playwright-core` (Apache-2.0, Microsoft) with its Chromium build, and `gsap`
-(GreenSock's Standard License, decision D10), into the user's plugin data folder.
+`doctor` installs `playwright-core` (Apache-2.0, Microsoft) with its Chromium build, `gsap`
+(GreenSock's "standard no-charge" license, https://gsap.com/standard-license, not an open-source
+licence; decision D10) and `p5` (LGPL-2.1), into the user's plugin data folder. Easel uses GSAP only
+to render previews; a user who ships GSAP in their own product installs it under GreenSock's terms.
 
 ## Trademarks
 
-Aseprite is a trademark of Igara Studio; Easel is not affiliated with Igara Studio.
+Aseprite is a trademark of Igara Studio; Easel is not affiliated with Igara Studio. STIX Fonts™ is a
+trademark of The Institute of Electrical and Electronics Engineers, Inc.
 
 ## The MIT License (text, for each MIT source above)
 

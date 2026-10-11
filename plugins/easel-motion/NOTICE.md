@@ -9,7 +9,8 @@ the end of this file, so the notices travel with the installed plugin. The repos
 
 The animate kit (`kit/`), seven of the styles (crosshatch, cut-paper, isometric, math, pixel, riso,
 sketchbook), the starter templates (`templates/`), the
-story grammars (`grammars/formats.md`, `frame.md`, `story.md`) and `tools/build.mjs` are adapted
+story grammars (`grammars/formats.md`, `frame.md`, `story.md`), `tools/build.mjs` and the format
+table, safe areas and canvas CSS in `tools/new-piece.mjs` are adapted
 from [cth9191/animate](https://github.com/cth9191/animate) at commit
 `7e5eb56feb2dd573f890e1b7b34748af43d58263` (`plugins/animate/skills/animate/`).
 
@@ -39,15 +40,17 @@ Copyright (c) 2026 Vincentwei1021, MIT License. No code, media or fonts from tha
 
 `grammars/` (nine explainer grammars) and `recipes/` (ten style recipes) are translated and adapted
 from huashu-art-motion at commit `9ff59339f934e08483ba0a5b1db20f4c2c421b35`. Copyright (c) 2026
-alchaincyf. MIT License. Each file names its source; characters, rig and tooling were removed.
+alchaincyf (花叔 · 花生). MIT License. Each file names its source; characters, rig and tooling were
+removed, and no grammar describes a character from any channel or brand.
 
 ## greensock/gsap-skills (MIT)
 
 `skills/ui-motion/gsap/` holds the eight official GSAP skills from
 [greensock/gsap-skills](https://github.com/greensock/gsap-skills) at commit
 `aed9cfd3277740755f6bfc1155c7aa645403b760`, text unchanged with a header added. Copyright (c) 2026
-GreenSock. MIT License. GSAP itself is not shipped: easel-core's `doctor` installs it at run time
-under GreenSock's Standard License (decision D10).
+GreenSock. MIT License. GSAP itself is not shipped: easel-core's `doctor` installs it at run time,
+to render previews, under GreenSock's "standard no-charge" license
+(https://gsap.com/standard-license; not an open-source licence; decision D10).
 
 ## ArnavPuri/designskills (MIT)
 

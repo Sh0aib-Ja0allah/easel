@@ -54,7 +54,7 @@ The MIT License applies to each source below; its text is reproduced once at the
 | [linyaosky/svg-skill](https://github.com/linyaosky/svg-skill) | Copyright (c) 2026 svg-skill contributors | easel-illustrate's `svg` skill and references (its bar chart example fixed), the SVG checker's checklist | `2103b92cb47f588a97a6c38aa6c40571fadbd4f8` |
 | [aishwaryaashok14/peanut-illustrations](https://github.com/aishwaryaashok14/peanut-illustrations) | Copyright (c) 2026 Aishwarya Ashok, **and** Copyright (c) 2026 Ian (portions adapted from [helloianneo/ian-xiaohei-illustrations](https://github.com/helloianneo/ian-xiaohei-illustrations)) | easel-illustrate's concept-illustration method ("Peanut Illustrations" by Aishwarya Ashok). **Excluded:** the peanut and Xiaohei characters and all example images; Easel's mascot is its own | `1e5c645892a2d70242062f23ee2277b18240e05c` |
 | [Alisa0808/vox-director](https://github.com/Alisa0808/vox-director) | Copyright (c) 2026 Alisa Qian | easel-ai-media's `ai-video` pipeline and its prompt, beat and model references, and the voice reference, renamed "editorial collage" (headers in each file, list in `plugins/easel-ai-media/NOTICE.md`). **Excluded:** its examples with real people and every note on getting around content filters; its Python scripts (replaced by Easel's Node server) | `6a85a7c341610442a6a5b1885e6e0217ab82a11f` |
-| [cth9191/animate](https://github.com/cth9191/animate) | Copyright (c) 2026 cth9191 | The three check-ins in the brief skill; easel-motion's animate kit (`kit/`), seven styles, templates, story grammars and `tools/build.mjs` (headers in each file, list in `plugins/easel-motion/NOTICE.md`); the `renderFrame(t)` page contract the engine reads; easel-core's `canvas_text` check, `measure_image`, `compare_images` and the `audio_score` synth; the style-match procedure | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
+| [cth9191/animate](https://github.com/cth9191/animate) | Copyright (c) 2026 cth9191 | The three check-ins in the brief skill; easel-motion's animate kit (`kit/`), seven styles, templates, story grammars, `tools/build.mjs` and `tools/new-piece.mjs` (headers in each file, list in `plugins/easel-motion/NOTICE.md`); the `renderFrame(t)` page contract the engine reads and its test fixture `engine/test/fixtures/anim-renderframe.html`; easel-core's `canvas_text` check, `measure_image`, `compare_images` and the `audio_score` synth; the style-match procedure | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
 
 ## Ideas only (no license; nothing copied)
 
@@ -76,19 +76,23 @@ Latin subsets from Fontsource 5.3.0, in `plugins/easel-core/fonts/` with each fa
 | JetBrains Mono | Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono) | `fonts/jetbrains-mono/OFL.txt` |
 | Space Grotesk | Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk) | `fonts/space-grotesk/OFL.txt` |
 | Caveat | Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat) | `fonts/caveat/OFL.txt` |
-| STIX Two Text | Copyright 2001-2021 The STIX Fonts Project Authors (https://github.com/stipub/stixfonts) | `fonts/stix-two-text/OFL.txt` |
+| STIX Two Text | Copyright 2001-2021 The STIX Fonts Project Authors (https://github.com/stipub/stixfonts), with Reserved Font Name "TM Math" (not used by these files). STIX Fonts™ is a trademark of The Institute of Electrical and Electronics Engineers, Inc. | `fonts/stix-two-text/OFL.txt` |
 | Noto Sans Math | Copyright 2022 Google LLC | `fonts/noto-sans-math/OFL.txt` |
 
 ## Installed at run time, not redistributed
 
 `doctor` installs these from npm into the user's plugin data folder: `playwright-core` 1.64.0
-(Apache-2.0, Microsoft) and its Chromium build, `gsap` 3.14.2 (GreenSock's Standard License;
-see decision D10) and `p5` 1.11.13 (LGPL-2.1, the Processing Foundation). Easel does not ship them.
+(Apache-2.0, Microsoft) and its Chromium build, `gsap` 3.14.2 (GreenSock's "standard no-charge"
+license, https://gsap.com/standard-license, which is not an open-source licence; see decision D10)
+and `p5` 1.11.13 (LGPL-2.1, the Processing Foundation). Easel does not ship them. Easel uses GSAP
+only to render previews of pages that load it; a user who ships GSAP in their own product installs
+it themselves under GreenSock's terms.
 
 ## Trademarks
 
-Aseprite is a trademark of Igara Studio; Easel is not affiliated with Igara Studio. Easel's style
-names avoid trademarks and the names of living or protected creators.
+Aseprite is a trademark of Igara Studio; Easel is not affiliated with Igara Studio. STIX Fonts™ is
+a trademark of The Institute of Electrical and Electronics Engineers, Inc. Easel's style names
+avoid trademarks and the names of living or protected creators.
 
 ## The MIT License (text)
 

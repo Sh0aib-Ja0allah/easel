@@ -33,7 +33,10 @@ If `playwright-core`, `gsap` or `chromium` are missing:
 
 1. Tell the user what will happen: the pinned npm packages (a few MB) and the Chromium headless
    shell (about 110 MB) will be downloaded into the plugin's data folder (shown as `dataDir` in
-   the report). Nothing is installed system-wide.
+   the report). Nothing is installed system-wide. Name the packages and their licences:
+   `playwright-core` (Apache-2.0), `p5` (LGPL-2.1) and `gsap` under GreenSock's "standard
+   no-charge" license (https://gsap.com/standard-license), which is not an open-source licence;
+   Easel uses GSAP only to render previews of pages that load it.
 2. Ask for a yes. Then call `mcp__plugin_easel-core_easel__doctor` with `{"install": true}`.
    It can take a minute or two.
 

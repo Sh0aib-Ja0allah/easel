@@ -7,8 +7,9 @@ version: 1
 <!--
 Adapted for Easel from nexu-io/open-design @ 17e255959703a3fad7c8eb7f7b70dcafccc5629a, craft/accessibility-baseline.md.
 Copyright 2026 Open Design contributors. Licensed under the Apache License, Version 2.0
-(licenses/Apache-2.0.txt at the repo root). open-design adapted parts of its craft files from
-referodesign/refero_skill, Copyright (c) 2026 Refero, MIT (see NOTICE.md).
+(licenses/Apache-2.0.txt in this plugin). open-design adapted parts of its craft files from
+referodesign/refero_skill @ a9b54a3e62a6391f5f5ab7a20e4ddb32fb79a27d
+(refero_skill, Copyright (c) 2026 Refero, MIT; see NOTICE.md).
 Modified by Easel (2026-10-11): rewritten in new words and restructured for Easel; extended from
 UI to illustration, motion and video; thresholds aligned with Easel's qa tool. Other sources of ideas:
 - WCAG 2.2 (W3C), success criteria cited by number

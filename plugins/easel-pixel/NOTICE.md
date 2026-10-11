@@ -8,8 +8,9 @@ the user buys and installs. Easel is also not affiliated with with-pebbly.
 
 - **Used at run time, not redistributed:** the npm package `@pebbly/aseprite-ai-artist`, pinned to
   version `0.8.0`, is the Aseprite bridge and MCP server. `server/launch.mjs` installs that exact
-  version into the plugin data folder on first use (install scripts off) and runs it with Lua
-  execution off.
+  version into the plugin data folder on first use (install scripts off) and runs it with its
+  `run_lua` MCP tool switched off. The package's local bridge itself has no authentication and
+  still accepts Lua from other programs on the same computer while it runs (see README).
 - **Adapted (headers in each file):** the four skills (`skills/pixel` from its studio skill;
   `pixel-draw` from draw, shade, new and palette; `pixel-animate` from rig and animate;
   `pixel-export` from export and tileset), the three agents (`animation-director`,
@@ -19,8 +20,9 @@ the user buys and installs. Easel is also not affiliated with with-pebbly.
   Copyright (c) 2026 with-pebbly. MIT License (text below). Easel's changes: tool names, setup through the launcher
   (no npx), palettes and looks described by their colours instead of trademarked names, critique
   through easel-core's critic, output to `./easel-out/<slug>/`.
-- `test/pebbly-tools.json` lists the package's tool names and descriptions as read from its source
-  at that commit; the eval mocks use it.
+- `test/pebbly-tools.json` and `evals/mocks/aseprite/_tools.json` list the package's tool names and
+  descriptions as read from its source at that commit (JSON holds no header, so they are named
+  here); the eval mocks use them.
 
 ## Easel's own
 
