@@ -1,6 +1,6 @@
 ---
-type: regex
-target: last_message
-pattern: '(9:16|16:9|vertical|aspect|format)'
-flags: i
+type: llm
 ---
+
+PASS if the reply asks the user a short set of intake questions (six or fewer) about the campaign before making anything, and offers a suggested default or example answer for most of them.
+FAIL if the reply produces final assets or a full plan without asking anything, or asks more than six questions.

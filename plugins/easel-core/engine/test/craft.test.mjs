@@ -25,10 +25,12 @@ test('every rulebook has an attribution header with pinned SHAs and licenses', (
     const text = readFileSync(join(CRAFT, `${n}.md`), 'utf8');
     const header = text.match(/<!--([\s\S]*?)-->/);
     assert.ok(header, `${n}: no header`);
-    assert.match(header[1], /written for Easel \(MIT\)/i, n);
-    assert.match(header[1], /No text copied/, n);
-    assert.match(header[1], /@ [0-9a-f]{40}/, `${n}: pinned SHA`);
-    assert.match(header[1], /\((MIT|Apache-2\.0)\)/, `${n}: license`);
+    // Adapted from open-design (Apache-2.0): name, SHA, copyright, license and a "Modified by Easel" line.
+    assert.match(header[1], /Adapted for Easel from nexu-io\/open-design @ [0-9a-f]{40}/, n);
+    assert.match(header[1], /Copyright 2026 Open Design contributors/, n);
+    assert.match(header[1], /Apache License, Version 2\.0/, n);
+    assert.match(header[1], /Modified by Easel \(\d{4}-\d{2}-\d{2}\)/, n);
+    assert.match(header[1], /refero_skill, Copyright \(c\) 2026 Refero, MIT/, n);
     assert.doesNotMatch(text.replace(header[0], ''), BANNED, `${n}: creator or brand name`);
   }
 });

@@ -49,3 +49,9 @@ export async function compareImages(browser, a, b, { tol = 16 } = {}) {
     return { sameSize: true, width: A.width, height: A.height, psnr: mse === 0 ? Infinity : 10 * Math.log10((255 * 255) / mse), maxDiff: Math.round(max), diffPixels: diff, diffRatio: diff / n, identical: se === 0 };
   }, tol);
 }
+
+// Width and height of any image the browser can decode (PNG read from its header, others decoded).
+export async function imageSize(browser, file) {
+  if (extname(file).toLowerCase() === '.png') return pngSize(file);
+  return withPixels(browser, [file], (imgs) => ({ width: imgs[0].width, height: imgs[0].height }));
+}

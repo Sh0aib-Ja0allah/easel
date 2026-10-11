@@ -1,12 +1,33 @@
 # easel-core
 
-The shared foundation every other Easel plugin depends on: planning check-ins (`brief`), the
-shared brand file (`brand`), the render engine (an MCP server plus a CLI), audio (`score`), the
-`critique` skill with its read-only `critic` agent, and the craft rulebooks.
+The shared foundation every other Easel plugin depends on: the render engine (an MCP server and a
+CLI), measured quality gates, shared data formats, craft rulebooks and critique rubrics, and four
+skills.
 
-**Status:** skeleton (v0.0.1). Nothing to use yet; see [the roadmap](../../docs/roadmap.md).
+## Skills
 
-**Requires:** Node 22+, Playwright Chromium (installed on first run) and ffmpeg.
+| Skill | Use it to |
+|---|---|
+| `/easel-core:setup` | Check and install what rendering needs (doctor), then prove it with a test render |
+| `/easel-core:brief` | Plan a multi-step job: intake, then story, look and storyboard check-ins |
+| `/easel-core:brand` | Create or find `.easel/brand.md`, the brand file every skill reads |
+| `/easel-core:critique` | Review rendered work with `qa` measurements and the read-only `critic` agent |
+
+## Engine tools
+
+Called by skills as `mcp__plugin_easel-core_easel__<tool>`, or from a terminal with
+`node engine/cli.mjs <tool> --json @args.json`:
+
+`doctor`, `render_still`, `contact_sheet`, `render_video`, `filmstrip`, `qa`, `validate`,
+`craft`, `ping`. Renders are offline and deterministic: bundled OFL fonts, seeded randomness,
+every frame seeked to `t = n / fps`.
+
+## Requirements
+
+- Node.js 20 or newer
+- ffmpeg and ffprobe on PATH (Windows: `winget install --id Gyan.FFmpeg -e`)
+- Playwright's Chromium headless shell and pinned npm packages: installed by
+  `/easel-core:setup` into the plugin's data folder (about 120 MB, asked first)
 
 ## Install
 

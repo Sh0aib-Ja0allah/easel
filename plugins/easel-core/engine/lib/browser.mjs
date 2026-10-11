@@ -56,7 +56,16 @@ const INIT_SCRIPT = ({ seed, css }) => {
   window.__easel = { t: 0, seed };
   const RealDate = Date;
   const now = () => EPOCH + Math.round(window.__easel.t * 1000);
-  window.Date = class extends RealDate { constructor(...a) { super(...(a.length ? a : [now()])); } static now() { return now(); } };
+  // Date() as a function returns a string; new Date() with no arguments is the render time.
+  function EaselDate(...a) {
+    if (!new.target) return new RealDate(now()).toString();
+    return a.length ? new RealDate(...a) : new RealDate(now());
+  }
+  EaselDate.prototype = RealDate.prototype;
+  EaselDate.now = now;
+  EaselDate.UTC = RealDate.UTC;
+  EaselDate.parse = RealDate.parse;
+  window.Date = EaselDate;
   performance.now = () => window.__easel.t * 1000;
   if (css) {
     const add = () => { const st = document.createElement('style'); st.setAttribute('data-easel', 'fonts'); st.textContent = css; (document.head || document.documentElement).prepend(st); };
@@ -69,12 +78,24 @@ const INIT_SCRIPT = ({ seed, css }) => {
     if (typeof window.renderAt === 'function') window.renderAt(t);
     else if (window.__timelines) for (const tl of Object.values(window.__timelines)) { if (tl && typeof tl.seek === 'function') tl.seek(t, false); }
     for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; }
+    // A face first used at this time may still be loading: let the caller wait for it.
+    return document.fonts.status === 'loaded' ? null : document.fonts.ready.then(() => null);
   };
 };
 
 export async function openBrowser() {
   const { chromium } = await loadPlaywright();
-  const browser = await chromium.launch({ args: ['--font-render-hinting=none', '--disable-lcd-text', '--force-color-profile=srgb'] });
+  const browser = await chromium.launch({
+    args: [
+      '--font-render-hinting=none', '--disable-lcd-text', '--force-color-profile=srgb',
+      // Offline by construction: no name resolves, nothing prefetches, WebRTC cannot go direct.
+      '--host-resolver-rules=MAP * ~NOTFOUND', '--dns-prefetch-disable', '--no-pings',
+      '--disable-background-networking', '--disable-component-update',
+      '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
+    ],
+    // Anything that slips past the request router goes to a closed local port.
+    proxy: { server: 'http://127.0.0.1:9' },
+  });
   return browser;
 }
 
@@ -98,6 +119,7 @@ export async function newPage(browser, { width, height, scale = 1, colorScheme =
     blocked.push(url);
     return route.abort('blockedbyclient');
   });
+  if (typeof context.routeWebSocket === 'function') await context.routeWebSocket(/.*/, (ws) => { blocked.push(ws.url()); ws.close(); });
   await context.addInitScript(INIT_SCRIPT, { seed, css: fonts ? fontFaceCss() : '' });
   const page = await context.newPage();
   const errors = [];
@@ -114,6 +136,8 @@ export async function waitReady(page, timeoutMs = 30000) {
   const usesReady = await page.evaluate(() => [...document.scripts].some((s) => s.textContent.includes('__ready')));
   if (usesReady) await page.waitForFunction(() => window.__ready === true, null, { timeout: timeoutMs });
   await page.evaluate(async () => {
+    // Load every declared face now (bundled and page fonts), not lazily on first use mid-render.
+    await Promise.all([...document.fonts].filter((f) => f.status === 'unloaded').map((f) => f.load().catch(() => null)));
     await document.fonts.ready;
     await Promise.all([...document.images].map((img) => (img.complete ? null : img.decode().catch(() => null))));
   });

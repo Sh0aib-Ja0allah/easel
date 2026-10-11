@@ -1,7 +1,7 @@
 // render_video: seek a page frame by frame (t = n / fps) and pipe PNG frames into ffmpeg.
 // filmstrip: a few frames at chosen times on one sheet, so a vision model can review motion.
 import { spawn } from 'node:child_process';
-import { mkdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { newPage, openBrowser, waitReady } from './browser.mjs';
 import { requireBinary } from './binaries.mjs';
@@ -25,7 +25,8 @@ async function compositionInfo(page) {
 function encoder(ffmpeg, { fps, file, crf, audio, duration, preset }) {
   const args = ['-y', '-hide_banner', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0'];
   if (audio) args.push('-i', audio);
-  args.push('-c:v', 'libx264', '-preset', preset, '-crf', String(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
+  // yuv420p needs even dimensions: pad by one pixel instead of letting x264 crop silently.
+  args.push('-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2', '-c:v', 'libx264', '-preset', preset, '-crf', String(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
   if (audio) args.push('-c:a', 'aac', '-b:a', '192k', '-t', String(duration), '-map', '0:v:0', '-map', '1:a:0');
   args.push(file);
   const proc = spawn(ffmpeg, args, { stdio: ['pipe', 'ignore', 'pipe'], windowsHide: true });
@@ -69,7 +70,7 @@ async function renderOne(browser, src, opts) {
     } finally {
       await enc.end();
     }
-    return { file: opts.file, width: opts.width, height: opts.height, fps, duration, frames, bytes: statSync(opts.file).size, blocked: [...new Set(blocked)], errors: [...new Set(errors)] };
+    return { file: opts.file, width: opts.width + (opts.width % 2), height: opts.height + (opts.height % 2), fps, duration, frames, bytes: statSync(opts.file).size, blocked: [...new Set(blocked)], errors: [...new Set(errors)] };
   } finally {
     await context.close();
   }
@@ -78,6 +79,10 @@ async function renderOne(browser, src, opts) {
 export async function renderVideo(args) {
   const t0 = Date.now();
   const ffmpeg = requireBinary('ffmpeg');
+  if (args.audio !== undefined) {
+    // Renders are offline: ffmpeg would happily fetch a URL, so only local files are accepted.
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(args.audio) || !existsSync(args.audio)) throw new Error(`audio must be a local file that exists: ${args.audio}`);
+  }
   const out = outputDir(args);
   mkdirSync(out, { recursive: true });
   const name = slugOf(args.name || 'video');

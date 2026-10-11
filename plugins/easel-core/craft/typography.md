@@ -5,9 +5,12 @@ applies_to: [design, ui, social, poster, presentation, motion, video]
 version: 1
 ---
 <!--
-Easel craft rulebook, written for Easel (MIT) on 2026-10-11. No text copied; ideas drawn from:
-- nexu-io/open-design @ 17e255959703a3fad7c8eb7f7b70dcafccc5629a, craft/typography.md and
-  craft/typography-hierarchy.md (Apache-2.0), adapted there from referodesign/refero_skill (MIT)
+Adapted for Easel from nexu-io/open-design @ 17e255959703a3fad7c8eb7f7b70dcafccc5629a, craft/typography.md and craft/typography-hierarchy.md.
+Copyright 2026 Open Design contributors. Licensed under the Apache License, Version 2.0
+(licenses/Apache-2.0.txt at the repo root). open-design adapted parts of its craft files from
+referodesign/refero_skill, Copyright (c) 2026 Refero, MIT (see THIRD_PARTY_NOTICES.md).
+Modified by Easel (2026-10-11): rewritten in new words and restructured for Easel; extended from
+UI to illustration, motion and video; thresholds aligned with Easel's qa tool. Other sources of ideas:
 - b1rdmania/claude-brand-skills (ideas only): choose the typeface before drawing a wordmark
 - WCAG 2.2 (W3C) for minimum sizes that affect contrast rules
 -->
@@ -19,7 +22,7 @@ Easel craft rulebook, written for Easel (MIT) on 2026-10-11. No text copied; ide
 - **Two families at most** in one piece: one for display, one for reading. A monospace third face
   is fine for code and tabular numbers.
 - **Brand first.** Use the faces in `.easel/brand.md`. Otherwise use the bundled OFL faces, which
-  render offline: Space Grotesk (display), Source Serif 4 (editorial), Inter (UI and body),
+  render offline: Space Grotesk (display), Newsreader (editorial), Inter (UI and body),
   JetBrains Mono (code, data). Never link a web font from a CDN at render time.
 - **Choose the face before the wordmark.** A logo's letterforms come from a chosen typeface,
   adjusted by hand, not invented from scratch.

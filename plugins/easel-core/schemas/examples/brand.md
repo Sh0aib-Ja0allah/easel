@@ -21,7 +21,7 @@ Calm, warm and precise. Generous white space, paper textures, no gloss.
 
 ## 3. Typography
 - Display: Space Grotesk 700
-- Body: Source Serif 4 400, 18px / 1.5
+- Body: Newsreader 400, 18px / 1.5
 - UI and data: Inter, JetBrains Mono for numbers
 
 ## 4. Spacing & Grid

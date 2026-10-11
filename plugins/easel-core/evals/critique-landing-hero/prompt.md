@@ -2,8 +2,8 @@
 description: Routing - asking what is wrong with a design should trigger critique.
 tags: [routing, critique]
 runs: 2
-max_turns: 14
-allowed_tools: [Skill, Read, Glob]
+max_turns: 20
+allowed_tools: [Skill, Read, Glob, Agent]
 ---
 
 What's wrong with this landing page hero design-wise? Be honest.

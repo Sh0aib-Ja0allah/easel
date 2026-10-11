@@ -5,12 +5,15 @@ applies_to: [motion, video, ui, animation]
 version: 1
 ---
 <!--
-Easel craft rulebook, written for Easel (MIT) on 2026-10-11. No text copied; ideas drawn from:
-- nexu-io/open-design @ 17e255959703a3fad7c8eb7f7b70dcafccc5629a, craft/animation-discipline.md
-  (Apache-2.0)
+Adapted for Easel from nexu-io/open-design @ 17e255959703a3fad7c8eb7f7b70dcafccc5629a, craft/animation-discipline.md.
+Copyright 2026 Open Design contributors. Licensed under the Apache License, Version 2.0
+(licenses/Apache-2.0.txt at the repo root). open-design adapted parts of its craft files from
+referodesign/refero_skill, Copyright (c) 2026 Refero, MIT (see THIRD_PARTY_NOTICES.md).
+Modified by Easel (2026-10-11): rewritten in new words and restructured for Easel; extended from
+UI to illustration, motion and video; thresholds aligned with Easel's qa tool. Other sources of ideas:
 - alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35, scripts/film_gate.py
   and scripts/storyboard_lint.py (MIT): no slideshow films, no blank stretches, a locked shot plan
-- cth9191/animate (MIT): cheap check-ins (story, look, storyboard) before rendering
+- cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263 (MIT): cheap check-ins (story, look, storyboard) before rendering
 -->
 
 # Motion rules

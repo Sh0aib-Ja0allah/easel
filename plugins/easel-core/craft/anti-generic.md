@@ -5,9 +5,12 @@ applies_to: [design, illustration, motion, video, social, ui]
 version: 1
 ---
 <!--
-Easel craft rulebook, written for Easel (MIT) on 2026-10-11. No text copied; ideas drawn from:
-- nexu-io/open-design @ 17e255959703a3fad7c8eb7f7b70dcafccc5629a, craft/anti-ai-slop.md (Apache-2.0),
-  itself adapted from referodesign/refero_skill (MIT)
+Adapted for Easel from nexu-io/open-design @ 17e255959703a3fad7c8eb7f7b70dcafccc5629a, craft/anti-ai-slop.md.
+Copyright 2026 Open Design contributors. Licensed under the Apache License, Version 2.0
+(licenses/Apache-2.0.txt at the repo root). open-design adapted parts of its craft files from
+referodesign/refero_skill, Copyright (c) 2026 Refero, MIT (see THIRD_PARTY_NOTICES.md).
+Modified by Easel (2026-10-11): rewritten in new words and restructured for Easel; extended from
+UI to illustration, motion and video; thresholds aligned with Easel's qa tool. Other sources of ideas:
 - alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35, scripts/film_gate.py (MIT):
   the blue-purple frame limit and the "slideshow" check
 - b1rdmania/claude-brand-skills (no license; ideas only, re-expressed): structurally different
@@ -42,7 +45,7 @@ give the move that replaces each. **Blocking** rules must be fixed before delive
   number hanging into the margin) reads as a decision.
 - **Accent everywhere.** Use the accent colour for at most two things per screen or frame.
 - **Default faces as the whole personality.** A system or default sans set for every role says
-  nothing. Pick a display face on purpose (the bundled Space Grotesk or Source Serif 4 are a
+  nothing. Pick a display face on purpose (the bundled Space Grotesk or Newsreader are a
   start), and keep the workhorse face for body text.
 - **Decoration with no job.** Blobs, waves, glows and noise that support nothing. Every element
   should carry meaning, hierarchy or rhythm.

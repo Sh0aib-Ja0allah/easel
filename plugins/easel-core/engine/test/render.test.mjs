@@ -3,7 +3,7 @@
 // only on purpose: EASEL_UPDATE_GOLDEN=1 npm test, then look at the new PNG before committing.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { copyFileSync, existsSync, mkdtempSync, rmSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, rmSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -70,7 +70,7 @@ test('bundled fonts are used (not a fallback)', { skip }, async () => {
     // Load each bundled face explicitly; a family that only falls back would load zero faces.
     const loaded = await page.evaluate(async () => {
       const out = [];
-      for (const f of ['Inter', 'Space Grotesk', 'Source Serif 4', 'JetBrains Mono']) for (const w of [400, 700]) out.push([`${f} ${w}`, (await document.fonts.load(`${w} 16px "${f}"`)).length]);
+      for (const f of ['Inter', 'Space Grotesk', 'Newsreader', 'JetBrains Mono']) for (const w of [400, 700]) out.push([`${f} ${w}`, (await document.fonts.load(`${w} 16px "${f}"`)).length]);
       return out;
     });
     for (const [f, n] of loaded) assert.ok(n > 0, `${f} did not load`);
@@ -80,7 +80,7 @@ test('bundled fonts are used (not a fallback)', { skip }, async () => {
 test('sizes and image sources: SVG at a size ladder has exact pixel sizes', { skip }, async () => {
   const r = await mod.renderStill({ file: fx('mark.svg'), outDir: out, name: 'mark', sizes: [{ width: 16, height: 16 }, { width: 64, height: 64 }, { width: 512, height: 512 }], transparent: true }, { browser });
   assert.deepEqual(r.files.map((f) => mod.pngSize(f.file)), [{ width: 16, height: 16 }, { width: 64, height: 64 }, { width: 512, height: 512 }]);
-  assert.ok(!existsSync(join(fx('.'), '.easel-wrap-mark.svg.html')), 'wrapper page cleaned up');
+  assert.deepEqual(readdirSync(fx('.')).filter((f) => f.startsWith('.easel-wrap-mark.svg') && f.includes(`-${process.pid}-`)), [], 'wrapper page cleaned up');
 });
 
 test('renders are offline; GSAP CDN URLs are served from the local copy', { skip }, async () => {

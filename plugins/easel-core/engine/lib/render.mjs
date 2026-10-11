@@ -29,7 +29,8 @@ export async function renderStill(args, { browser: shared } = {}) {
         try {
           await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
           await waitReady(page);
-          if (typeof args.t === 'number') await page.evaluate((t) => window.__easelSeek(t), args.t);
+          // Stills are the state at t (default 0), never whatever wall-clock time the capture lands on.
+          await page.evaluate((t) => window.__easelSeek(t), typeof args.t === 'number' ? args.t : 0);
           const suffix = `${sizes.length > 1 || size.name ? `-${size.name || `${size.width}x${size.height}`}` : ''}${themes.length > 1 || args.theme === 'dark' ? `-${theme}` : ''}`;
           const file = join(out, `${name}${suffix}.png`);
           const target = args.selector ? page.locator(args.selector).first() : page;

@@ -51,7 +51,9 @@ test('contrast fails on grey-on-white and on a pale gradient (sampled)', { skip:
   assert.doesNotMatch(els, /\.ok/);
   const faint = c.findings.find((f) => /faint/.test(f.element));
   assert.ok(Math.abs(faint.ratio - 2.32) < 0.05, `#aaa on #fff is 2.32:1, got ${faint.ratio}`);
-  assert.ok(c.findings.find((f) => /hero/.test(f.element)).sampled);
+  // Measured against the real pixels behind it: the background is the pale gradient, not white.
+  const hero = c.findings.find((f) => /hero/.test(f.element));
+  assert.ok(hero.bg[2] > hero.bg[1], `gradient background sampled: ${hero.bg}`);
 });
 
 test('contrast passes (incl. large text at 3:1 and light-on-dark gradient)', { skip: pageSkip }, async () => {

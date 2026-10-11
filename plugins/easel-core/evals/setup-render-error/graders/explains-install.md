@@ -1,6 +1,4 @@
 ---
-type: regex
-target: last_message
-pattern: '(install|110 ?MB|Chromium)'
-flags: i
+type: tool_used
+tool: mcp__plugin_easel-core_easel__doctor
 ---

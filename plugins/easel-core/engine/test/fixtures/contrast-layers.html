@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:Inter,sans-serif;background:#ffffff}
+.card{position:relative;width:300px;height:80px;margin:16px}
+.card img{position:absolute;inset:0;width:100%;height:100%}
+.card p{position:relative;margin:0;padding:24px;font-size:18px}
+#ok p{color:#ffffff} #bad p{color:#333333}
+#half p{color:#ffffff;white-space:nowrap}
+.fancy{margin:16px;font:700 20px Inter;background:linear-gradient(90deg,#d1603d,#335c67);-webkit-background-clip:text;background-clip:text;color:transparent}
+</style></head><body>
+<div class="card" id="ok"><img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='80'%3E%3Crect width='300' height='80' fill='%2310161c'/%3E%3C/svg%3E"><p>Readable on a dark photo</p></div>
+<div class="card" id="bad"><img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='80'%3E%3Crect width='300' height='80' fill='%2310161c'/%3E%3C/svg%3E"><p>Unreadable dark text on photo</p></div>
+<div class="card" id="half"><img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='80'%3E%3Crect width='300' height='80' fill='%23000'/%3E%3Crect width='120' height='80' fill='%23fff'/%3E%3C/svg%3E"><p>White text half lost on white</p></div>
+<div class="fancy">Gradient headline text</div>
+</body></html>

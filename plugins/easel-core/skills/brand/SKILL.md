@@ -31,7 +31,7 @@ If `.easel/brand.md` exists, read it, validate it, and use it. Otherwise search 
 
 Ask in one message for the gaps only, with suggestions: primary and accent colours (hex),
 display and body typefaces, the feel in three words, what the brand must never look like.
-If the user has no typefaces in mind, suggest the bundled ones (Space Grotesk, Source Serif 4,
+If the user has no typefaces in mind, suggest the bundled ones (Space Grotesk, Newsreader,
 Inter, JetBrains Mono); renders work offline with those.
 
 ## 3. Write `.easel/brand.md`

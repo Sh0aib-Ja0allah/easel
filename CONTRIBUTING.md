@@ -14,7 +14,7 @@ on Windows. The repo contract for AI sessions is [CLAUDE.md](CLAUDE.md); the des
 | Engine code (Node) | `plugins/easel-core/engine/` |
 | Rulebooks, rubrics, schemas | `plugins/easel-core/{craft,rubrics,schemas}/` (served by the `craft` tool) |
 | Styles, grammars, design systems | data files in their plugin: `styles/<id>/`, `grammars/<id>.md`, `design-systems/<id>/DESIGN.md` |
-| Eval cases | `evals/<plugin>/<case>/` |
+| Eval cases | `plugins/<plugin>/evals/<case>/` (`prompt.md` + `graders/*.md`; engine mocks in `evals/mocks/easel/`) |
 | Third-party credits | `THIRD_PARTY_NOTICES.md`; Apache-2.0 text in `licenses/Apache-2.0.txt` |
 
 **Styles, grammars, design systems and rubrics are data, not skills.** Add a file, not a skill,
@@ -134,8 +134,8 @@ node --check <every changed .mjs/.js>
 npm --prefix plugins/easel-core/engine test     # once the engine has tests
 ```
 
-CI runs the same on every push. Each skill needs eval cases in `evals/<plugin>/` (at least three
-routing cases, plus output cases for visual skills); `claude plugin eval` makes real model calls,
+CI runs the same on every push. Each skill needs eval cases in `plugins/<plugin>/evals/` (at least
+three routing cases, plus output cases for visual skills); `claude plugin eval` makes real model calls,
 so it runs before releases, not on every push.
 
 ## 7. Releases

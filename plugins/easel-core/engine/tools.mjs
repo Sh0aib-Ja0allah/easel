@@ -34,7 +34,7 @@ export const tools = {
   },
   render_still: {
     description:
-      'Render a page to PNG: inline HTML, or a file (.html, .svg, .png, .jpg). Renders offline with the bundled OFL fonts (Inter, Source Serif 4, JetBrains Mono, Space Grotesk) and a seeded Math.random. ' +
+      'Render a page to PNG: inline HTML, or a file (.html, .svg, .png, .jpg). Renders offline with the bundled OFL fonts (Inter, Newsreader, JetBrains Mono, Space Grotesk) and a seeded Math.random. ' +
       'Use sizes for several outputs (e.g. social formats), theme "both" for light and dark (prefers-color-scheme), t to seek an animated page. Output goes to ./easel-out/<slug>/ unless outDir is given. Look at the PNG after rendering.',
     inputSchema: {
       type: 'object',

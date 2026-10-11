@@ -46,7 +46,7 @@ export function findBinary(name, env = process.env, os = platform()) {
       if (version) { found = { path: exe, version, onPath: false }; break; }
     }
   }
-  cache.set(key, found);
+  if (found) cache.set(key, found); // never cache a miss: the user may install it mid-session
   return found;
 }
 

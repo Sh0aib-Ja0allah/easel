@@ -4,9 +4,10 @@ import { basename, extname, join } from 'node:path';
 import { openBrowser } from './browser.mjs';
 import { renderStill, outputDir } from './render.mjs';
 import { composeSheet } from './sheet.mjs';
-import { pngSize } from './image.mjs';
+import { imageSize } from './image.mjs';
 
 const RASTER = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'contact-sheet';
 
 export async function contactSheet(args) {
   const t0 = Date.now();
@@ -22,7 +23,7 @@ export async function contactSheet(args) {
       const label = item.label || (item.file ? basename(item.file) : `item ${i + 1}`);
       const isRaster = item.file && RASTER.has(extname(item.file).toLowerCase());
       if (!sizes.length && isRaster) {
-        const { width, height } = pngSize(item.file);
+        const { width, height } = await imageSize(browser, item.file);
         cells.push({ file: item.file, label, width, height, background: 'checker' });
         continue;
       }
@@ -32,7 +33,7 @@ export async function contactSheet(args) {
         r.files.forEach((f, k) => cells.push({ file: f.file, label: `${label} · ${useSizes[k].name || `${useSizes[k].width}×${useSizes[k].height}`} · ${theme}`, width: f.width, height: f.height, background: theme }));
       }
     }
-    const sheet = await composeSheet(browser, { cells, out: join(out, `${args.name || 'contact-sheet'}.png`), columns: args.columns || (sizes.length ? Math.min(sizes.length, 6) : 4), title: args.title });
+    const sheet = await composeSheet(browser, { cells, out: join(out, `${slugOf(args.name || 'contact-sheet')}.png`), columns: args.columns || (sizes.length ? Math.min(sizes.length, 6) : 4), title: args.title });
     return { sheet: sheet.file, width: sheet.width, height: sheet.height, cells: cells.map((c) => ({ file: c.file, label: c.label })), ms: Date.now() - t0 };
   } finally {
     await browser.close();

@@ -26,6 +26,18 @@ function parseJson(value) {
   }
 }
 
+// Flags arrive as strings and are guessed into numbers or booleans; turn them back into strings
+// where the tool's schema wants a string (e.g. --slug 2026).
+export function coerceToSchema(schema, args) {
+  const props = (schema && schema.properties) || {};
+  for (const [k, v] of Object.entries(args)) {
+    const t = props[k] && props[k].type;
+    const wantsString = t === 'string' || (Array.isArray(t) && t.includes('string') && !t.includes(typeof v));
+    if (wantsString && (typeof v === 'number' || typeof v === 'boolean')) args[k] = String(v);
+  }
+  return args;
+}
+
 export function parseArgs(argv) {
   const [name, ...rest] = argv;
   let args = {};
@@ -54,6 +66,7 @@ export async function main(argv = process.argv.slice(2)) {
     return 0;
   }
   if (!Object.hasOwn(tools, name)) { process.stderr.write(`Unknown tool: ${name}. Run: node cli.mjs list\n`); return 2; }
+  coerceToSchema(tools[name].inputSchema, args);
   const problems = validateArgs(tools[name].inputSchema, args);
   if (problems.length) { process.stderr.write(`Invalid arguments: ${problems.join('; ')}\n`); return 2; }
   try {
