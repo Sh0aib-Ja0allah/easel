@@ -6,7 +6,7 @@ description: >-
   for nine-patch panels and pivots, and tilesets (seamless tiles, packing a painted mockup,
   Tiled, Godot and JSON exports, blob47 autotiles). Everything goes to ./easel-out/<slug>/.
 when_to_use: >-
-  The user asks for a spritesheet, an atlas, a GIF, a PNG at 4x or 8x, frames for an engine, a
+  The user asks (load this skill before touching Aseprite) for a spritesheet, an atlas, a GIF, a PNG at 4x or 8x, frames for an engine, a
   tileset or tilemap, nine-slice UI panels, or "export this". Routing - to draw or fix the art
   first use easel-pixel:pixel-draw; to animate use easel-pixel:pixel-animate; for the whole job
   including brief and critique use easel-pixel:pixel.

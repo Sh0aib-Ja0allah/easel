@@ -72,38 +72,37 @@ These can be v2 items.
 
 ### 1.5 Legal and trust items (must-do)
 
+Legal pass for v1.0.0 (T5.2, 2026-10-11): every item ticked with the commit that did it and how it
+is checked. "Sweep" = a search of the whole repository on 2026-10-11.
+
 **Don't copy:**
 
-- [ ] Character and brand assets:
-  - huashu character assets (`hero/`, `long_scroll/frames/`, `assets/角色/`, `rig_huashu.js`)
-  - the Mario/Nintendo showcase and the Clawd fan work
-  - vox's Ronaldo/CR7 examples
-  - mg-styles media with unstated sources
-  - the peanut and Xiaohei characters and their example images
-- [ ] Any text from the **unlicensed** repos (b1rdmania, VicUgochukwu). Use their ideas only, rewritten in our own words.
-- [ ] Anthropic's `canvas-design` / `frontend-design` via b1rdmania. Take them from **anthropics/skills** directly (Apache-2.0).
+- [x] Character and brand assets:
+  - huashu character assets (`hero/`, `long_scroll/frames/`, `assets/角色/`, `rig_huashu.js`): not present (sweep; only the grammars and recipes were translated, 1411085). `plugins/easel-motion/test/build.test.mjs` fails on huashu names in any built piece.
+  - the Mario/Nintendo showcase and the Clawd fan work: not present (sweep); the motion, pixel and illustrate tests reject the names.
+  - vox's Ronaldo/CR7 examples: not present (sweep; 10e6085); `plugins/easel-ai-media/test/static.test.mjs` rejects the names and any line about getting around content filters that is not a refusal.
+  - mg-styles media with unstated sources: none copied; the four mg-styles looks are Easel's own code (D17, 2a6c11e). Every image in `plugins/` is Easel-rendered (style samples, goldens, the style-match example, test fixtures).
+  - the peanut and Xiaohei characters and their example images: not present; Easel's mascot is its own "card" (10e6085, 3cf1603); `plugins/easel-illustrate/test/static.test.mjs` rejects the names.
+- [x] Any text from the **unlicensed** repos (b1rdmania, VicUgochukwu). Checked with an 8-word overlap test against both repos (b1rdmania/claude-brand-skills @ `b356640b`, VicUgochukwu/brand-design-skill @ `179eb1ce`, fetched as data): the only prose shared is Anthropic's Apache-2.0 canvas-design and algorithmic-art text, which b1rdmania also copies and Easel takes from anthropics/skills directly; after removing that and MIT/HTML boilerplate, 88 shared 8-word runs remain in 40 files, all code boilerplate or formulas (doctype lines, CSS declarations, the WCAG luminance constants). No prose.
+- [x] Anthropic's `canvas-design` / `frontend-design` via b1rdmania. Taken from **anthropics/skills** @ `dbd4588` directly (4e686ac, 10e6085; headers in each file); `frontend-design` is not used.
 
 **Rename:**
 
-- [ ] Styles named after trademarks or living or protected creators: Vox, Ghibli, Shinkai, Kusama, Kirby, Haring, Dalí, "Mario-style".
-- [ ] Design systems that copy real brands (open-design: Stripe, Apple, Linear, …). Ship generic styles only.
+- [x] Styles named after trademarks or living or protected creators: Vox -> editorial collage, and the rest (1411085, 2a6c11e, 10e6085). Banned-name tests in the core craft rules, motion builds, illustrate, ai-media and pixel suites.
+- [x] Design systems that copy real brands. Ten generic systems only (4e686ac, D8); `plugins/easel-design/test/static.test.mjs` checks for brand names.
 
 **Safety:**
 
-- [ ] Add a **consent gate** before any voice cloning.
-- [ ] Remove the docs that explain how to get around model content filters (vox).
+- [x] Add a **consent gate** before any voice cloning (10e6085, hardened in 3cf1603 after QA F-1). Tested refusals: no statement, negated or placeholder statements, wrong names and dates, no real recording, files outside the job folder.
+- [x] Remove the docs that explain how to get around model content filters (vox). Removed (10e6085); the ai-media test above.
 
 **Attribution:**
 
-- [ ] **Apache-2.0 sources** (upbrew svg-creator, open-design, HyperFrames, Anthropic skills):
-  - ship the Apache-2.0 license text
-  - keep copyright notices
-  - mark every modified file
-  - add a NOTICE file crediting them
-- [ ] **MIT sources:** keep each copyright notice in `THIRD_PARTY_NOTICES.md` and credit the authors in the README. peanut needs **two** notices (Aishwarya Ashok + Ian).
-- [ ] **open-design skills:** check each skill's **own** license before taking it. Prefer the original upstream repo.
-- [ ] **Remotion:** larger companies need a paid company license, so treat it as optional and say so.
-- [ ] **Affiliation:** state that the project is not affiliated with Aseprite / Igara Studio.
+- [x] **Apache-2.0 sources** (upbrew svg-creator, open-design, HyperFrames, Anthropic skills): the licence text ships at the root and in every plugin with Apache material; copyright and NOTICE lines are in THIRD_PARTY_NOTICES.md and the plugins' NOTICE.md; every changed file says "Modified by Easel"; HyperFrames is ideas only (no code). Checked by `plugins/easel-core/engine/test/notices.test.mjs`.
+- [x] **MIT sources:** each copyright notice is in `THIRD_PARTY_NOTICES.md` with its upstream commit, and the authors are credited in the root README and each plugin's README; peanut has **two** notices (Aishwarya Ashok + Ian). The notices test checks the commit of every adapted file against both notice files.
+- [x] **open-design skills:** only open-design's own Apache-2.0 craft rulebooks were taken (01562ee); `shader-dev`, `hand-drawn-diagrams` and `threejs` were traced to their origins and deferred (D21).
+- [x] **Remotion:** not used at all (D7 = B, Easel's own render loop), so no company licence applies.
+- [x] **Affiliation:** not affiliated with Aseprite / Igara Studio: easel-pixel's plugin.json, README, NOTICE and pixel skill, the root README and THIRD_PARTY_NOTICES.md (3cf1603; checked by the pixel tests).
 
 ### 1.6 Platform
 
@@ -283,3 +282,8 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 
 - **Decision:** the case scores 0.25 (2 runs): when the files exist the model muxes the user's track with `mux_audio`, reports loudness and asks before mastering (the LLM grader passes), but it does not load the `score` skill for a one-tool job, so the skill-fired grader fails; in the other run the eval sandbox has no `launch.mp4`, so the model asks for the file. The grader is not loosened (that would weaken a test to get green); the gap is reported for the 0.2.0 release.
 - **Reason:** start prompt: "evals at threshold or the gap reported"; "don't weaken a test to get green".
+
+### D26. Eval stubs say they are stubs; graders judge the plan; Aseprite is a stateful agent mock ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the first v0.3.0/v0.4.0 eval run (job 114: design 11/14, illustrate 4/7, ai-media 5/7, pixel 1/5; $8.59) failed mostly on the test bench, not the skills: the engine mocks answer every render with a fixed 1200x630 `still.png` that is never written, so honest replies said "I could not view the render" and the judge failed them; the Aseprite mocks were fixed answers that contradicted each other (a sprite open in one tool, none in another) and ignored the prompt's open sprite. Changes: (a) every engine mock that names an output file says it is a stub and asks the model to say so and carry on; (b) every LLM grader carries a note for the judge that tools are stubbed and that saying a result could not be viewed is fine, as long as nothing unchecked is claimed (the PASS and FAIL criteria are unchanged); (c) the `aseprite` server is a `type: agent` mock that keeps one document state, with a per-case starting document where the prompt says one is open; (d) routing text: the voice, ai-video, pixel-animate, pixel-export, logo and illustrate skills now say to load them first, including for requests they must refuse or redirect. No `skill-fired` grader was loosened; both runs are reported.
+- **Reason:** start prompt (report eval gaps honestly; never weaken a test to get green); the plugin evals docs (mock substitutions, `type: agent` mocks).

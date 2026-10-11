@@ -34,6 +34,12 @@ browser into the plugin's data folder. Each plugin's README says what else it ne
 
 ## Docs
 
+- **Each plugin's README** (what it does, its skills, what it needs):
+  [easel-core](plugins/easel-core/README.md), [easel-motion](plugins/easel-motion/README.md),
+  [easel-design](plugins/easel-design/README.md), [easel-illustrate](plugins/easel-illustrate/README.md),
+  [easel-ai-media](plugins/easel-ai-media/README.md), [easel-pixel](plugins/easel-pixel/README.md).
+- [Gallery](docs/gallery.md): examples Easel made, rendered and checked by its tests.
+- [CHANGELOG](CHANGELOG.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 - [Handoff](docs/HANDOFF.md): current state, decisions, hard rules, verified plugin facts.
 - [Vision](docs/vision.md), [Roadmap](docs/roadmap.md), [Tasks](docs/tasks.md).
 - [Architecture](docs/architecture.md): repo layout, how plugins share code, the render engine,

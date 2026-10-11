@@ -9,7 +9,9 @@ description: >-
   code and checked through the Easel engine, with no API key.
 when_to_use: >-
   The user says "draw", "illustrate", "make an illustration", "make a picture of", or asks for a
-  graphic without saying what kind. For animation use easel-motion:animate.
+  graphic without saying what kind, such as art for an app screen (an empty state, onboarding, a
+  spot illustration). Load it before drawing anything: it picks the skill that draws it. For
+  animation use easel-motion:animate.
 argument-hint: "[what to draw] [where it will be used]"
 allowed-tools: mcp__plugin_easel-core_easel__render_still Read Glob
 ---

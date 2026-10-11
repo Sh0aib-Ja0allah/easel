@@ -91,9 +91,17 @@ test('server config: the launcher from the plugin root, Lua off, settings declar
   assert.match(body('skills/pixel/SKILL.md'), new RegExp(VERSION.replace(/\./g, '\\.')));
 });
 
-test('the eval mocks describe the pinned package\'s tools', () => {
+test('the eval mocks describe the pinned package\'s tools; one stateful agent answers every tool, per case where a sprite is open', () => {
   const dir = join(PLUGIN, 'evals', 'mocks', 'aseprite');
   const listed = JSON.parse(readFileSync(join(dir, '_tools.json'), 'utf8')).tools;
   assert.deepEqual(listed.map((t) => [t.name, t.description]), Object.entries(PEBBLY.tools));
-  for (const t of listed) assert.ok(existsSync(join(dir, `${t.name}.md`)), t.name);
+  const servers = [join(dir, '_server.md'), ...readdirSync(join(PLUGIN, 'evals')).map((c) => join(PLUGIN, 'evals', c, 'mocks', 'aseprite', '_server.md')).filter(existsSync)];
+  assert.ok(servers.length >= 4, `${servers.length} agent mocks`);
+  for (const f of servers) {
+    const fm = /^---\n([\s\S]*?)\n---\n/.exec(readFileSync(f, 'utf8'))[1];
+    assert.match(fm, /^type: agent$/m, f);
+    const tools = /^tools: \[(.*)\]$/m.exec(fm)[1].split(/,\s*/);
+    for (const t of listed) assert.ok(tools.includes(t.name) || existsSync(join(dirname(f), `${t.name}.md`)), `${f}: ${t.name}`);
+    assert.doesNotMatch(readFileSync(f, 'utf8'), /run_lua is on|ALLOW_LUA=1/);
+  }
 });

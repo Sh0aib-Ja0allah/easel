@@ -1,1 +1,1 @@
-{ "filmstrip": "easel-out/render/filmstrip.png", "frames": [{ "file": "easel-out/render/filmstrip-frames/filmstrip-00.png", "label": "t = 0.31 s" }], "ms": 1900 }
+{"filmstrip": "easel-out/render/filmstrip.png", "frames": [{"file": "easel-out/render/filmstrip-frames/filmstrip-00.png", "label": "t = 0.31 s"}], "ms": 1900, "note": "Eval stub: the Easel engine is mocked in this test, so the paths and sizes above are placeholders and no file was written. Say that the result could not be viewed here, and carry on with the rest of the procedure."}

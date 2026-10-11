@@ -6,7 +6,7 @@ description: >-
   in-betweens, set millisecond timing that reads as motion, tag the cycle and review it as a
   filmstrip. Covers idles, walks, runs, jumps, attacks, secondary motion and simple effects.
 when_to_use: >-
-  The user wants a sprite to move: a walk or run cycle, an idle breath, an attack, a jump, a
+  The user wants a sprite to move (load this skill before touching Aseprite): a walk or run cycle, an idle breath, an attack, a jump, a
   flickering torch, a bobbing pickup, or limbs split onto layers for animation. Routing - to draw
   or shade the sprite first use easel-pixel:pixel-draw; for the whole job with brief, critique
   and export use easel-pixel:pixel; for the spritesheet or GIF use easel-pixel:pixel-export.

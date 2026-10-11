@@ -1,1 +1,1 @@
-{ "file": "easel-out/job/print.pdf", "pages": 1, "bytes": 182344, "ms": 1400 }
+{"file": "easel-out/job/print.pdf", "pages": 1, "bytes": 182344, "ms": 1400, "note": "Eval stub: the Easel engine is mocked in this test, so the paths and sizes above are placeholders and no file was written. Say that the result could not be viewed here, and carry on with the rest of the procedure."}

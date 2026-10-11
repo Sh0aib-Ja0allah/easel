@@ -1,7 +1,7 @@
 {
   "name": "easel-ai-media",
   "displayName": "Easel AI Media",
-  "version": "0.0.1",
+  "version": "0.4.0",
   "description": "AI images, video and voice through a provider layer that uses your own API keys, with cost estimates before spending",
   "author": {
     "name": "Sh0aib-Ja0allah"

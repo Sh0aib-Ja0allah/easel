@@ -5,7 +5,7 @@ characters, one-idea concept sketches with a mascot, and p5.js generative art. E
 offline through the easel-core engine, is checked (clipped text, contrast, frame overflow, an SVG
 checker) and needs no API key.
 
-**Status:** in development for v0.3.0 (Phase 3; see [the roadmap](../../docs/roadmap.md)).
+**Status:** v0.3.0 (Phase 3; see [the roadmap](../../docs/roadmap.md)).
 
 **Requires:** `easel-core` (installed automatically as a dependency; its doctor installs p5.js for
 generative art). Photographic or painted rasters go through `easel-ai-media` when it is installed.

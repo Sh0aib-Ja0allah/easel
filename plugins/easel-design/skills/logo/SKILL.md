@@ -7,8 +7,9 @@ description: >-
   passes at most), then the export set (SVG, PNG ladder, mono and reversed versions, favicon and
   app icon sizes) with a provenance record. No image model or API key needed.
 when_to_use: >-
-  The user asks for a logo, logomark, wordmark, monogram, favicon, app icon or brand mark, or to
-  fix one that falls apart at small sizes. For a whole identity (colours, type, guidelines) use
+  The user asks for a logo, logomark, wordmark, monogram, favicon, app icon or brand mark, to fix
+  one that falls apart at small sizes, or for a logo "like" or "exactly like" another company's
+  mark (this skill turns that into an original mark with the qualities they admire). For a whole identity (colours, type, guidelines) use
   easel-design:brand-identity; for a set of UI icons use easel-design:icons.
 argument-hint: "[name] [what it stands for] [smallest use size]"
 allowed-tools: mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep

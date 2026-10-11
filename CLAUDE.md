@@ -148,7 +148,14 @@ Gates - run before every commit, never commit red:
 - `npm --prefix plugins/easel-pixel test` (since T4.5): the launcher for the pinned
   `@pebbly/aseprite-ai-artist` (a stand-in package, no network), the hooks, and the skills,
   agents, settings and attribution. Drawing with a real Aseprite is the owner's end-to-end check.
-- CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos.
+- The engine tests include `notices.test.mjs` (since T5.1): every adapted file's source and commit
+  must be in `THIRD_PARTY_NOTICES.md` and its plugin's `NOTICE.md`; Apache files say "Modified by
+  Easel" and their plugin ships the licence text.
+- `node scripts/install-check.mjs --work <empty folder>` (since T5.5): installs the marketplace from
+  GitHub into an empty Claude Code config and uses every plugin from its installed copy (needs
+  network; run before a release, not per commit).
+- CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos, and on
+  pushes to main `clean install` (install-check) on all three.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`
 until green. A green local run is not enough once CI exists.

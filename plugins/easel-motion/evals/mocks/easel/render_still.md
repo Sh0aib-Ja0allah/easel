@@ -1,1 +1,1 @@
-{ "files": [{ "file": "easel-out/render/still.png", "width": 1200, "height": 630, "theme": "light" }], "ms": 900 }
+{"files": [{"file": "easel-out/render/still.png", "width": 1200, "height": 630, "theme": "light"}], "ms": 900, "note": "Eval stub: the Easel engine is mocked in this test, so the paths and sizes above are placeholders and no file was written. Say that the result could not be viewed here, and carry on with the rest of the procedure."}

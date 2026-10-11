@@ -7,7 +7,8 @@ description: >-
   statement from the voice owner kept in the job folder. Shows the cost before spending.
 when_to_use: >-
   The user asks for a voice-over, narration, text to speech, to read a script aloud, or to clone a
-  voice. For music use easel-core:score; for a whole narrated video use easel-ai-media:ai-video.
+  voice: their own or anyone else's (load this skill before answering a cloning request, even one
+  that must be refused: it says what consent the voice owner gives and offers a stock voice). For music use easel-core:score; for a whole narrated video use easel-ai-media:ai-video.
 argument-hint: "[script or file] [voice or delivery]"
 allowed-tools: mcp__plugin_easel-ai-media_media__providers mcp__plugin_easel-ai-media_media__estimate mcp__plugin_easel-ai-media_media__generate mcp__plugin_easel-ai-media_media__consent_template mcp__plugin_easel-core_easel__qa Read Write Glob
 ---

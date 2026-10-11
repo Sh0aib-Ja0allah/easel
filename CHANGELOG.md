@@ -4,18 +4,27 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
 
 ## Unreleased
 
-- **easel-design (Phase 3, in progress):** thirteen skills (`design` entry, `social-graphic`,
+- Repository: `scripts/install-check.mjs` and a CI job install the marketplace into an empty Claude Code
+  config on Windows, macOS and Linux and use every plugin from its installed copy; a notices test
+  ties every adapted file to THIRD_PARTY_NOTICES.md and its plugin's NOTICE.md; a gallery of
+  Easel's own examples (`docs/gallery.md`).
+
+## easel-design 0.3.0, easel-illustrate 0.3.0, easel-ai-media 0.4.0, easel-pixel 0.4.0 (2026-10-11)
+
+All four need easel-core 0.2.0 or later.
+
+- **easel-design 0.3.0:** thirteen skills (`design` entry, `social-graphic`,
   `poster`, `ad-creative`, `infographic`, `presentation`, `ui-design`, `landing-page`,
   `design-system`, `brand-identity`, `logo`, `icons`, `directions`) built on code output rendered
   by the engine, with references adapted from designskills, Anthropic's canvas-design and
   theme-factory, and code-katz's logo method; ten generic design systems (`systems/`); an OKLCH
   palette tool; an example per skill rendered and checked by the tests; fourteen routing evals.
-- **easel-illustrate (Phase 3, in progress):** five skills (`illustrate` entry, `svg`,
+- **easel-illustrate 0.3.0:** five skills (`illustrate` entry, `svg`,
   `svg-illustration`, `concept-illustration`, `generative-art`) adapted from linyaosky's svg-skill
   (its bar chart example fixed), upbrew's svg-creator (Apache-2.0, modified), the Peanut
   Illustrations method (with a neutral mascot of Easel's own) and Anthropic's algorithmic-art; an
   SVG checker (`tools/svg-check.mjs`); an example per skill; seven routing evals.
-- **easel-ai-media (Phase 4, in progress):** the `media` MCP server (Node, no dependencies) with
+- **easel-ai-media 0.4.0:** the `media` MCP server (Node, no dependencies) with
   adapters for Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud and ElevenLabs on the user's own keys
   (environment or masked plugin settings, sent only to each provider's own hosts); every generation
   a dry run with a cost estimate first, a spending limit above which an approved amount is needed,
@@ -24,7 +33,7 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   `voice` with a consent gate for cloning: the owner's statement and recording, checked) and
   `assemble` (clips, captions, narration and ducked music with the local ffmpeg). Tested with
   recorded responses; no live calls yet.
-- **easel-pixel (Phase 4, in progress):** four skills (`pixel` entry, `pixel-draw`,
+- **easel-pixel 0.4.0:** four skills (`pixel` entry, `pixel-draw`,
   `pixel-animate`, `pixel-export`) and three agents adapted from with-pebbly's aseprite-ai-artist,
   driving the user's own Aseprite through the pinned `@pebbly/aseprite-ai-artist` 0.8.0, which a
   Node launcher installs into the plugin data folder from a shipped lockfile (no npx; Lua execution

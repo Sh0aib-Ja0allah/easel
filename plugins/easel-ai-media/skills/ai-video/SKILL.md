@@ -8,7 +8,9 @@ description: >-
   a cost estimate before every spend; real people only from the user's own footage with consent.
 when_to_use: >-
   The user wants an AI-generated explainer or ad video, a collage video, a narrated short from a
-  topic, or footage made by a video model. For a video drawn in code with no provider costs use
+  topic, or footage made by a video model, including a request that names a real person, a
+  channel's style or a way around a model's content rules (this skill says what it will make
+  instead). For a video drawn in code with no provider costs use
   easel-motion:animate; for a still image use easel-ai-media:image; for narration alone use
   easel-ai-media:voice.
 argument-hint: "[topic] [length, e.g. 15s or 30s] [aspect, e.g. 9:16]"
