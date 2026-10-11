@@ -4,7 +4,7 @@ Optional pixel-art add-on: sprites, characters, tiles and animation cycles drawn
 Aseprite window (or headless), shaded with palette-legal ramps, critiqued by easel-core's critic
 with the pixel rubric, and exported as PNG, GIF, spritesheets with a JSON atlas, or tilesets.
 
-**Status:** v0.4.0 (Phase 4; see [the roadmap](../../docs/roadmap.md)). The
+**Status:** v1.0.0 (see [the roadmap](../../docs/roadmap.md)). The
 skills, launcher and hooks are tested; drawing end to end with a real Aseprite has not been run by
 the Easel project yet (it needs a licensed Aseprite).
 

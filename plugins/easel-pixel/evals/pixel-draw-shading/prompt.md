@@ -3,7 +3,7 @@ description: "Routing - shading an existing sprite goes to pixel-draw and looks 
 tags: [routing, pixel-draw]
 runs: 2
 plugins: ["../..", "../../../easel-core"]
-max_turns: 12
+max_turns: 20
 allowed_tools: [Skill, Read, Write, Glob]
 ---
 

@@ -1,6 +1,6 @@
 # Tasks
 
-> Status: draft · Last updated: 2026-10-11 · Phases: [roadmap.md](roadmap.md)
+> Status: all tasks closed (2026-10-11) · Phases: [roadmap.md](roadmap.md) · Run report: easel-runner `team/` (STATE, BACKLOG, QA reports)
 
 Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Done when** describes the result we can check. **Needs** lists the tasks that must be finished first.
 
@@ -41,39 +41,39 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 | T2.5 | ✅ Done (`1411085`; 10 recipes in `recipes/`, 9 grammars in `grammars/`, test checks names and English). Translate and rename the first ~10 huashu styles + the 9 grammars | English `STYLE.md` + grammar files; no creator names in style names | T2.1 |
 | T2.6 | ✅ Done (`2a6c11e`; D17: Easel's own Canvas kits, demos in 9:16 + 16:9, goldens rendered on Windows). Port the mg-styles recipes that only exist there: liquid, aurora-glass, synthwave, HUD | Each renders on the engine | T2.1 |
 | T2.7 | ✅ Done (`2a6c11e`; 8 gsap-skills references + designskills patterns, `reducedMotion` render, example `card-reveal.html`; QA D-1 fixed in the same commit). `ui-motion` from greensock/gsap-skills + designskills motion-design | Routing + output evals pass | T1.8 |
-| T2.8 | Evals for easel-motion + release v0.2.0 | Evals ≥ threshold; tag pushed | T2.2–T2.7 |
+| T2.8 | ✅ Done (tags `easel-core--v0.2.0` and `easel-motion--v0.2.0` at `3cf1603`; evals core 13/14 with the score-own-track gap reported (D25), motion 8/9 then the failing case 2/2 after its fix). Evals for easel-motion + release v0.2.0 | Evals ≥ threshold; tag pushed | T2.2–T2.7 |
 
 ## Phase 3: easel-design and easel-illustrate v1
 
 | ID | Task | Done when | Needs |
 | --- | --- | --- | --- |
-| T3.1 | Port the designskills skills, merged per [skill-catalog.md](skill-catalog.md) (13 v1 skills) | Each skill renders through the engine and calls `critique` | T1.8 |
-| T3.2 | `logo` from code-katz (contact sheet on the engine), plus the brand-identity phases (rewritten ideas) | Logo job produces SVG + PNG ladder + mono + provenance | T1.2 |
-| T3.3 | `directions` skill (keep/kill, blur test, anti-references) | Eval shows 3–5 structurally different outputs | T1.7 |
-| T3.4 | Generic design systems in `DESIGN.md` format (no real-brand copies) | ≥ 8 systems; lint checks there are no brand names | T1.5 |
-| T3.5 | `svg` (linyaosky base, chart example fixed) + `svg-illustration` (upbrew craft, Apache headers) | Filters and CSS animation verified via `filmstrip` | T1.3 |
-| T3.6 | `concept-illustration` with user-supplied mascot + neutral default | Vector path works without any API key | T3.5 |
-| T3.7 | `generative-art` from anthropics/skills `algorithmic-art` (+ shader recipes once their origin is traced) | p5.js sketch → PNG + loop MP4 | T1.3 |
-| T3.8 | Evals for both plugins + release v0.3.0 | Evals ≥ threshold; tags pushed | T3.1–T3.7 |
+| T3.1 | ✅ Done (`4e686ac`; QA E-1 fixes `3cf1603`: every skill ends in a critique). Port the designskills skills, merged per [skill-catalog.md](skill-catalog.md) (13 v1 skills) | Each skill renders through the engine and calls `critique` | T1.8 |
+| T3.2 | ✅ Done (`4e686ac`; logo ladder test `3cf1603`). `logo` from code-katz (contact sheet on the engine), plus the brand-identity phases (rewritten ideas) | Logo job produces SVG + PNG ladder + mono + provenance | T1.2 |
+| T3.3 | ✅ Done (`4e686ac`; eval `directions-generic` 2/2). `directions` skill (keep/kill, blur test, anti-references) | Eval shows 3–5 structurally different outputs | T1.7 |
+| T3.4 | ✅ Done (`4e686ac`; ten systems, brand-name lint in the tests). Generic design systems in `DESIGN.md` format (no real-brand copies) | ≥ 8 systems; lint checks there are no brand names | T1.5 |
+| T3.5 | ✅ Done (`10e6085`, QA `3cf1603`; CSS animation through `filmstrip`, filters through `render_still`). `svg` (linyaosky base, chart example fixed) + `svg-illustration` (upbrew craft, Apache headers) | Filters and CSS animation verified via `filmstrip` | T1.3 |
+| T3.6 | ✅ Done (`10e6085`, QA `3cf1603`; no API key on the vector path). `concept-illustration` with user-supplied mascot + neutral default | Vector path works without any API key | T3.5 |
+| T3.7 | ✅ Done (`10e6085`, QA `3cf1603`; seekable and seamless loop tested, MP4). Shader recipes deferred to v2 (D21: origin traced; WebGL review needed). `generative-art` from anthropics/skills `algorithmic-art` (+ shader recipes once their origin is traced) | p5.js sketch → PNG + loop MP4 | T1.3 |
+| T3.8 | ✅ Done (`a585c49`; tags `easel-design--v0.3.0`, `easel-illustrate--v0.3.0` at `e4725ee`; evals in docs/evals-v1.md). Evals for both plugins + release v0.3.0 | Evals ≥ threshold; tags pushed | T3.1–T3.7 |
 
 ## Phase 4: easel-ai-media and easel-pixel v1
 
 | ID | Task | Done when | Needs |
 | --- | --- | --- | --- |
-| T4.1 | Provider layer + adapters (Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud, ElevenLabs); key handling via env or `userConfig`; cost estimates | Dry-run shows cost for each adapter; no keys written to disk | T1.1 |
-| T4.2 | `providers` + `image` skills (generalized from designskills image-generation) | Image generated with ≥ 2 providers | T4.1 |
-| T4.3 | `ai-video` from vox-director (Windows fixes, celebrity examples and filter-workaround docs removed, style renamed) | 15 s film with one provider, with both approval gates | T4.1, T1.8 |
-| T4.4 | `voice` with consent gate for cloning | Cloning refused without a logged consent statement | T4.1 |
-| T4.5 | `easel-pixel`: `.mcp.json` with pinned `@pebbly/aseprite-ai-artist`, 4 skills + 3 agents adapted, hook matchers rewritten | End-to-end sprite + walk cycle on Windows | T1.8 |
-| T4.6 | Evals + release v0.4.0 | Tags pushed | T4.2–T4.5 |
+| T4.1 | ✅ Done offline (`10e6085`, hardened `3cf1603`; dry run with cost for each adapter, keys never on disk; recorded responses, no live calls - owner). Provider layer + adapters (Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud, ElevenLabs); key handling via env or `userConfig`; cost estimates | Dry-run shows cost for each adapter; no keys written to disk | T1.1 |
+| T4.2 | ✅ Done offline (`10e6085`); live: an image with 2 providers needs the owner's keys and budget (DEFERRED to the owner). `providers` + `image` skills (generalized from designskills image-generation) | Image generated with ≥ 2 providers | T4.1 |
+| T4.3 | ✅ Done offline (`10e6085`; both approval gates, assembly tested with ffmpeg); live: a 15 s film needs the owner's keys (DEFERRED to the owner). `ai-video` from vox-director (Windows fixes, celebrity examples and filter-workaround docs removed, style renamed) | 15 s film with one provider, with both approval gates | T4.1, T1.8 |
+| T4.4 | ✅ Done (`10e6085`, `3cf1603`; refusals tested: no statement, negated or placeholder statements, no real recording, files outside the job folder). `voice` with consent gate for cloning | Cloning refused without a logged consent statement | T4.1 |
+| T4.5 | ✅ Done to the boundary (`3cf1603`; launcher, lockfile install checked on Windows, hooks and skills tested); the end-to-end sprite + walk cycle needs a licensed Aseprite (DEFERRED to the owner). `easel-pixel`: `.mcp.json` with pinned `@pebbly/aseprite-ai-artist`, 4 skills + 3 agents adapted, hook matchers rewritten | End-to-end sprite + walk cycle on Windows | T1.8 |
+| T4.6 | ✅ Done (`a585c49`; tags `easel-ai-media--v0.4.0`, `easel-pixel--v0.4.0` at `e4725ee`; evals in docs/evals-v1.md). Evals + release v0.4.0 | Tags pushed | T4.2–T4.5 |
 
 ## Phase 5: Release v1.0.0
 
 | ID | Task | Done when | Needs |
 | --- | --- | --- | --- |
-| T5.1 | Complete `THIRD_PARTY_NOTICES.md` with upstream SHAs; per-file "Modified by Easel" headers on Apache-derived files | Checklist in [third-party-notices-draft.md](third-party-notices-draft.md) is all done | all |
-| T5.2 | Legal pass: findings §1.5 checklist (exclusions, renames, consent gate, no brand design systems) | Every item ticked, with a commit reference | all |
-| T5.3 | User docs + gallery of our own example outputs | README links to install, per-plugin docs, gallery | all |
-| T5.4 | Full eval run with baseline comparison; publish the results summary | Report committed | all |
-| T5.5 | Clean-machine install test (Windows + macOS) | Both pass | all |
-| T5.6 | Tag v1.0.0 for every plugin; optional community listing submission | Tags pushed | T5.1–T5.5 |
+| T5.1 | ✅ Done (`a585c49`; `notices.test.mjs` ties every adapted file to both notice files; draft complete). Complete `THIRD_PARTY_NOTICES.md` with upstream SHAs; per-file "Modified by Easel" headers on Apache-derived files | Checklist in [third-party-notices-draft.md](third-party-notices-draft.md) is all done | all |
+| T5.2 | ✅ Done (`a585c49`; every §1.5 item ticked with commits and checks, including an overlap test against the unlicensed repos). Legal pass: findings §1.5 checklist (exclusions, renames, consent gate, no brand design systems) | Every item ticked, with a commit reference | all |
+| T5.3 | ✅ Done (`a585c49`; README with install, per-plugin docs, credits; `docs/gallery.md`). User docs + gallery of our own example outputs | README links to install, per-plugin docs, gallery | all |
+| T5.4 | ✅ Done (v1.0.0 commit; `docs/evals-v1.md`: every plugin with a no-plugin baseline, cost). Full eval run with baseline comparison; publish the results summary | Report committed | all |
+| T5.5 | ✅ Done (`a585c49`, `e4725ee`; `scripts/install-check.mjs`; CI clean install on Windows, macOS and Linux; one run on the owner's Windows PC). A real Mac is on the owner's list. Clean-machine install test (Windows + macOS) | Both pass | all |
+| T5.6 | ✅ Done (tags `<plugin>--v1.0.0` for all six; listing prepared in the run folder, not submitted - owner). Tag v1.0.0 for every plugin; optional community listing submission | Tags pushed | T5.1–T5.5 |

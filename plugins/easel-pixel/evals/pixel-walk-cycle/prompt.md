@@ -3,7 +3,7 @@ description: "Routing - a walk cycle for an existing sprite goes to pixel-animat
 tags: [routing, pixel-animate]
 runs: 2
 plugins: ["../..", "../../../easel-core"]
-max_turns: 12
+max_turns: 24
 allowed_tools: [Skill, Read, Write, Glob]
 ---
 

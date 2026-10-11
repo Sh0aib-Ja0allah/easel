@@ -1,7 +1,7 @@
 {
   "name": "easel-motion",
   "displayName": "Easel Motion",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Code-drawn animation and video, a style catalog, explainer grammars and UI motion",
   "author": {
     "name": "Sh0aib-Ja0allah"
@@ -18,7 +18,7 @@
   "dependencies": [
     {
       "name": "easel-core",
-      "version": ">=0.2.0"
+      "version": "^1.0.0"
     }
   ]
 }

@@ -1,8 +1,9 @@
 # Easel
 
-> **Status: in development toward v1.0.0.** `easel-core` and `easel-motion` work today; the other
-> plugins are built and tested and are being released phase by phase (see
-> [the roadmap](docs/roadmap.md) and [CHANGELOG.md](CHANGELOG.md)).
+> **Status: v1.0.0.** Six plugins, each tagged `<plugin>--v1.0.0`. Tested on Windows, macOS and
+> Linux (CI, including a clean install of the marketplace). easel-ai-media's live provider calls
+> and easel-pixel's drawing in Aseprite run on your own keys and app; the project tests them with
+> recorded responses and a stand-in, not live.
 
 Easel is a Claude Code plugin marketplace for visual and creative work: animation, illustration,
 drawing, video and design. It brings together and adapts the best open-source Claude Code plugins

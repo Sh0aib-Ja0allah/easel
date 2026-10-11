@@ -30,7 +30,8 @@ does not call anything finished until it has been looked at and critiqued. At ea
 the skill it names and follow it; do not do the stage from memory.
 
 Never recreate a copyrighted or trademarked character (a famous game mascot or plumber, a film
-or cartoon hero): offer an original character with the qualities the user wants instead.
+or cartoon hero): offer an original character with the qualities the user wants instead. The alternative shares the mood or genre, never the character's signature features: no matching
+outfit, headwear, facial hair, colour scheme, job or name pun, so it cannot read as the original.
 
 ## 1. Connect
 

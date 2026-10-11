@@ -4,7 +4,7 @@ Graphic, UI and brand design made in code (HTML, CSS, SVG), rendered offline to 
 the easel-core engine, measured (clipped text, contrast, frame overflow) and critiqued before
 delivery.
 
-**Status:** v0.3.0 (Phase 3; see [the roadmap](../../docs/roadmap.md)).
+**Status:** v1.0.0 (see [the roadmap](../../docs/roadmap.md)).
 
 **Requires:** `easel-core` (installed automatically as a dependency). An AI raster (a photo, a
 painting) is only used when the user asks for one and `easel-ai-media` is installed.

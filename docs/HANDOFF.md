@@ -12,14 +12,21 @@ Easel is a **public, open-source Claude Code plugin marketplace** for creative w
 
 | Plugin | Purpose |
 |---|---|
-| `easel-core` | Shared foundation: planning check-ins, brand context, render engine (MCP server), audio, critic agent, craft rules, AI provider layer |
+| `easel-core` | Shared foundation: planning check-ins, brand context, render engine (MCP server), audio, critic agent, craft rules |
 | `easel-motion` | Code-drawn animation and video, a style catalog, explainer grammars, UI motion (GSAP) |
 | `easel-design` | Graphic, UI, social, posters, decks, design systems, logos, icons, brand identity |
 | `easel-illustrate` | SVG illustration and characters, concept illustration with a mascot, generative art |
-| `easel-ai-media` | AI images, video and voice using the user's **own** API keys |
+| `easel-ai-media` | AI images, video and voice using the user's **own** API keys (its own provider server, D22) |
 | `easel-pixel` | Pixel art in Aseprite (optional; Aseprite is a paid app) |
 
-**Status:** planning is complete. **No code exists yet.** The next phase is Phase 0: the repo skeleton plus three technical tests ("spikes").
+**Status (2026-10-11):** Phases 0-5 are built. All six plugins are in the repo with their tests,
+evals and notices; CI runs on Windows, macOS and Linux, including a clean install of the
+marketplace. Releases are tagged per plugin (`<plugin>--v<version>`; see CHANGELOG.md). What the
+project could not do itself is listed in the run report: live paid provider calls (needs the
+owner's keys and budget), drawing in a licensed Aseprite, and a test on a real Mac (CI covers
+macOS). Decisions D1-D26 are in findings-and-decisions.md. The sections below are the original
+planning handoff, kept for history; where they differ, the code, CHANGELOG and
+findings-and-decisions.md are right.
 
 ---
 

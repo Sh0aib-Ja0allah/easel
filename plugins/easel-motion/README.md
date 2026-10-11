@@ -3,7 +3,7 @@
 Code-drawn animation and video: the `animate` entry skill, a style catalog, explainer grammars,
 `style-match` and GSAP-based `ui-motion`.
 
-**Status:** all three skills, the kit and eleven styles are in (Phase 2; see
+**Status:** v1.0.0: all three skills, the kit and eleven styles (see
 [the roadmap](../../docs/roadmap.md)).
 
 ## Skills

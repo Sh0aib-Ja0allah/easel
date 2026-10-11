@@ -1,7 +1,7 @@
 {
   "name": "easel-illustrate",
   "displayName": "Easel Illustrate",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "SVG illustration and characters, concept illustration with a mascot, and generative art",
   "author": {
     "name": "Sh0aib-Ja0allah"
@@ -18,7 +18,7 @@
   "dependencies": [
     {
       "name": "easel-core",
-      "version": ">=0.2.0"
+      "version": "^1.0.0"
     }
   ]
 }

@@ -14,7 +14,7 @@ easel/
 │   │   ├── skills/{setup,brief,brand,critique,score}/SKILL.md
 │   │   ├── agents/critic.md
 │   │   ├── .mcp.json             # the "easel" MCP server (render engine)
-│   │   ├── engine/               # Node: MCP server + CLI, render, audio, providers
+│   │   ├── engine/               # Node: MCP server + CLI, render, audio, qa, schemas
 │   │   ├── craft/                # shared rulebooks (anti-generic, type, colour, a11y, motion)
 │   │   ├── rubrics/              # critique rubrics per domain
 │   │   └── schemas/              # brief.json, beats.json, cues.json, brand.md
@@ -89,7 +89,7 @@ Reference: <https://code.claude.com/docs/en/plugins/manifest-reference>
 
 **Design:**
 
-1. **`easel-core` owns all shared code.** Its `engine/` directory holds the render engine, audio, provider layer, schemas and QA scripts.
+1. **`easel-core` owns all shared code.** Its `engine/` directory holds the render engine, audio, schemas and QA scripts. The AI provider layer is the exception: it is easel-ai-media's own `media` server (D22), so keys and paid calls stay out of the plugin every user installs.
 2. **The other plugins declare `"dependencies": ["easel-core"]`.** Installing `easel-motion` then pulls in core automatically.
 3. **Core exposes the engine as an MCP server** (`.mcp.json`, stdio, `node ${CLAUDE_PLUGIN_ROOT}/engine/server.mjs`). Other plugins' skills call its tools by full name, for example `mcp__plugin_easel-core_easel__render`.
 4. **The same engine also runs as a CLI** (`node …/engine/cli.mjs`) for long jobs and scripting.
@@ -132,7 +132,8 @@ Every visual artifact is a web page that can be put into an exact state at any t
 | `measure_image` | Reference images → trimmed copies, size and aspect, exact palette with shares, sampled points, accent families (for matching a look) |
 | `compare_images` | A reference and our frame side by side on a 10% proportion grid, with both palettes |
 | `craft` | Return a craft rulebook or rubric by name |
-| `generate` | Provider-layer call (§6); used by `easel-ai-media` |
+| `render_pdf` | A page or SVG → print PDF at its `@page` size, a paper format or explicit sizes |
+| `ping`, `doctor`, `validate` | Health check; environment check and installs into the data folder; schema validation of brand/brief/beats/cues/provenance |
 
 ### Determinism
 
@@ -157,35 +158,43 @@ Every visual artifact is a web page that can be put into an exact state at any t
 | Aseprite bridge | `easel-pixel/.mcp.json` → `node ${CLAUDE_PLUGIN_ROOT}/server/launch.mjs serve`, which runs the pinned `@pebbly/aseprite-ai-artist` 0.8.0 installed in the data folder (D23) | The pixel skill runs `launch.mjs setup` once: `npm ci` from the shipped lockfile, then the package's Lua extension. Their hook matchers are rewritten for our tool names. |
 | HyperFrames | Not a dependency (D7 = B). Users may install it themselves; Easel compositions follow its format | Apache-2.0; credited for the composition-format idea |
 | Image/video/voice APIs | Provider layer (§6) | Bring your own key |
-| Figma / Canva / Recraft / Hugging Face MCP | Documented as optional backends in `easel-ai-media:providers` | No bundled config; the user installs these themselves |
 
-## 6. Provider layer (decision D3)
+## 6. Provider layer (decisions D3, D22)
+
+easel-ai-media's own MCP server (`media`, `plugins/easel-ai-media/server/`, Node, no npm
+dependencies) with five tools:
 
 ```text
-generate({ kind: image|video|tts|stt|music|bg-remove|upscale, model?, prompt, refs?, size?, seconds?, voice? })
-  → { files[], cost_estimate, provider, model }
+providers()                       keys set (names only), kinds, models, prices and their sources, the limit
+estimate({ kind, provider?, model?, size?, quality?, seconds?, text?, count? })  -> { usd, basis, source }
+generate({ kind: image|video|tts|music|voice-clone, ..., confirm?, approvedUsd?, slug?, name? })
+  -> without confirm: a dry run { estimate, request, next }; with confirm: { files[], estimate }
+assemble({ clips[], narration?, music?, overlays[], size, fps })  -> one film (local ffmpeg)
+consent_template()                -> the statement a voice owner gives before cloning
 ```
 
-**Adapters (v1):**
+**Adapters (v1):** Gemini (image), OpenAI (image, TTS), fal.ai (image, image-to-video), Replicate
+(image), Atlas Cloud (image, image-to-video, TTS, music), ElevenLabs (TTS with word timings, voice
+clone). Prices for estimates are in `server/prices.json`, each with its source and a checked date
+or `verify`.
 
-- Gemini (image)
-- OpenAI (image, TTS)
-- fal.ai (image, video, lip-sync)
-- Replicate (image, video)
-- Atlas Cloud (everything vox-director uses)
-- ElevenLabs (voice)
+**Keys and configuration:** environment variables (`GEMINI_API_KEY` or `GOOGLE_API_KEY`,
+`OPENAI_API_KEY`, `FAL_KEY`, `REPLICATE_API_TOKEN`, `ATLASCLOUD_API_KEY`, `ELEVENLABS_API_KEY`) or
+masked `userConfig` fields (stored in the system's credential store) passed as
+`EASEL_CFG_<PROVIDER>`. Keys are never written to disk, are masked in every output, and are sent
+only to each provider's own https hosts.
 
-**Keys and configuration:**
+**Required behaviour (implemented and tested with recorded responses):**
 
-- Keys come from environment variables (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `FAL_KEY`, `REPLICATE_API_TOKEN`, `ATLASCLOUD_API_KEY`, `ELEVENLABS_API_KEY`) or from the plugin's `userConfig`.
-- Keys are never written to project files.
-
-**Required behaviour:**
-
-- Show the **cost estimate before spending**, as vox's host mode does.
-- Ask for confirmation when the estimate exceeds a threshold the user sets.
-- No watermarks or tracking parameters.
-- **Voice cloning requires an explicit consent statement** from the voice owner, logged in the job folder.
+- Every generation is a dry run with a cost estimate until the user confirms; above the limit
+  (`max_spend_usd`, default 0.5 USD) or for an unpriced model an approved amount is also needed.
+- URLs a provider returns are checked (https, no local or private addresses, redirects checked,
+  size cap, media types); every paid job is logged in `jobs.jsonl`; paid files are never
+  overwritten; every file gets a `provenance.json` entry; job folders stay inside the project.
+- **Voice cloning requires the voice owner's consent statement and a recording of it**, in the
+  job folder, checked before any call; every clone is logged in `consent-log.jsonl`.
+- No watermarks or tracking parameters. Live calls have not been run by the project (owner's keys
+  and budget).
 
 ## 7. Shared data formats (`easel-core/schemas`)
 

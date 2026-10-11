@@ -1,7 +1,7 @@
 {
   "name": "easel-core",
   "displayName": "Easel Core",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Shared foundation for Easel: planning check-ins, brand context, render engine (MCP server), audio, critic agent and craft rules",
   "author": {
     "name": "Sh0aib-Ja0allah"

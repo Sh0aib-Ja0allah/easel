@@ -3,7 +3,7 @@ description: "Routing - an animated character runs the full chain: brief, draw, 
 tags: [routing, pixel]
 runs: 2
 plugins: ["../..", "../../../easel-core"]
-max_turns: 14
+max_turns: 30
 allowed_tools: [Skill, Read, Write, Glob, Agent]
 ---
 

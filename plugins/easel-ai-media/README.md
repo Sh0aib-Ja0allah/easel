@@ -6,7 +6,7 @@ first: you see the estimated cost and a summary of the request (provider, model,
 Above your spending limit an approved amount is also needed. Voice cloning is refused without a
 recorded consent statement from the voice's owner.
 
-**Status:** v0.4.0 (Phase 4; see [the roadmap](../../docs/roadmap.md)). The
+**Status:** v1.0.0 (see [the roadmap](../../docs/roadmap.md)). The
 provider adapters are tested against recorded responses, not live accounts: live generation has
 not been run by the Easel project yet.
 

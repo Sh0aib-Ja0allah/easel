@@ -1,11 +1,13 @@
 {
   "name": "easel-engine",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Easel render engine: MCP server and CLI (zero-dependency core; Playwright, GSAP and p5.js are installed by doctor into the plugin data folder)",
   "license": "MIT",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test --test-reporter=spec \"test/*.test.mjs\""
   },

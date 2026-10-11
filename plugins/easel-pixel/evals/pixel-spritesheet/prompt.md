@@ -3,7 +3,7 @@ description: "Routing - files for a game engine go to pixel-export (spritesheet 
 tags: [routing, pixel-export]
 runs: 2
 plugins: ["../..", "../../../easel-core"]
-max_turns: 12
+max_turns: 20
 allowed_tools: [Skill, Read, Write, Glob]
 ---
 

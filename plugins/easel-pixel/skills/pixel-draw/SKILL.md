@@ -28,7 +28,8 @@ form harder to see and dearer to fix. Draw, then `look`, then fix: call
 `mcp__plugin_easel-pixel_aseprite__look` after **every** call that changed pixels.
 
 Never recreate a copyrighted or trademarked character; offer an original one with the qualities
-the user asked for.
+the user asked for. The alternative shares the mood or genre, never the character's signature features: no matching
+outfit, headwear, facial hair, colour scheme, job or name pun, so it cannot read as the original.
 
 ## 0. Connect and read
 

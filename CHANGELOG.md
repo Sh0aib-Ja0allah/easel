@@ -2,12 +2,20 @@
 
 Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
 
-## Unreleased
+## 1.0.0: easel-core, easel-motion, easel-design, easel-illustrate, easel-ai-media, easel-pixel (2026-10-11)
+
+The first stable release of the whole marketplace. Every plugin is 1.0.0; the five that build on
+easel-core require `^1.0.0`.
 
 - Repository: `scripts/install-check.mjs` and a CI job install the marketplace into an empty Claude Code
   config on Windows, macOS and Linux and use every plugin from its installed copy; a notices test
   ties every adapted file to THIRD_PARTY_NOTICES.md and its plugin's NOTICE.md; a gallery of
   Easel's own examples (`docs/gallery.md`).
+- Docs reconciled with what shipped (architecture's provider layer, HANDOFF status, roadmap and
+  tasks with their commits); the §1.5 legal checklist is ticked with its evidence; the full eval
+  suite with a no-plugin baseline is summarised in `docs/evals-v1.md`.
+- Not done by the project and listed for the owner: live paid provider calls, drawing in a
+  licensed Aseprite, a test on a real Mac.
 
 ## easel-design 0.3.0, easel-illustrate 0.3.0, easel-ai-media 0.4.0, easel-pixel 0.4.0 (2026-10-11)
 

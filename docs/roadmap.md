@@ -1,6 +1,6 @@
 # Roadmap
 
-> Status: draft · Last updated: 2026-10-11 · Task details: [tasks.md](tasks.md)
+> Status: all phases built (2026-10-11) · Task details and commits: [tasks.md](tasks.md) · Releases: [CHANGELOG.md](../CHANGELOG.md)
 
 Phases run in order, because each depends on the one before it. Phases 3 and 4 can overlap once core is stable.
 
@@ -13,6 +13,9 @@ Sizes are relative effort, not dates:
 | L | about a week or more |
 
 ## Phase 0: Foundations and spikes
+
+> **Done.** Skeleton, spikes (D7 = B: Easel's own render loop) and CI.
+
 
 **Goal:** settle the remaining risky unknowns before we build anything.
 
@@ -35,6 +38,9 @@ Sizes are relative effort, not dates:
 
 ## Phase 1: easel-core MVP → v0.1.0
 
+> **Done:** `easel-core--v0.1.0`.
+
+
 **Goal:** a working render engine and the shared skills that every other plugin relies on.
 
 **Contents:**
@@ -55,6 +61,9 @@ Sizes are relative effort, not dates:
 **Size:** L
 
 ## Phase 2: easel-motion v1 → v0.2.0
+
+> **Done:** `easel-core--v0.2.0`, `easel-motion--v0.2.0` (eval gap on one case reported, D25).
+
 
 **Goal:** the first plugin users will actually want: code-drawn animated video.
 
@@ -77,6 +86,9 @@ Sizes are relative effort, not dates:
 
 ## Phase 3: easel-design and easel-illustrate v1 → v0.3.0
 
+> **Done:** `easel-design--v0.3.0`, `easel-illustrate--v0.3.0`.
+
+
 **Goal:** cover design, illustration and drawing for still output.
 
 **Contents:**
@@ -93,6 +105,9 @@ Sizes are relative effort, not dates:
 **Size:** L
 
 ## Phase 4: easel-ai-media and easel-pixel v1 → v0.4.0
+
+> **Done to the boundary:** `easel-ai-media--v0.4.0`, `easel-pixel--v0.4.0`. Live provider calls and the Aseprite end-to-end run need the owner's keys, budget and a licensed Aseprite.
+
 
 **Goal:** the optional paid add-ons.
 
@@ -111,6 +126,9 @@ Sizes are relative effort, not dates:
 **Size:** L
 
 ## Phase 5: Release → v1.0.0
+
+> **Done:** v1.0.0 tags for all six plugins; clean install checked in CI on Windows, macOS and Linux and on the owner's PC; a test on a real Mac is on the owner's list.
+
 
 **Goal:** a public release people can install with confidence.
 
