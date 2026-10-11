@@ -27,7 +27,7 @@ export async function renderStill(args, { browser: shared } = {}) {
   try {
     for (const theme of themes) {
       for (const size of sizes) {
-        const { page, context, blocked, errors } = await newPage(browser, { width: size.width, height: size.height, scale: args.scale || 1, colorScheme: theme, seed: args.seed ?? 1, transparent: !!args.transparent, aspect: args.aspect || null });
+        const { page, context, blocked, errors } = await newPage(browser, { width: size.width, height: size.height, scale: args.scale || 1, colorScheme: theme, seed: args.seed ?? 1, transparent: !!args.transparent, aspect: args.aspect || null, reducedMotion: args.reducedMotion });
         try {
           await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
           await waitReady(page);

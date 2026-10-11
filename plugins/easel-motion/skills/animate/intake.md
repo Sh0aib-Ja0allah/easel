@@ -1,6 +1,6 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/intake.md).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): gallery, voice, music and asset steps point at Easel tools and skills. -->
 # Intake
 
@@ -25,7 +25,7 @@ Ask only what you can't infer from the request. AskUserQuestion takes up to 4 qu
    - On-screen handwritten narration
 
 4. **The look?** *(skip the gallery when the request already names a style or brings references — go to new-style.md or the named style)* Show the gallery (easel-core `contact_sheet` of every `<easel-motion>/styles/<id>/sample.png`, plus any `styles/<name>/sample.png` in the user's project), then ask:
-   - One of these: cut paper / crosshatch ink / riso print / sketchbook / math / pixel / isometric *(recommend the one that fits the subject: cut paper for histories and stories, crosshatch for software and tool explainers, math for anything with equations or graphs, pixel for computing history, isometric for products, devices and infrastructure, riso or sketchbook for a softer editorial feel)*
+   - One of these: cut paper / crosshatch ink / riso print / sketchbook / math / pixel / isometric / synthwave / liquid / aurora glass / HUD *(recommend the one that fits the subject: cut paper for histories and stories, synthwave for retro and music pieces, liquid for logo and brand stings, aurora glass for calm product launches, HUD for tech and data drama, crosshatch for software and tool explainers, math for anything with equations or graphs, pixel for computing history, isometric for products, devices and infrastructure, riso or sketchbook for a softer editorial feel)*
    - A style they've made before (any `styles/<name>/` in their project)
    - My own references (the gallery's last tile, "custom") — links or files (videos, stills, a web page): use `easel-motion:style-match`; keep the media local and uncommitted
    - Surprise me
@@ -37,7 +37,7 @@ Ask only what you can't infer from the request. AskUserQuestion takes up to 4 qu
 
 6. **Music: do you have your own track?**
    - No — compose the score in code, cut to a 120 BPM grid *(recommended unless they have one)*
-   - Yes — a file (WAV / MP3 / M4A) they own or licensed. Ask for its path, the part to use (start time) and the BPM if they know it. Then SKILL.md → Music: the track's beats go in `beats.json` (easel-core `validate` kind `beats`), the cuts follow the song, and the render muxes the track (the score adds sound effects only). Never fetch music from a site the user didn't point to.
+   - Yes — a file (WAV / MP3 / M4A) they own or licensed. Ask for its path, the part to use (start time) and the BPM if they know it. Then SKILL.md → Music: the track's tempo and first beat go in `piece/beatmap.json` (`{ "bpm", "offset" }`), the cuts follow the song, and the render uses the track as its sound (it replaces the page score). Never fetch music from a site the user didn't point to.
 
 7. **Is it about a product, app or site — should the video show the real thing?** *(ask only when the subject is a product)*
    - Yes — real screenshots and the logo: ask for screenshots and logo files they own (or render their own page with easel-core `render_still`). SKILL.md → Assets. *(recommended for a product reel)*

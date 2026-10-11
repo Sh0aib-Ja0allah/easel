@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/y5_kinetic_type.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; removed designer, film, song, artist, channel, tutorial,
      font and software names; dropped the source's demo film, file paths, scripts, JS function names and font tooling;
      restated demo-specific values as general rules and examples; adapted CJK character limits with English equivalents;

@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/y3_whiteboard.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; replaced series, channel, studio, illustrator, presenter, tool and font names with neutral descriptions (the two reference types renamed "lecture-board" and "page-per-shot"); removed source-project paths, scripts, function names and demo-film references (useful demo values kept, tagged [tested]); replaced named characters with generic ones; rewrote the implementation notes engine-neutrally; condensed the review and QA sections into tool-independent lessons; dropped reference links. -->
 
 # Whiteboard explainer

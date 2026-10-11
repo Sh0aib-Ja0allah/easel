@@ -56,7 +56,7 @@ function encoder(ffmpeg, { fps, file, crf, audio, duration, preset }) {
 }
 
 async function renderOne(browser, src, opts) {
-  const { page, context, blocked, errors } = await newPage(browser, { width: opts.width, height: opts.height, seed: opts.seed, colorScheme: opts.theme, aspect: opts.aspect || null });
+  const { page, context, blocked, errors } = await newPage(browser, { width: opts.width, height: opts.height, seed: opts.seed, colorScheme: opts.theme, aspect: opts.aspect || null, reducedMotion: opts.reducedMotion });
   try {
     await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
     await waitReady(page);
@@ -143,7 +143,7 @@ export async function filmstrip(args) {
   const browser = await openBrowser();
   try {
     const [aw, ah] = args.aspect ? ASPECTS[args.aspect] : [];
-    const { page, context } = await newPage(browser, { width: args.width || aw || 1920, height: args.height || ah || 1080, seed: args.seed ?? 1, colorScheme: args.theme || 'light', aspect: args.aspect || null });
+    const { page, context } = await newPage(browser, { width: args.width || aw || 1920, height: args.height || ah || 1080, seed: args.seed ?? 1, colorScheme: args.theme || 'light', aspect: args.aspect || null, reducedMotion: args.reducedMotion });
     let cells = [];
     try {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });

@@ -4,7 +4,8 @@
 // text under the phone UI on portrait formats (a warning). A reviewer looking at thumbnails misses
 // these: a cropped label reads as fine at contact-sheet size.
 // beat_grid: with TIMELINE.bpm, every hard cut (TIMELINE.cuts) and morph centre (TIMELINE.morphs)
-// lands on the 8th-note grid (from TIMELINE.gridOffset), within half a frame.
+// lands on the 8th-note grid (from TIMELINE.gridOffset), within half a frame; inside the optional fast
+// window [TIMELINE.fastFrom, TIMELINE.fastTo) the 16th-note grid is allowed (as upstream review.mjs did).
 // Adapted for Easel from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (plugins/animate/skills/animate/tools/textcheck.mjs), MIT License, Copyright (c) 2026 cth9191.
 // Modified by Easel (2026-10-11): runs inside the engine's offline page (newPage/waitReady), takes the
@@ -87,11 +88,17 @@ function scan({ every, safe }) {
 
 function gridScan() {
   const T = window.TIMELINE;
-  if (!T.bpm || !T.fps) return null;
-  const E8 = 60 / T.bpm / 2, g0 = T.gridOffset || 0, tol = 0.5 / T.fps + 1e-6;
+  if (!T.bpm || !T.fps) return { bpm: T.bpm || null, missing: true };
+  // 8ths everywhere; 16ths inside the fast window [fastFrom, fastTo) when the piece declares one
+  const E8 = 60 / T.bpm / 2, E16 = E8 / 2, g0 = T.gridOffset || 0, tol = 0.5 / T.fps + 1e-6;
+  const fast = typeof T.fastFrom === 'number' ? [T.fastFrom, typeof T.fastTo === 'number' ? T.fastTo : Infinity] : null;
   const events = [...(T.cuts || []).map((t) => ['cut', t]), ...(T.morphs || []).map((t) => ['morph', t])];
-  const off = events.map(([kind, t]) => { const k = Math.round((t - g0) / E8), on = g0 + k * E8; return { kind, t, nearest: +on.toFixed(4), offBy: +(t - on).toFixed(4) }; }).filter((e) => Math.abs(e.offBy) > tol);
-  return { bpm: T.bpm, e8: +E8.toFixed(4), gridOffset: g0, events: events.length, off };
+  const off = events.map(([kind, t]) => {
+    const step = fast && t >= fast[0] - tol && t < fast[1] ? E16 : E8;
+    const k = Math.round((t - g0) / step), on = g0 + k * step;
+    return { kind, t, grid: step === E16 ? '16th' : '8th', nearest: +on.toFixed(4), offBy: +(t - on).toFixed(4) };
+  }).filter((e) => Math.abs(e.offBy) > tol);
+  return { bpm: T.bpm, e8: +E8.toFixed(4), gridOffset: g0, fast: fast && [fast[0], fast[1] === Infinity ? null : fast[1]], events: events.length, off };
 }
 
 // args: html | file, aspect, every (sample every Nth frame, default 6), textIgnore [[t0, t1, why], ...]
@@ -100,7 +107,7 @@ export async function canvasChecks(args, src, want = () => true, { browser: shar
   const [aw, ah] = args.aspect ? ASPECTS[args.aspect] : [];
   const browser = shared || (await openBrowser());
   try {
-    const { page, context, errors } = await newPage(browser, { width: args.width || aw || 1080, height: args.height || ah || 1920, aspect: args.aspect || null, seed: args.seed ?? 1 });
+    const { page, context, errors } = await newPage(browser, { width: args.width || aw || 1080, height: args.height || ah || 1920, aspect: args.aspect || null, seed: args.seed ?? 1, reducedMotion: args.reducedMotion });
     try {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
       await waitReady(page);
@@ -109,7 +116,13 @@ export async function canvasChecks(args, src, want = () => true, { browser: shar
       const checks = [];
       if (want('beat_grid')) {
         const g = await page.evaluate(gridScan);
-        if (g) checks.push({ name: 'beat_grid', pass: g.off.length === 0, hard: true, value: g.off.length, threshold: `cuts and morph centres on the 8th grid (${g.e8} s at ${g.bpm} BPM, offset ${g.gridOffset} s), within half a frame`, eventsChecked: g.events, findings: g.off.map((e) => ({ ...e, fix: `move the ${e.kind} to ${e.nearest} s (use onBeat(t))` })) });
+        if (g.missing) {
+          // asked for by name: a piece without TIMELINE.bpm (and fps) cannot be checked, so it fails
+          if (args.checks && args.checks.includes('beat_grid')) checks.push({ name: 'beat_grid', pass: false, hard: true, value: null, threshold: 'TIMELINE.bpm and TIMELINE.fps set', findings: [{ fix: 'set TIMELINE.bpm (and TIMELINE.fps) in the piece, or leave beat_grid out of checks' }] });
+        } else {
+          const where = `the 8th grid${g.fast ? ` (16ths from ${g.fast[0]} s${g.fast[1] === null ? '' : ` to ${g.fast[1]} s`})` : ''}`;
+          checks.push({ name: 'beat_grid', pass: g.off.length === 0, hard: true, value: g.off.length, threshold: `cuts and morph centres on ${where} (${g.e8} s 8ths at ${g.bpm} BPM, offset ${g.gridOffset} s), within half a frame`, eventsChecked: g.events, findings: g.off.map((e) => ({ ...e, fix: `move the ${e.kind} to ${e.nearest} s (use onBeat(t))` })) });
+        }
       }
       if (!want('canvas_text')) return checks;
       const info = await compositionInfo(page);

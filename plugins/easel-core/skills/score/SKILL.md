@@ -4,14 +4,14 @@ description: >-
   Add music and sound effects to a video or animation: turn its timing into a cue sheet
   (cues.json), synthesize a score that follows it (a chord per scene, a dip into near-silence
   before the payoff and the loudest hit on it, named effects such as whoosh, pop, click, chime,
-  riser, impact), master it to -14 LUFS and mux it. Offline, deterministic, no Python.
+  riser, impact), master it to -14 LUFS and mux it. Offline, repeatable, no Python.
 when_to_use: >-
   The user asks to "add music", "add sound", "sound effects", "score this", "sync it to the beat",
   or a render has no audio. For an easel-motion animate piece, its own in-piece score is used by
   default (render_video audio "page"); use this skill for any other video, or when the user wants
   a score built from a cue sheet. A user's own music track is muxed as is.
 argument-hint: "[video or piece] [mood: warm | bright | retro]"
-allowed-tools: mcp__plugin_easel-core_easel__audio_score mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__qa Read Write Edit Glob
+allowed-tools: mcp__plugin_easel-core_easel__audio_score mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__mux_audio mcp__plugin_easel-core_easel__qa Read Write Edit Glob
 ---
 
 # Score: music and effects from a cue sheet
@@ -25,7 +25,9 @@ say so. Work in the job folder `./easel-out/<slug>/`.
 - **An easel-motion animate piece** already has a score in `src/score.js`. Render it with
   `render_video` `audio: "page"` (mastered to -14 LUFS for you). Use this skill only if the user
   wants a different score.
-- **The user's own track** (a file they own or licensed): mux it with `render_video` `audio:
+- **The user's own track** (a file they own or licensed): on a video that already exists, mux it
+  with `mcp__plugin_easel-core_easel__mux_audio` (`video`, `audio` = the track, `master: true` if
+  it is not already mastered); on a page you are still rendering, use `render_video` `audio:
   "<path>"`. Never fetch music from a site the user didn't point to.
 - **Anything else** (a video without sound, a slideshow, a GSAP piece): build a cue sheet and
   synthesize a score, below.
@@ -60,8 +62,15 @@ an unknown effect name, use one of the listed names. Then `qa` with `audio` = th
 
 ## 4. Put it on the video
 
-`render_video` with `audio` = the WAV (it is trimmed to the video length), or give the WAV to the
-user for their editor. Run `qa` on the final MP4 (`video`) for loudness and stillness.
+- **A video that already exists** (an MP4 the user gave you, or one rendered earlier):
+  `mcp__plugin_easel-core_easel__mux_audio` with `video` and `audio` = the WAV. The video stream is
+  copied unchanged and the result is cut to the shorter of the two; it writes a new file and never
+  overwrites the input.
+- **A page you are rendering now:** `render_video` with `audio` = the WAV (trimmed to the video
+  length).
+
+Or give the WAV to the user for their editor. Run `qa` on the final MP4 (`video`) for loudness and
+stillness.
 
 ## 5. Report
 

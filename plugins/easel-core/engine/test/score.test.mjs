@@ -1,7 +1,6 @@
 // T2.4: audio_score (cue sheet -> synthesized, mastered WAV). Needs Chromium and ffmpeg; skips otherwise.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,7 +11,6 @@ import { parseKey, planScore } from '../lib/score.mjs';
 const ready = ['playwright-core', 'chromium', 'ffmpeg', 'ffprobe'].every((n) => doctorReport().checks.find((c) => c.name === n)?.ok);
 const skip = ready ? false : 'needs Chromium and ffmpeg (doctor --install)';
 const example = fileURLToPath(new URL('../../schemas/examples/cues.json', import.meta.url));
-const sha = (f) => createHash('sha256').update(readFileSync(f)).digest('hex');
 // 16-bit PCM samples of a WAV (finds the data chunk; ffmpeg may add a LIST chunk first)
 const samples = (f) => { const b = readFileSync(f); let o = 12; while (o < b.length) { const id = b.toString('latin1', o, o + 4), n = b.readUInt32LE(o + 4); if (id === 'data') return new Int16Array(b.buffer.slice(b.byteOffset + o + 8, b.byteOffset + o + 8 + n)); o += 8 + n + (n % 2); } throw new Error('no data chunk'); };
 let out, m;
@@ -31,11 +29,18 @@ test('keys parse to a root and a mode', () => {
   assert.throws(() => parseKey('H major'), /unknown key/);
 });
 
-test('the plan: one section per scene, bass on every beat, hits and named effects in place', () => {
+test('the plan: one section per scene, bass on the BPM grid, hits and named effects in place', () => {
   const cues = JSON.parse(readFileSync(example, 'utf8'));   // 12 s, 30 fps, 100 BPM, scenes at 0, 4, 8 s, a pop at 4.4 s, music-stop at 359
   const p = planScore(cues);
   assert.deepEqual(p.sections, [{ t0: 0, t1: 4 }, { t0: 4, t1: 8 }, { t0: 8, t1: 11.967 }]);
-  assert.equal(p.events.filter((e) => e.type === 'bass').length, 7 + 7 + 7);   // 0.6 s beats: 4 s -> 7 beats per section
+  // 0.6 s beats counted from the music start, not from each scene: 0-3.6, 4.2-7.8, 8.4-11.4
+  const bass = p.events.filter((e) => e.type === 'bass');
+  assert.equal(bass.length, 7 + 7 + 6);
+  for (const e of bass) assert.ok(Math.abs(e.t / 0.6 - Math.round(e.t / 0.6)) < 1e-9, `bass at ${e.t} is off the grid`);
+  assert.deepEqual(bass.filter((e) => e.accent).map((e) => +e.t.toFixed(3)), [0, 2.4, 4.8, 7.2, 9.6]);   // every bar's downbeat
+  // 90 BPM: the downbeat at 10.667 s keeps its accent (no float drift from repeated addition)
+  const p90 = planScore({ ...cues, bpm: 90 });
+  assert.deepEqual(p90.events.filter((e) => e.type === 'bass' && e.accent).map((e) => +e.t.toFixed(3)), [0, 2.667, 5.333, 8, 10.667]);
   assert.deepEqual(p.events.filter((e) => e.type === 'sfx').map((e) => [e.name, +e.t.toFixed(2)]), [['pop', 4.4]]);
   const withHit = planScore({ ...cues, cues: [...cues.cues, { name: 'payoff', frame: 270, kind: 'hit' }, { name: 'odd', frame: 30, kind: 'sfx', sfx: 'kazoo' }] });
   assert.deepEqual(withHit.hits, [9]);
@@ -68,9 +73,20 @@ test('audio_score: palettes differ, a custom target is met, bad input is refused
   assert.ok(Math.abs(retro.lufs + 16) <= 1, `retro ${retro.lufs}`);
   assert.equal(retro.hits, 1);
   assert.match(retro.warnings[0], /kazoo/);
-  const warm = join(out, 'warm.wav');
-  await m.audioScore({ file: example, outDir: out, name: 'warm' });
-  assert.notEqual(sha(warm), sha(retro.file));
+  // the same cue sheet at the same target: only the palette differs, so the samples must differ well beyond rounding
+  const warm = await m.audioScore({ cues: { ...cues, cues: extra }, palette: 'warm', outDir: out, name: 'warm', lufs: -16 });
+  const W = samples(warm.file), R = samples(retro.file);
+  let diff = 0; for (let i = 0; i < W.length; i++) diff = Math.max(diff, Math.abs(W[i] - R[i]));
+  assert.ok(diff > 1000, `warm and retro differ by only ${diff} LSB`);
   await assert.rejects(m.audioScore({ cues: { version: 1, fps: 30 }, outDir: out }), /not valid/);
   await assert.rejects(m.audioScore({ file: example, palette: 'jazz', outDir: out }), /palette must be one of/);
+});
+
+test('audio_score: effects on frame 0 (whoosh, swish, riser) render instead of failing', { skip }, async () => {
+  const cues = { version: 1, fps: 30, durationSec: 3, bpm: 120, key: 'C major', cues: [
+    { name: 'open', frame: 0, kind: 'scene' }, { name: 'w', frame: 0, kind: 'sfx', sfx: 'whoosh' },
+    { name: 's', frame: 0, kind: 'sfx', sfx: 'swish' }, { name: 'r', frame: 0, kind: 'sfx', sfx: 'riser' } ] };
+  const r = await m.audioScore({ cues, outDir: out, name: 'frame0' });
+  assert.equal(r.pass, true, JSON.stringify(r));
+  assert.ok(Math.abs(m.probe(r.file).duration - 3) < 0.05);
 });

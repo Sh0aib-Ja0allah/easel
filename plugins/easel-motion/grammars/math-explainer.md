@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/t1_3b1b.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; replaced the channel, creator and source-repo names and URLs with neutral descriptions; removed the source engine's paths, scripts, function names and demo-render lines; restated the implementation notes without the source's library; renamed the demo shots to Shot 1-3; replaced the network's animal example class with "the target class"; generalised the CJK font notes; wrote the review severity icons as words; pointed cross-references at other grammars by description. -->
 
 # Math explainer

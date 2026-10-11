@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/风格配方/08_impressionism.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; renamed after the movement, not an artist; removed the source's characters, rig, choreography and scene/helper/function names; replaced painting titles with generic descriptions; generalised figure lessons to "the figure" and "the hero"; folded the v2 revision into the sections below; reorganised into Easel recipe sections. -->
 
 # Impressionist

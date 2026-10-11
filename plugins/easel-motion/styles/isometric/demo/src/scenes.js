@@ -1,6 +1,6 @@
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/styles/isometric/demo/src/scenes.js).
-// MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+// MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
 // Modified by Easel (2026-10-11): no changes beyond this header.
 // =====================================================================
 //  SCENES — isometric demo. Each scene sets its iso origin, then draws back to front (painter's order).
@@ -65,7 +65,7 @@ function screenTerm(fp) {
   faceRR(fp, 12, 12, LP.w - 24, LP.lid - 24, 12);
   for (let i = 0; i < 3; i++) faceEll(fp, 28 + i * 14, 28, 4.5, 4.5, { stroke: PAL.inner });
   const typed = (s, t0, cps = 22) => Math.floor(clamp((TT - t0) * cps, 0, s.length));
-  isoText(fp, '$ claude', 26, 66, 20, { color: PAL.textD, count: typed('$ claude', cu.type) });
+  isoText(fp, '$ easel', 26, 66, 20, { color: PAL.textD, count: typed('$ easel', cu.type) });
   isoText(fp, '> ship the api', 26, 96, 20, { color: PAL.text, count: typed('> ship the api', cu.type + 0.38) });
   [170, 120, 200].forEach((L, i) => {   // output lines as hairline pills, like a figure's text
     const s = spring(TT, cu.type + 0.85 + i * 0.1, { k: 200, damp: 0.7 });

@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/风格配方/03_greek.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; removed the source's characters, rig, drink choreography and cup IK, scene file names and helper names; generalized figure and animal techniques; folded the review revisions into the drawing steps and pitfalls; reordered into the Easel recipe structure; added an empty "Not done yet" note (the source has none). -->
 
 # Greek black-figure

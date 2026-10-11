@@ -1,6 +1,6 @@
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/kit/board.js).
-// MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+// MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
 // Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts; board.html (written
 // by tools/build.mjs) shows the storyboard as the page, for easel-core's render_still.
 
@@ -17,7 +17,8 @@ function renderBoard() {
   bc.width = GAP + COLS * (PW + GAP); bc.height = HEAD + rows * (PH + NOTE + GAP);
   const g = bc.getContext('2d'), SANS = '"Inter", "Noto Sans Math", sans-serif';   // bundled OFL font (easel-core/fonts): the same on every OS
   g.fillStyle = '#2a211b'; g.fillRect(0, 0, bc.width, bc.height);
-  g.fillStyle = '#efe5cf'; g.font = `400 60px ${HAND}`; g.fillText(`${document.title}: storyboard`, GAP, 80);
+  const TITLE_FONT = typeof HAND !== 'undefined' ? HAND : '"Caveat", cursive';   // a style without a HAND font (isometric) gets the bundled Caveat
+  g.fillStyle = '#efe5cf'; g.font = `400 60px ${TITLE_FONT}`; g.fillText(`${document.title}: storyboard`, GAP, 80);
   g.font = `600 22px ${SANS}`; g.fillStyle = '#d9c9a8';
   g.fillText(`${TIMELINE.duration}s · ${W}×${H} · ${TIMELINE.bpm} BPM · ${BD.length} beats. Thumbs up or down by panel number.`, GAP, 122);
   const wrap = (str, x, y, maxW, lh) => { let line = ''; for (const w of str.split(' ')) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > maxW && line) { g.fillText(line, x, y); y += lh; line = w; } else line = t; } if (line) g.fillText(line, x, y); return y + lh; };

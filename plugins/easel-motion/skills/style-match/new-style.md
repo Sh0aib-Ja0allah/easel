@@ -1,6 +1,6 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/new-style.md).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): measuring and comparing are easel-core tools (measure_image,
      compare_images, render_still); new-style.mjs and new-piece.mjs start the style and its piece;
      references stay in the job folder. -->

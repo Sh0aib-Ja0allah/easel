@@ -1,6 +1,6 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/craft.md).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): review steps use easel-core tools (qa canvas_text, beat_grid, stillness, loudness; filmstrip; the critic) instead of upstream scripts; styles can mix. -->
 # Craft: the rules that came out of building these pieces
 
@@ -57,7 +57,7 @@ Each rule was learned the hard way on a real piece. Follow them unless the user 
 
 ## Sound
 - **With a voice-over, the voice is the clock and the payoff sits in a pause.** Each beat starts ~0.3s after a sentence ends; land the payoff hit (and the picture's return) in the silence *before* the line that names it — under speech the duck swallows it. Judge the arc on the score without the voice.
-- **With the user's track, the song is the arc.** Find its drop and its biggest hit in `beats.json` and put the turn and the payoff there; cut on its beats (`onBeat`), keep the score to sound effects.
+- **With the user's track, the song is the arc.** Ask the user where its drop and its biggest hit are (in seconds; you can't listen) and put the turn and the payoff there; cut on its beats (`onBeat`, from `piece/beatmap.json`).
 - **The score improves with the story** (thin early, fullest at the peak); motifs carry characters (the spark = a rising fifth).
 - **A loudness stage** (RMS-normalise to −17 dBFS, look-ahead limiter at −1 dBFS) is in `kit/score-tail.js`; stems share the mix gain so they sum back to it.
 - **Under that stage, balance by removing energy, not adding it** — every relative boost is partly undone.

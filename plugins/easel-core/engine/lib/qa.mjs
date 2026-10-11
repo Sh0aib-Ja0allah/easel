@@ -105,7 +105,7 @@ async function pageChecks(args, out) {
   const browser = await openBrowser();
   const clip = [], contrast = [], unmeasured = [];
   try {
-    const { page, context } = await newPage(browser, { width: args.width || 1200, height: args.height || 630, colorScheme: args.theme || 'light' });
+    const { page, context } = await newPage(browser, { width: args.width || 1200, height: args.height || 630, colorScheme: args.theme || 'light', reducedMotion: args.reducedMotion });
     try {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
       await waitReady(page);

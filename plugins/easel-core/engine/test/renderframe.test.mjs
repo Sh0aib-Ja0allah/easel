@@ -118,3 +118,40 @@ test('qa beat_grid: a cut off the 8th-note grid fails with the nearest grid time
   assert.deepEqual(all.checks.map((c) => c.name).sort(), ['beat_grid', 'canvas_text', 'contrast', 'text_clipping']);
   assert.deepEqual(all.hardFailures.sort(), ['beat_grid', 'canvas_text']);
 });
+
+// QA D-1 #2 and #21: the 16th-note window, and an explicit beat_grid on a piece without a BPM
+const gridPage = (timeline) => `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#111}</style></head><body><canvas id="c" width="320" height="180"></canvas><script>
+window.TIMELINE = ${JSON.stringify(timeline)};
+window.renderFrame = (t, cv) => { const g = (cv || document.getElementById('c')).getContext('2d'); g.fillStyle = '#123'; g.fillRect(0, 0, 320, 180); };
+</script></body></html>`;
+
+test('qa beat_grid: 16ths are allowed inside TIMELINE.fastFrom..fastTo and nowhere else', { skip }, async () => {
+  const base = { width: 320, height: 180, fps: 24, duration: 2, bpm: 120 };   // 8ths 0.25 s, 16ths 0.125 s
+  const inWindow = await m.qa({ html: gridPage({ ...base, cuts: [0.5, 1.125, 1.375], fastFrom: 1, fastTo: 1.5 }), checks: ['beat_grid'], outDir: join(out, 'bg16') });
+  assert.equal(inWindow.pass, true, JSON.stringify(inWindow.checks));
+  assert.match(inWindow.checks[0].threshold, /16ths from 1 s to 1\.5 s/);
+  const outside = await m.qa({ html: gridPage({ ...base, cuts: [1.125, 1.625], fastFrom: 1, fastTo: 1.5 }), checks: ['beat_grid'], outDir: join(out, 'bg16b') });
+  assert.equal(outside.pass, false);
+  assert.deepEqual(outside.checks[0].findings.map((f) => [f.t, f.grid]), [[1.625, '8th']]);
+  const noWindow = await m.qa({ html: gridPage({ ...base, cuts: [1.125] }), checks: ['beat_grid'], outDir: join(out, 'bg16c') });
+  assert.equal(noWindow.pass, false, 'without a fast window a 16th cut is off the grid');
+});
+
+test('qa beat_grid: asked for on a piece without TIMELINE.bpm it fails; unasked it is left out', { skip }, async () => {
+  const page = gridPage({ width: 320, height: 180, fps: 24, duration: 1, cuts: [0.3] });
+  const asked = await m.qa({ html: page, checks: ['beat_grid'], outDir: join(out, 'nobpm') });
+  assert.equal(asked.pass, false);
+  assert.deepEqual(asked.hardFailures, ['beat_grid']);
+  assert.match(JSON.stringify(asked.checks[0].findings), /TIMELINE\.bpm/);
+  const all = await m.qa({ html: page, outDir: join(out, 'nobpm2') });
+  assert.ok(!all.checks.some((c) => c.name === 'beat_grid'), JSON.stringify(all.checks.map((c) => c.name)));
+});
+
+// QA D-1 #11: the reduced-motion path can be rendered
+test('reducedMotion "reduce" renders the page\'s prefers-reduced-motion styles', { skip }, async () => {
+  const html = '<!doctype html><html><head><style>html,body{margin:0;height:100%;background:#ff0000}@media (prefers-reduced-motion: reduce){html,body{background:#00ff00}}</style></head><body></body></html>';
+  const normal = await m.renderStill({ html, outDir: join(out, 'rm'), name: 'normal', width: 32, height: 32 }, { browser });
+  const reduced = await m.renderStill({ html, outDir: join(out, 'rm'), name: 'reduced', width: 32, height: 32, reducedMotion: 'reduce' }, { browser });
+  const px = await m.withPixels(browser, [normal.files[0].file, reduced.files[0].file], (imgs) => imgs.map((i) => Array.from(i.data.slice(0, 3))));
+  assert.deepEqual(px, [[255, 0, 0], [0, 255, 0]]);
+});

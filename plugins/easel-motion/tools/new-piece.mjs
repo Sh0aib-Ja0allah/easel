@@ -14,7 +14,7 @@
 // Part of Easel (MIT). Uses only Node built-ins; never overwrites an existing piece.
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 export const PLUGIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const FORMATS = ['9:16', '16:9', '1:1', '4:5'];
@@ -70,10 +70,23 @@ export function newPiece(dest, { style = 'cut-paper', from = 'demo', formats = [
   return { dir: D, piece, from: path.relative(PLUGIN, srcDir).split(path.sep).join('/') };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+// run as a command (also when started through a symlink or a differently cased path on Windows)
+const isMain = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    const a = fs.realpathSync(process.argv[1]), b = fs.realpathSync(fileURLToPath(import.meta.url));
+    return process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
+  } catch { return false; }
+})();
+if (isMain) {
   const args = process.argv.slice(2), opt = {};
   const dest = args.shift();
-  for (let i = 0; i < args.length; i += 2) opt[args[i].replace(/^--/, '')] = args[i + 1];
+  const KNOWN = ['style', 'from', 'formats', 'title', 'mix'];
+  for (let i = 0; i < args.length; i += 2) {
+    const k = args[i].replace(/^--/, '');
+    if (!args[i].startsWith('--') || !KNOWN.includes(k) || args[i + 1] === undefined || args[i + 1].startsWith('--')) { console.error(`bad option "${args[i]}"${args[i + 1] === undefined ? ' (no value)' : ''}: use --${KNOWN.join(', --')}, each with a value`); process.exit(2); }
+    opt[k] = args[i + 1];
+  }
   if (!dest || dest.startsWith('--')) { console.error('usage: node tools/new-piece.mjs <dest dir> [--style riso] [--from demo|blank|piece|beat-cut] [--formats 9:16,16:9] [--title "..."] [--mix a,b]'); process.exit(2); }
   try {
     const r = newPiece(dest, { style: opt.style, from: opt.from, formats: opt.formats ? opt.formats.split(',') : undefined, title: opt.title, mix: opt.mix ? opt.mix.split(',') : [] });

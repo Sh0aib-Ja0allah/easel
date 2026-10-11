@@ -1,0 +1,1 @@
+{ "file": "easel-out/job/score.wav", "durationSec": 12, "lufs": -14.1, "pass": true, "palette": "warm", "key": "D major", "bpm": 120, "sections": [{ "t0": 0, "t1": 4 }, { "t0": 4, "t1": 8 }, { "t0": 8, "t1": 12 }], "events": 31, "hits": 0, "ms": 4100 }

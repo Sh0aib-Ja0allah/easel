@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/t3_finance_chart.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; replaced publication, news-channel, data-terminal, charting-tool and font-brand names with neutral descriptions; dropped reference URLs that carry brand names (kept academic citations, with DOI/arXiv ids); removed the source engine's paths, scripts, spec fields, CLI flags, function names and demo-render lines; restated the implementation notes without the source's library; renamed the demo shots to Shot 1-3; wrote the review severity icons as words; pointed cross-references at other grammars by description. -->
 
 # Finance chart
@@ -13,7 +13,7 @@
 2. **Figures must be derivable from each other.** A multiple in the title must be computable from the numbers on the chart (write a / b in the annotation). The same number must match across shots. Keep "grew to" and "grew by" apart.
 3. **Time the data's growth to the word in the voice-over.** For a bar chart, use several bar cues, each tied to particular bars, so each bar grows only when it is named. Do not put the title up at second 0 and then grow everything in one go.
 4. **Hold after landing.** Hold at least 0.5 s after the numbers land; no constant slow push. To look at a detail, at the moment the voice-over points to it, do a fast push of 0.28 s that closes in by 18-32% and then stops, or zoom through to that point.
-5. **Do not use the same layout for more than 3 charts in a row.** Thin red rule + title + chart three times in a row is flipping through a report. In between, insert a push into a detail, a slammed big number, or a cut back to real footage.
+5. **Do not use the same layout for more than 3 charts in a row.** Thin accent rule + title + chart three times in a row is flipping through a report. In between, insert a push into a detail, a slammed big number, or a cut back to real footage.
 6. **Keep the chart inside the film's world.** A chart shot's background stays in the same colour family as the shots around it: in a dark film, use a dark chart theme, or set the chart background to the film's background colour (switching to light text on a dark background). Use a white report-style background only in films that are already white paper or web pages. Better still, draw the chart onto an object in the film's world: render it with a transparent background and composite it onto a screen, a blackboard or a sheet of paper in the scene. A sudden white line chart with a fixed title bar in a night-scene film gets flagged in review as "disconnected from the rest of the film".
 
 ## 1. When to use it
@@ -26,12 +26,12 @@
 
 | Item | Value | Basis |
 |---|---|---|
-| Background | White `#FFFFFF` (a major economics weekly's web charts); or a financial newspaper's salmon pink `#FFF1E5`. In dark films use a dark theme (`#0E1116` background, light text, cyan main bars) | That weekly's 2017 chart style guide; the newspaper's open-source colour palette source |
-| Layout | **Thin red rule at the top (8px) + small red tag at the top left (96x22) + bold title (one conclusion sentence) + subtitle (metric, unit) + source at the bottom left** | Layout examples in the style guide |
-| Main palette | Signature red `#E3120B`, blue `#006BA2`, cyan `#3EBCD2`, green `#379A8B`, yellow `#EBB434`, grey `#758D99`, black `#0C0C0C` | That weekly's chart palette |
-| Emphasis | **One colour for the hero; the rest turn light grey** (reference piece: the last bar stays blue, the others transition to `#C6D2D8`) | A charting tool's guidance: "use grey to push back secondary data" |
+| Background | White `#FFFFFF`, or a warm paper `#F7F3EC`. In dark films use a dark theme (`#0E1116` background, light text, cyan main bars) | Common practice in published chart style guides |
+| Layout | **Thin accent rule at the top (6px, your piece's accent colour) + bold title (one conclusion sentence) + subtitle (metric, unit) + source at the bottom left.** Pick your own accent; don't recreate a publication's rule-and-tag mark | Common layout in published chart style guides |
+| Main palette | Accent `#2F6FDE`, teal `#2BA59A`, amber `#E8A33D`, coral `#E2674A`, plum `#7A5BA8`, grey `#7C8A96`, ink `#15181C` | Easel's own palette: distinct in hue and lightness, readable for most colour-vision types |
+| Emphasis | **One colour for the hero; the rest turn light grey** (reference piece: the last bar keeps the accent, the others transition to `#C6D2D8`) | A charting tool's guidance: "use grey to push back secondary data" |
 | Grid | Horizontal gridlines only, thin and grey (reference piece: alpha 0.13, 1.5px). **Only the zero baseline is a solid black line** (3px). Y-axis tick values sit on the right, above the gridlines | Style guide |
-| Fonts | The weekly uses its own condensed sans; the reference piece uses Roboto Condensed (numbers) + a CJK sans (CJK text). Title weight 700, subtitle and axes 400. Axis text is the smallest; the source line is smallest and lightest (75% black) | Same |
+| Fonts | A condensed sans for numbers (the reference piece uses Roboto Condensed) + a CJK sans for CJK text. Title weight 700, subtitle and axes 400. Axis text is the smallest; the source line is smallest and lightest (75% black) | Same |
 | Up/down colours | **Mainland China A-shares: red up, green down** (reference piece). Hong Kong, Europe and the US: green up, red down. For Chinese-speaking audiences you must state "red up, green down" on the chart. Colour-blind-friendly alternative: blue/orange + ▲▼ symbols | Jiang et al. 2014 (JBDM); a financial data terminal's colour-blind mode |
 | Line width | Main data line 5px (reference piece), moving average 4px, annotation leader 2px | - |
 | Shape language | Rectangular bars, line + end dot, candlestick bodies + wicks, small dot + leader annotations | - |
@@ -49,11 +49,11 @@
 
 ## 4. Transitions (5 common ones)
 
-1. **Panel slide push**: the new panel pushes in from the right while the old one pushes out to the left, led by a vertical brand-red bar, 0.5 s, `cubic-bezier(.7,0,.2,1)`. Reference piece: shot 1 -> 2. The new panel starts building its layout while it slides in (red rule grows, title surfaces).
+1. **Panel slide push**: the new panel pushes in from the right while the old one pushes out to the left, led by a vertical accent bar, 0.5 s, `cubic-bezier(.7,0,.2,1)`. Reference piece: shot 1 -> 2. The new panel starts building its layout while it slides in (accent rule grows, title surfaces).
 2. **Zoom into a detail (zoom through, with the old shot kept live)**: the camera pushes in 6x around the latest data point (the old shot redraws itself as vectors). The new picture (the last 20 days of candlesticks) dissolves in from 0.6x, with its subject (the latest candle) aligned with the push point. Reference piece: shot 2 -> 3. When there is no circular opening, make sure the new picture's background fills the frame from the start; otherwise the new picture looks like a small card floating in the middle.
 3. **Morph between charts**: the same data in a different form (bar -> dot -> line). Move into place first, then change shape (Heer & Robertson: scatter -> bars moves sideways first, then morphs; stacked -> grouped changes width first, then drops). **Do not morph between different metrics** (revenue bars turning into a stock price line implies the two share units).
 4. **Axis rescale**: when the data range changes, change the scale first (old ticks fade out, new ticks fade in), then move the data.
-5. **Hard cut, layout fixed**: same layout, new chart. The red rule and title stay in place; only the content changes. This is the most common transition in the economics weekly's videos.
+5. **Hard cut, layout fixed**: same layout, new chart. The accent rule and title stay in place; only the content changes. This is the most common transition in news chart videos.
 
 ## 5. Rhythm and text
 

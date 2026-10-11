@@ -12,7 +12,7 @@ when_to_use: >-
   inside easel-motion:animate's look check; for a look a shipped style already covers, go straight
   to animate.
 argument-hint: "[reference images or folder] [style name]"
-allowed-tools: mcp__plugin_easel-core_easel__measure_image mcp__plugin_easel-core_easel__compare_images mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__measure_image mcp__plugin_easel-core_easel__compare_images mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep
 ---
 
 <!-- Easel: the procedure is adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263

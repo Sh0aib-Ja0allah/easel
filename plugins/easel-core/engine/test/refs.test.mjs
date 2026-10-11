@@ -1,7 +1,7 @@
 // T2.3: measure_image and compare_images (matching a look from references). Needs Chromium; skips otherwise.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { doctorReport } from '../lib/doctor.mjs';
@@ -54,4 +54,13 @@ test('compare_images: both pictures at one height on a 10% grid, with both palet
   const cropped = await m.compareSheet({ reference: ref, ours, autoTrim: true, crop: [50, 120, 100, 60], cropOurs: [30, 200, 300, 120], outDir: join(out, 'c'), name: 'cmp-2', height: 240 });
   assert.equal(cropped.reference.palette[0].hex, '#e63946');
   assert.equal(cropped.ours.palette[0].hex, '#f4a261');
+  // QA D-1 #13: sheets saved beside the references (default name "compare") are not measured as references
+  const shelf = join(out, 'shelf');
+  mkdirSync(shelf, { recursive: true });
+  copyFileSync(ref, join(shelf, 'ref.png'));
+  await m.compareSheet({ reference: ref, ours, outDir: shelf });
+  await m.compareSheet({ reference: ref, ours, outDir: shelf, name: 'compare-2' });
+  assert.ok(existsSync(join(shelf, 'compare.png')));
+  const again = await m.measureImage({ images: [shelf], trim: false });
+  assert.deepEqual(again.images.map((i) => i.file.split(/[\\/]/).pop()), ['ref.png']);
 });

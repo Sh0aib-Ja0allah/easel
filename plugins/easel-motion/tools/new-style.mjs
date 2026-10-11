@@ -8,7 +8,7 @@
 // Part of Easel (MIT). Uses only Node built-ins.
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 export const PLUGIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -75,8 +75,17 @@ export function newStyle(dir, { from = 'blank' } = {}) {
   return { dir: D, name, from };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+// run as a command (also when started through a symlink or a differently cased path on Windows)
+const isMain = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    const a = fs.realpathSync(process.argv[1]), b = fs.realpathSync(fileURLToPath(import.meta.url));
+    return process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
+  } catch { return false; }
+})();
+if (isMain) {
   const args = process.argv.slice(2), dir = args[0], fi = args.indexOf('--from');
-  if (!dir || dir.startsWith('--')) { console.error('usage: node tools/new-style.mjs <project>/styles/<name> [--from blank|<shipped style>]'); process.exit(2); }
+  const rest = args.slice(1);
+  if (!dir || dir.startsWith('--') || !(rest.length === 0 || (rest.length === 2 && rest[0] === '--from' && !rest[1].startsWith('--')))) { console.error('usage: node tools/new-style.mjs <project>/styles/<name> [--from blank|<shipped style>]'); process.exit(2); }
   try { const r = newStyle(dir, { from: fi >= 0 ? args[fi + 1] : 'blank' }); console.log(`new style "${r.name}" in ${r.dir} (from ${r.from})`); } catch (e) { console.error(e.message); process.exit(1); }
 }

@@ -128,6 +128,7 @@ Every visual artifact is a web page that can be put into an exact state at any t
 | `filmstrip` | Frames at chosen times side by side, so a vision model can review motion |
 | `qa` | Measured checks: text clipping, contrast, canvas text (cut off, overlapping, under the phone UI) and beat grid for canvas pieces, dead or still stretches, loudness, colour-cast gate |
 | `audio_score` | Cue sheet → synthesized music and SFX (warm, bright or retro) → WAV mastered to −14 LUFS |
+| `mux_audio` | Put a track (a score or the user's own) on a video that already exists; the video stream is copied |
 | `measure_image` | Reference images → trimmed copies, size and aspect, exact palette with shares, sampled points, accent families (for matching a look) |
 | `compare_images` | A reference and our frame side by side on a 10% proportion grid, with both palettes |
 | `craft` | Return a craft rulebook or rubric by name |

@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/y4_storytime.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; removed creator, channel, studio, video and tool names;
      replaced the source's mascot with a generic hero; dropped the source's demo film, file paths, scripts, JS function
      names and TTS notes; restated demo-specific findings as general rules; folded the review and QA notes into rules. -->
@@ -38,8 +38,8 @@ Typical makers: popular first-person storytime animation channels. Background on
 | Part | Colour | Notes |
 |---|---|---|
 | Skin | `#FFE2CC` | Light, close to white. One well-known channel uses pure white ("marshmallow people"), another uses a warm white |
-| Hat / white T-shirt | `#FFFFFF`, hat band `#E4E4E8` | White objects stand up through their black outline |
-| Shorts | `#CDBB97` | |
+| White clothing or items | `#FFFFFF`, shading `#E4E4E8` | White objects stand up through their black outline |
+| A warm neutral item | `#CDBB97` | |
 | Character line | `#1B1B1F` | The darkest thing in the film |
 | Wall / desk / floor | `#DCE9EC` / `#E2C29B` / `#E8DCC8` | Low saturation, high lightness: the background is always "lighter" than the character |
 | Background line | `#5B6470`, 3px | Lighter than the character line and less than half as thick |
@@ -51,10 +51,10 @@ Typical makers: popular first-person storytime animation channels. Background on
 **Shape language**: all round, all blunt. The head is a slightly flattened circle (width 1.0R x height 0.93R), the body is a bean (width 1.0R x height 1.2R), the full figure is 3.2R tall - **the head is about 58% of body height**. An arm is one tube with round ends, no elbow, no fingers; the hand is a circle. No right angles except on props.
 
 **Drawing the hero**
-- Give the hero one or two signature items and draw them with care, for example a plain white hat (rounded-trapezoid crown, wide brim sloping down, light-grey band) and round black glasses (frame line 1.5x the outline width - the glasses become the "eyes" of the face). Keep the rest simple: a white T-shirt, khaki shorts, a black watch (a small black patch on the near wrist).
-- Eyes are black dots inside the lenses (0.075R) with one white highlight. For "dead-fish eyes" shrink the dot to 0.035R and remove the highlight.
-- Expression lives mostly in the **eyebrows** (a short thick line between brim and glasses frame): raised = surprised, inner ends raised = hurt, flat = unimpressed. Mouths are only five: smile arc, straight line, wavy (worried), half open, fully open.
-- Show a little black hair at the temples so viewers know there is hair under the hat, not a bald head.
+- Give the hero one or two signature items of your own invention and draw them with care: one item on the head and one on the face read best at small sizes (for example a knitted beanie with a pom-pom, and round glasses whose frame line is 1.5x the outline width so the glasses become the "eyes" of the face). Keep the rest simple: one flat-coloured top, one flat-coloured bottom, and at most one small accessory. Never reuse a creator's own on-screen persona.
+- Eyes are black dots (inside the lenses, if the hero wears glasses) (0.075R) with one white highlight. For "dead-fish eyes" shrink the dot to 0.035R and remove the highlight.
+- Expression lives mostly in the **eyebrows** (a short thick line just above the eyes): raised = surprised, inner ends raised = hurt, flat = unimpressed. Mouths are only five: smile arc, straight line, wavy (worried), half open, fully open.
+- If the head item covers the hair, show a little hair at the temples so viewers know there is hair under it.
 
 ## 3. Motion
 
@@ -95,7 +95,7 @@ Entrances and exits: storytime has almost no "entrance animation". The character
 2. **Smash cut to a reaction close-up** - the new picture appears on the first frame, springs from 1.22x back to 1 (freq 3, decay 11), with a 55% white flash over the first 2 frames and a low "thud". Use it for "says something outrageous -> look at their face". Clamp the scale at >= 1 so the spring never shows the frame edge.
 3. **Whip pan** - the camera whips toward "what they're looking at", `expoInOut` 0.26s, with 16 offset copies stacked mid-move for horizontal motion blur and a whoosh. Use it for gaze shifts like "I opened my laptop -> (the screen)".
 4. **Jump-in** - cut from the same camera position straight to a shot about 2x closer, same background. Use it for "they said it again", "they realised", "the punchline". Example: in a wide shot the hero starts a line, and on the breath before the punchline word you hard-cut to a 1.9x close shot so the face is readable. This only works if the wide and close shots are **the same world canvas with only the camera changed**; otherwise the jump gives the game away.
-5. **Over-the-shoulder / point of view** - cut to what they see (screen, phone, another person) with the back of their head in the foreground. Draw the back-view identifiers (hat and band, ears, glasses arms over the ears, short hair, nape, T-shirt collar) and a cool rim light on the screen side; a pure black silhouette reads as "another shadow person". The foreground doesn't follow the camera push, it only rises and falls with breathing; the parallax against the screen gives the shot instant depth.
+5. **Over-the-shoulder / point of view** - cut to what they see (screen, phone, another person) with the back of their head in the foreground. Draw the back-view identifiers (the head item, ears, glasses arms over the ears if any, hair, nape, collar) and a cool rim light on the screen side; a pure black silhouette reads as "another shadow person". The foreground doesn't follow the camera push, it only rises and falls with breathing; the parallax against the screen gives the shot instant depth.
 
 ## 5. Rhythm and text
 

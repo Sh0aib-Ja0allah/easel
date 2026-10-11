@@ -21,7 +21,7 @@ const eng = async (f) => import(pathToFileURL(join(ENGINE, f)).href);
 const { doctorReport } = await eng('doctor.mjs');
 const ready = ['playwright-core', 'chromium', 'ffmpeg', 'ffprobe'].every((n) => doctorReport().checks.find((c) => c.name === n)?.ok);
 const skip = ready ? false : 'needs the easel-core engine installed (doctor --install) and ffmpeg';
-const STYLES = ['crosshatch', 'cut-paper', 'isometric', 'math', 'pixel', 'riso', 'sketchbook'];
+const STYLES = ['aurora-glass', 'crosshatch', 'cut-paper', 'hud', 'isometric', 'liquid', 'math', 'pixel', 'riso', 'sketchbook', 'synthwave'];
 const GOLDEN_T = 4.5;   // after each demo's morph: the second world, with its caption written on
 const GOLDEN_PSNR = Number(process.env.EASEL_GOLDEN_PSNR || 40);          // same OS
 const SHARED_PSNR = Number(process.env.EASEL_GOLDEN_SHARED_PSNR || 36);   // the Windows sample on another OS
@@ -59,7 +59,8 @@ for (const s of STYLES) {
     const r = await m.renderStill({ file: demos[s], outDir: join(out, `${s}-still`), name: s, width: 1080, height: 1920, scale: 0.5, t: GOLDEN_T }, { browser });
     assert.equal(r.warnings, undefined, JSON.stringify(r.warnings));
     const f = r.files[0].file, { file: g, floor } = golden(s);
-    if (process.env.EASEL_UPDATE_GOLDEN === '1') { copyFileSync(f, g); t.diagnostic(`golden rewritten: ${g}`); return; }
+    // EASEL_GOLDEN_STYLES=a,b limits a rewrite to those styles (new ones), leaving the reviewed goldens alone
+    if (process.env.EASEL_UPDATE_GOLDEN === '1' && (!process.env.EASEL_GOLDEN_STYLES || process.env.EASEL_GOLDEN_STYLES.split(',').includes(s))) { copyFileSync(f, g); t.diagnostic(`golden rewritten: ${g}`); return; }
     // On a miss, keep the render beside the goldens (test/golden/candidates/, git-ignored; CI uploads it).
     const keep = () => { const c = fileURLToPath(new URL('./golden/candidates/', import.meta.url)); mkdirSync(c, { recursive: true }); copyFileSync(f, join(c, `${s}-${process.platform}.png`)); };
     if (!existsSync(g)) keep();
@@ -157,4 +158,46 @@ test('the style-match example: the blueprint style is found beside the piece, re
   assert.equal(cmp.reference.palette[0].hex, cmp.ours.palette[0].hex, 'the same ground colour as the reference');
   const committed = await m.compareImages(browser, still.files[0].file, join(PLUGIN, 'examples', 'style-match', 'compare', 'ours-idea.png'));
   assert.ok(committed.psnr >= SHARED_PSNR, `the committed example frame is current: ${committed.psnr}`);
+});
+
+test('the ui-motion example: a paused GSAP timeline is seeked by the engine, offline, and passes the UI checks', { skip: skip || (!(await eng('deps.mjs')).findPackage('gsap') && 'needs gsap (doctor --install)') }, async () => {
+  const file = join(PLUGIN, 'examples', 'ui-motion', 'card-reveal.html');
+  const f = await m.filmstrip({ file, outDir: join(out, 'ui'), name: 'card', times: [0, 0.2, 0.45, 1.6], columns: 4 });
+  const [a, b, , d] = f.frames.map((x) => x.file);
+  assert.ok((await m.compareImages(browser, a, d)).psnr < 30, 'the start and the end differ (the card rises in)');
+  assert.ok((await m.compareImages(browser, b, d)).psnr < 40, 'mid-motion differs from the end');
+  const q = await m.qa({ file, mode: 'ui', times: [1.6], width: 1280, height: 720, outDir: join(out, 'ui-qa') });
+  assert.equal(q.pass, true, JSON.stringify(q.checks));
+  const s = await m.renderStill({ file, outDir: join(out, 'ui'), name: 'end', width: 1280, height: 720, t: 1.6 }, { browser });
+  assert.equal(s.warnings, undefined, `offline, no page errors: ${JSON.stringify(s.warnings)}`);
+});
+
+// QA D-1 #3 and #23: every demo's and template's storyboard page draws (board.html calls renderBoard()
+// at load; a page error there means no #easel-board and a 30 s timeout in render_still)
+test('storyboards: every demo and template draws its board page with no page errors', { skip }, async () => {
+  const pieces = [...STYLES.map((s) => [`styles/${s}/demo`, s]), ['styles/isometric', 'isometric-dark', 'demo-dark'], ['templates/piece', 'tpl-piece'], ['templates/beat-cut', 'tpl-beat-cut'], ['templates/blank', 'tpl-blank']];
+  for (const [rel, name, sub] of pieces) {
+    const d = join(out, `board-${name}`);
+    cpSync(join(PLUGIN, rel), d, { recursive: true });
+    const { board } = build(sub ? join(d, sub) : d);
+    const b = await m.renderStill({ file: board, outDir: join(out, 'boards'), name, width: 1200, height: 800, scale: 0.25, selector: '#easel-board' }, { browser });
+    assert.equal(b.warnings, undefined, `${name}: ${JSON.stringify(b.warnings)}`);
+    assert.ok(b.files[0].width > 100 && b.files[0].height > 100, `${name}: ${JSON.stringify(b.files[0])}`);
+  }
+});
+
+// QA D-1 #2 and #23: the starter templates pass the page gates the animate skill runs, in every format they list
+test('templates: piece, beat-cut and blank pass canvas_text and beat_grid in each of their formats', { skip }, async () => {
+  for (const tpl of ['piece', 'beat-cut', 'blank']) {
+    const d = join(out, `qa-${tpl}`);
+    cpSync(join(PLUGIN, 'templates', tpl), d, { recursive: true });
+    const { file } = build(d);
+    const meta = JSON.parse(readFileSync(join(d, 'piece.json'), 'utf8'));
+    // a format-aware template head (const FORMATS) is checked in 16:9 too
+    const formats = meta.formats || (readFileSync(join(d, 'src', 'head.html'), 'utf8').includes('const FORMATS =') ? ['9:16', '16:9'] : ['9:16']);
+    for (const aspect of formats) {
+      const q = await m.qa({ file, aspect, checks: ['canvas_text', 'beat_grid'], every: 3, textIgnore: (meta.review && meta.review.textIgnore) || [], outDir: join(d, 'qa') });
+      assert.equal(q.pass, true, `${tpl} ${aspect}: ${JSON.stringify(q.checks.map((c) => [c.name, c.pass, c.findings]))}`);
+    }
+  }
 });

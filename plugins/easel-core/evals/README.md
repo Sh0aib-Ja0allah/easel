@@ -1,6 +1,6 @@
 # easel-core evals
 
-Twelve routing cases, three per skill (`setup`, `brief`, `brand`, `critique`). Engine tools are
+Fifteen routing cases, three per skill (`setup`, `brief`, `brand`, `critique`, `score`). Engine tools are
 answered by mocks in `mocks/easel/`, so no real server, browser or ffmpeg is started.
 
 Each case has a "skill fired" grader (`tool_used: Skill`) plus graders that need the plugin's

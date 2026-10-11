@@ -65,7 +65,7 @@ function listImages(paths) {
   return paths.flatMap((p) => {
     const a = resolve(p);
     if (!existsSync(a)) throw new Error(`File not found: ${a}`);
-    if (statSync(a).isDirectory()) return readdirSync(a).filter((n) => IMG.test(n) && !/\.trim\.png$|^compare-/i.test(n)).sort().map((n) => join(a, n));
+    if (statSync(a).isDirectory()) return readdirSync(a).filter((n) => IMG.test(n) && !/\.trim\.png$|^compare([-.]|$)/i.test(n)).sort().map((n) => join(a, n));
     if (!IMG.test(a)) throw new Error(`Not a PNG, JPG or WEBP image: ${a}`);
     return [a];
   });

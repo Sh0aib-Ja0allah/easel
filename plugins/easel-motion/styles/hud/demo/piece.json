@@ -1,0 +1,26 @@
+{
+  "name": "hud-demo",
+  "title": "HUD demo",
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 24,
+    "bpm": 120,
+    "duration": 6.0,
+    "frames": 144
+  },
+  "storyFormat": "morph chain (2 eras, 1 shape morph)",
+  "style": "hud",
+  "formats": [
+    "9:16",
+    "16:9"
+  ],
+  "review": {
+    "safe": {
+      "top": 240,
+      "bottom": 420,
+      "right": 140
+    },
+    "refs": {}
+  }
+}

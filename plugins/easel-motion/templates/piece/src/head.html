@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/templates/piece/src/head.html).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts;
      the format also comes from window.__easel.aspect (the Easel engine's aspects);
      build and render comments point at easel-motion and easel-core. -->
@@ -33,7 +33,7 @@ const FORMATS = { '9:16': [1080, 1920], '4:5': [1080, 1350], '1:1': [1080, 1080]
 const FORMAT = new URLSearchParams(location.search).get('format') || (window.__easel && window.__easel.aspect) || '9:16';   // the piece's main format first
 const FPS = 24, [W, H] = FORMATS[FORMAT];
 { const cv = document.getElementById('c'); cv.width = W; cv.height = H; }
-// a supplied music track: tools/beats.mjs writes beats.json and build.mjs injects it as BEATS (see SKILL.md -> Music)
+// a supplied music track: its beat map piece/beatmap.json ({ bpm, offset }) is injected by build.mjs as BEATS (see SKILL.md -> Music)
 const BPM = typeof BEATS !== 'undefined' ? BEATS.bpm : 120, GRID0 = typeof BEATS !== 'undefined' ? BEATS.offset : 0;
 const BEAT = 60 / BPM, E8 = BEAT / 2, E16 = BEAT / 4;   // at 120 BPM: 0.5 / 0.25 / 0.125s = 12 / 6 / 3 frames
 const DURATION = 8.0;

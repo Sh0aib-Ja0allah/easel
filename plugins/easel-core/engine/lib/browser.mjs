@@ -113,8 +113,9 @@ export async function openBrowser() {
 
 export const ASPECTS = { '16:9': [1920, 1080], '9:16': [1080, 1920], '1:1': [1080, 1080], '4:5': [1080, 1350] };
 
-export async function newPage(browser, { width, height, scale = 1, colorScheme = 'light', seed = 1, transparent = false, fonts = true, allowNetwork = false, aspect = null } = {}) {
-  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, colorScheme, reducedMotion: 'no-preference' });
+export async function newPage(browser, { width, height, scale = 1, colorScheme = 'light', seed = 1, transparent = false, fonts = true, allowNetwork = false, aspect = null, reducedMotion = 'no-preference' } = {}) {
+  // reducedMotion 'reduce' renders the page's prefers-reduced-motion path (render_still, filmstrip, render_video, qa)
+  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, colorScheme, reducedMotion: reducedMotion === 'reduce' ? 'reduce' : 'no-preference' });
   const blocked = [];
   await context.route('**/*', async (route) => {
     const url = route.request().url();

@@ -9,6 +9,7 @@ import { KINDS, loadSchema, validateData, validateFile } from './lib/schemas.mjs
 import { craft } from './lib/craft.mjs';
 import { measureImage, compareSheet } from './lib/refs.mjs';
 import { audioScore, PALETTES } from './lib/score.mjs';
+import { muxAudio } from './lib/audio.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -36,7 +37,7 @@ export const tools = {
   },
   render_still: {
     description:
-      'Render a page to PNG: inline HTML, or a file (.html, .svg, .png, .jpg). Renders offline with the bundled OFL fonts (Inter, Newsreader, JetBrains Mono, Space Grotesk) and a seeded Math.random. ' +
+      'Render a page to PNG: inline HTML, or a file (.html, .svg, .png, .jpg). Renders offline with the bundled OFL fonts (Inter, Newsreader, JetBrains Mono, Space Grotesk, Caveat, STIX Two Text, Noto Sans Math) and a seeded Math.random. ' +
       'Use sizes for several outputs (e.g. social formats), theme "both" for light and dark (prefers-color-scheme), t to seek an animated page. Output goes to ./easel-out/<slug>/ unless outDir is given. Look at the PNG after rendering.',
     inputSchema: {
       type: 'object',
@@ -57,6 +58,7 @@ export const tools = {
         t: { type: 'number', minimum: 0, description: 'Seek animated pages to this time in seconds before capture.' },
         aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'Render a format-aware page (e.g. an animate piece) in this format; also the default size (1920x1080, 1080x1920, 1080x1080, 1080x1350).' },
         seed: { type: 'integer', description: 'Seed for Math.random (default 1).' },
+        reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" renders the page\'s reduced-motion path.' },
       },
       additionalProperties: false,
     },
@@ -99,6 +101,7 @@ export const tools = {
         crf: { type: 'integer', minimum: 0, maximum: 51, description: 'x264 quality, lower is better (default 18).' },
         preset: { enum: ['ultrafast', 'veryfast', 'fast', 'medium', 'slow'] },
         theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' },
+        reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" renders the page\'s reduced-motion path.' },
       },
       additionalProperties: false,
     },
@@ -116,6 +119,7 @@ export const tools = {
         columns: { type: 'integer', minimum: 1, maximum: 12 }, cellWidth: { type: 'integer', minimum: 64, maximum: 1920 }, title: { type: 'string' },
         aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'Capture a format-aware page in this format (sets the size unless width/height are given).' },
         theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' },
+        reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" renders the page\'s reduced-motion path.' },
       },
       additionalProperties: false,
     },
@@ -123,7 +127,7 @@ export const tools = {
   },
   qa: {
     description:
-      'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images); for canvas pieces (window.renderFrame + window.TIMELINE, e.g. animate pieces) canvas_text traces every string drawn on sampled frames: cut off by the frame or overlapping other text fails, under the phone UI on portrait formats warns (pass aspect to check one format), and beat_grid checks that TIMELINE.cuts and TIMELINE.morphs land on the 8th-note grid of TIMELINE.bpm. ' +
+      'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images); for canvas pieces (window.renderFrame + window.TIMELINE, e.g. animate pieces) canvas_text traces every string drawn on sampled frames: cut off by the frame or overlapping other text fails, under the phone UI on portrait formats warns (pass aspect to check one format), and beat_grid checks that TIMELINE.cuts and TIMELINE.morphs land on the 8th-note grid of TIMELINE.bpm (16ths inside TIMELINE.fastFrom to fastTo); named in checks on a piece without TIMELINE.bpm it fails. Pass reducedMotion "reduce" to check a page\'s reduced-motion path. ' +
       'Media checks: stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
       'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. Contrast is a hard gate when mode is "ui".',
     inputSchema: {
@@ -140,6 +144,7 @@ export const tools = {
         textIgnore: { type: 'array', maxItems: 32, items: { type: 'array', minItems: 2, maxItems: 3 }, description: 'canvas_text: [[t0, t1, "why"], ...] windows where crowded or cropped text is deliberate.' },
         stillSeconds: { type: 'number', minimum: 0.1 }, castMaxRatio: { type: 'number', minimum: 0, maximum: 1 },
         lufsMin: { type: 'number' }, lufsMax: { type: 'number' }, slug: { type: 'string' }, outDir: { type: 'string' },
+        reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" renders the page\'s reduced-motion path.' },
       },
       additionalProperties: false,
     },
@@ -170,7 +175,7 @@ export const tools = {
   audio_score: {
     description:
       'Synthesize a score from a cue sheet (cues.json: fps, durationSec, bpm, key, cues of kind scene, beat, hit, caption, sfx, music-start, music-stop) and master it to -14 LUFS: a chord per scene section (pad, bass on the beat, a motif at each scene start), a dip into near-silence before every hit and the loudest moment on it, and sound effects by name (whoosh, swish, pop, click, tick, chime, riser, impact, blip). ' +
-      'Offline and deterministic (Web Audio in the engine browser; no Python). Writes <name>.wav to ./easel-out/<slug>/ and reports its loudness. Mux it with render_video audio, or check it with qa.',
+      'Offline and repeatable to within a few LSB (Web Audio in the engine browser; no Python). Writes <name>.wav to ./easel-out/<slug>/ and reports its loudness. For a page, render it with render_video audio = the WAV; for a video that already exists, use mux_audio; check it with qa.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -183,6 +188,25 @@ export const tools = {
       additionalProperties: false,
     },
     run: (args) => audioScore(args),
+  },
+  mux_audio: {
+    description:
+      'Put an audio track (a score from audio_score, or the user\'s own track) on a video that already exists: the video stream is copied unchanged, the audio becomes AAC, and the result is cut to the shorter of the two (shortest: false keeps the longer). master: true first masters the track to lufs (default -14). Writes <name>.mp4 (default <video name>-audio) to ./easel-out/<slug>/; never overwrites the input. For a page you are still rendering, use render_video audio instead.',
+    inputSchema: {
+      type: 'object',
+      required: ['video', 'audio'],
+      properties: {
+        video: { type: 'string', description: 'Path to the video (.mp4, .mov, .webm).' },
+        audio: { type: 'string', description: 'Path to the audio (.wav, .mp3, .m4a, .flac, .ogg).' },
+        master: { type: 'boolean', description: 'Master the track to lufs first (default false; audio_score output is already mastered).' },
+        lufs: { type: 'number', minimum: -24, maximum: -9, description: 'Loudness target with master (default -14).' },
+        offset: { type: 'number', minimum: 0, maximum: 600, description: 'Start the audio this many seconds into the video.' },
+        shortest: { type: 'boolean', description: 'Cut to the shorter stream (default true).' },
+        name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => muxAudio(args),
   },
   measure_image: {
     description:

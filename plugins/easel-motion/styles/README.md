@@ -1,6 +1,6 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/styles/README.md).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): fonts are the bundled OFL fonts; styles can mix (KITS);
      upstream's Playwright tools are replaced by easel-core's engine tools. -->
 # Styles
@@ -18,9 +18,13 @@ Look at every style at once: easel-core's `contact_sheet` with each style's `sam
 | [math](math/STYLE.md) | a manim-style math explainer: black stage, axes and graphs, colour-coded variables, smooth easing | on 1s | two short math explainers |
 | [isometric](isometric/STYLE.md) | isometric product line art: constant hairlines, white faces, rounded slabs, one dark accent; light or dark ground | on 1s, spring settles | this demo (the first style made with new-style.md) |
 | [pixel](pixel/STYLE.md) | low-resolution eras: draw at the true resolution, upscale nearest-neighbour | on 1s or 2s | a fixed-stage history of AI video |
-| custom | any other look: show it a video, stills or a web page and it measures the style, matches frames with you and saves `styles/<name>/` ([new-style.md](../new-style.md)) | either | woodblock prints, neon signs (test runs) |
+| [synthwave](synthwave/STYLE.md) | an 80s night drive: neon grid, striped sun, chrome type, VHS pass (Easel original) | on 1s | its demo |
+| [liquid](liquid/STYLE.md) | glossy candy metaballs on plum: drops, fusions, a flood, a liquid wordmark (Easel original) | on 1s | its demo |
+| [aurora-glass](aurora-glass/STYLE.md) | blurred aurora light under frosted glass cards and a magnifying lens (Easel original) | on 1s | its demo |
+| [hud](hud/STYLE.md) | a fictional HUD: rings, radar, rolling data, lock-on brackets, an alert state (Easel original) | on 1s | its demo |
+| custom | any other look: show it a video, stills or a web page and it measures the style, matches frames with you and saves `styles/<name>/` ([new-style.md](../skills/style-match/new-style.md)) | either | woodblock prints, neon signs (test runs) |
 
-A new look gets made from the user's references with [new-style.md](../new-style.md), then saved as a style beside the project's pieces (`<project>/styles/<name>/`), where `build.mjs` finds it.
+A new look gets made from the user's references with [new-style.md](../skills/style-match/new-style.md), then saved as a style beside the project's pieces (`<project>/styles/<name>/`), where `build.mjs` finds it.
 
 ## What a style folder holds
 
@@ -56,7 +60,7 @@ Rules every kit keeps:
 - **Nothing carries between frames.** The renderer clears each era's layer; a kit never keeps drawing state across `renderFrame` calls (caches of *static* things, keyed and seeded, are fine).
 - **Everything is code.** No images, font files, `data:` URIs or URLs. Fonts are the OFL families bundled with easel-core (Inter, Newsreader, JetBrains Mono, Space Grotesk, Caveat, STIX Two Text, Noto Sans Math), named in the kit with a bundled fallback (`"STIX Two Text", "Noto Sans Math", serif`), so a frame is the same on every OS.
 - **Captions and tags go through `DEFER`** (see `yearTag` in cut-paper) so they draw after the camera, at screen size.
-- **Kits don't mix.** One style per piece: kits reuse names (`handText`, `STYLE`), so a piece that needs two looks gets a merged kit.
+- **One main style per piece.** Kits reuse names (`handText`, `STYLE`), so a second look comes in through `"mix"` (below), never by pasting two kits together.
 
 Renderer quirks a kit has to know:
 - **Colours given to the renderer are 6-digit hex** (`ERA_BG`, `heroColor`, bridge shapes' `c`): `mixHex` blends them. Mid-morph, `blob` and `backdrop` receive the blend as an `rgb(r,g,b)` string.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/tools/build.mjs).
-// MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+// MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
 // Modified by Easel (2026-10-11): also writes board.html (the storyboard page); paths follow the easel-motion layout (kit/ and styles/ at the
 // plugin root); styles can mix: piece.json "mix" adds more styles, each wrapped in its own scope as
 // KITS.<name> (upstream put every kit's names in one global scope, so two kits collided), and an era
@@ -21,7 +21,7 @@
 // A style is found in a styles/<name>/ folder beside the piece or above it, then in this plugin's styles/
 // (so a style made for one project, e.g. <project>/styles/my-look/, works for every piece in that project).
 // Checks: the script compiles; the style defines STYLE; no data: URIs and no http(s) URLs in the code.
-// Generated parts: <piece>/beats.json -> const BEATS (a supplied track's beat map); <piece>/voice.json -> const VOICE (voice-over timing); <piece>/assets/* -> const ASSETS
+// Generated parts: <piece>/beatmap.json -> const BEATS (a supplied track's beat map; an upstream piece's beats.json is read too); <piece>/voice.json -> const VOICE (voice-over timing); <piece>/assets/* -> const ASSETS
 // (the user's own screenshots and logos, embedded; window.renderFrame appears once they're decoded).
 //
 // Mixing styles (Easel): piece.json { "style": "cut-paper", "mix": ["riso"] } builds cut-paper as the
@@ -33,7 +33,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 export const PLUGIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT = ['src/head.html', 'kit/core.js', 'style', 'src/scenes.js', 'src/bridges.js', 'kit/morph.js', 'kit/board.js', 'kit/score-head.js', 'src/score.js', 'kit/score-tail.js'];
@@ -75,9 +75,9 @@ export function wrapKit(name, code) {
   const getters = names.map((n) => `get ${n}() { return ${n}; }`).join(', ');
   return `// ---- style "${name}", mixed in (Easel): its names live under KITS[${JSON.stringify(name)}]
 KITS[${JSON.stringify(name)}] = (() => {
-${code.replace(/\s*$/, '\n')}const k = { STYLE, ${getters} };
-for (const n of Object.keys(k)) void k[n];   // fail at load, not mid-render, if a name is missing
-return k;
+${code.replace(/\s*$/, '\n')}const __easelKit = { STYLE, ${getters} };
+for (const n of Object.keys(__easelKit)) void __easelKit[n];   // fail at load, not mid-render, if a name is missing
+return __easelKit;
 })();
 `;
 }
@@ -134,9 +134,13 @@ export function build(dir) {
 
   // ---- generated parts, injected right after "use strict" (before the head's own code runs)
   const inject = [];
-  // a supplied music track's beat map (<piece>/beats.json): the head reads BEATS.bpm / BEATS.offset
-  const beatsFile = path.join(ROOT, 'beats.json');
-  if (fs.existsSync(beatsFile)) inject.push(`// ---- beats.json: the supplied track's tempo, beats, downbeats and hits\nconst BEATS = ${JSON.stringify(JSON.parse(fs.readFileSync(beatsFile, 'utf8')))};`);
+  // a supplied music track's beat map (<piece>/beatmap.json; beats.json in pieces made upstream): the head reads BEATS.bpm / BEATS.offset
+  const beatsFile = ['beatmap.json', 'beats.json'].map((f) => path.join(ROOT, f)).find((f) => fs.existsSync(f)) || path.join(ROOT, 'beatmap.json');
+  if (fs.existsSync(beatsFile)) {
+    const map = JSON.parse(fs.readFileSync(beatsFile, 'utf8'));
+    if (typeof map.bpm !== 'number' || !(map.bpm > 0)) throw new Error(`${path.basename(beatsFile)}: needs "bpm" (a number above 0) and "offset" (the first beat, in seconds)`);
+    inject.push(`// ---- ${path.basename(beatsFile)}: the supplied track's tempo and first beat\nconst BEATS = ${JSON.stringify({ offset: 0, ...map })};`);
+  }
   // a voice-over's timing (<piece>/voice.json): lines and word times the scenes cue on
   const voiceFile = path.join(ROOT, 'voice.json');
   if (fs.existsSync(voiceFile)) { const V = JSON.parse(fs.readFileSync(voiceFile, 'utf8')); V.lines.forEach((l) => delete l.take); inject.push(`// ---- voice.json: the voice-over's lines and word times\nconst VOICE = ${JSON.stringify(V)};`); }
@@ -168,11 +172,19 @@ export function build(dir) {
   const bAt = out.indexOf('"use strict";') >= 0 ? out.indexOf('"use strict";') + '"use strict";'.length : out.indexOf('<script>') + '<script>'.length;
   fs.writeFileSync(board, out.slice(0, bAt) + '\nconst EASEL_BOARD = true;   // tools/build.mjs: this page shows the storyboard' + out.slice(bAt));
   if (assetBytes > 12e6) warnings.push(`${(assetBytes / 1e6).toFixed(1)} MB of assets: resize screenshots to the size they're shown at`);
-  const extras = [fs.existsSync(beatsFile) ? 'beats.json' : null, fs.existsSync(voiceFile) ? 'voice.json' : null, assetFiles.length ? `${assetFiles.length} asset(s), ${(assetBytes / 1e6).toFixed(1)} MB` : null].filter(Boolean);
+  const extras = [fs.existsSync(beatsFile) ? path.basename(beatsFile) : null, fs.existsSync(voiceFile) ? 'voice.json' : null, assetFiles.length ? `${assetFiles.length} asset(s), ${(assetBytes / 1e6).toFixed(1)} MB` : null].filter(Boolean);
   return { file, board, lines: out.split('\n').length, parts: parts.length, style: styleName, mix, extras, warnings };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+// run as a command (also when started through a symlink or a differently cased path on Windows)
+const isMain = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    const a = fs.realpathSync(process.argv[1]), b = fs.realpathSync(fileURLToPath(import.meta.url));
+    return process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
+  } catch { return false; }
+})();
+if (isMain) {
   const dir = process.argv[2];
   if (!dir) { console.error('usage: node tools/build.mjs <piece dir>'); process.exit(2); }
   try {

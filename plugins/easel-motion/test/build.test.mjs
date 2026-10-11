@@ -3,27 +3,29 @@
 // kits that share names (PAL, hand, rect, ...) no longer collide.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import vm from 'node:vm';
-import { build, topLevelNames, PLUGIN } from '../tools/build.mjs';
+import { build, topLevelNames, wrapKit, PLUGIN } from '../tools/build.mjs';
 
-export const STYLES = ['crosshatch', 'cut-paper', 'isometric', 'math', 'pixel', 'riso', 'sketchbook'];
+export const STYLES = ['aurora-glass', 'crosshatch', 'cut-paper', 'hud', 'isometric', 'liquid', 'math', 'pixel', 'riso', 'sketchbook', 'synthwave'];
 const copy = (rel) => { const d = mkdtempSync(join(tmpdir(), 'easel-motion-')); cpSync(join(PLUGIN, rel), d, { recursive: true }); return d; };
 
-test('all seven styles are present, each with STYLE.md, kit.js and a demo', () => {
+test('all eleven styles are present, each with STYLE.md, kit.js, a demo and a sample', () => {
   const have = readdirSync(join(PLUGIN, 'styles')).filter((n) => existsSync(join(PLUGIN, 'styles', n, 'kit.js'))).sort();
   assert.deepEqual(have, STYLES);
-  for (const s of STYLES) for (const f of ['STYLE.md', 'demo/piece.json', 'demo/src/head.html']) assert.ok(existsSync(join(PLUGIN, 'styles', s, f)), `${s}/${f}`);
+  for (const s of STYLES) for (const f of ['STYLE.md', 'demo/piece.json', 'demo/src/head.html', 'sample.png']) assert.ok(existsSync(join(PLUGIN, 'styles', s, f)), `${s}/${f}`);
 });
 
 test('every demo and template builds (copied out, so the plugin tree stays clean)', () => {
-  for (const rel of [...STYLES.map((s) => `styles/${s}/demo`), 'templates/piece', 'templates/beat-cut', 'templates/blank', 'examples/water-cycle']) {
-    const d = copy(rel);
+  for (const rel of [...STYLES.map((s) => `styles/${s}/demo`), 'styles/isometric/demo-dark', 'templates/piece', 'templates/beat-cut', 'templates/blank', 'examples/water-cycle']) {
+    // demo-dark reuses ../demo/src, so it is copied with its style folder
+    const dark = rel.endsWith('/demo-dark'), d = copy(dark ? rel.replace(/\/demo-dark$/, '') : rel);
     try {
       // a copied demo has no styles/ folder beside it: the style comes from the plugin
-      const r = build(d);
+      const r = build(dark ? join(d, 'demo-dark') : d);
       assert.ok(r.lines > 500, `${rel}: ${r.lines} lines`);
       assert.deepEqual(r.warnings, []);
     } finally { rmSync(d, { recursive: true, force: true }); }
@@ -47,7 +49,7 @@ test('upstream collision: two kits concatenated as globals do not compile, mixed
   assert.throws(() => new vm.Script(`"use strict";\n${kit('cut-paper')}\n${kit('riso')}`), SyntaxError);
 });
 
-test('mix: one piece with all seven styles builds; each mixed kit is KITS.<name> with live getters', () => {
+test('mix: one piece with all eleven styles builds; each mixed kit is KITS.<name> with live getters', () => {
   const d = copy('templates/piece');
   try {
     const meta = JSON.parse(readFileSync(join(d, 'piece.json'), 'utf8'));
@@ -96,7 +98,8 @@ test('new-piece: every style starts from its demo with a format-aware head, and 
       assert.deepEqual(r.piece.formats, ['16:9', '9:16']);
       assert.equal(r.from, `styles/${s}/demo`);
       const head = readFileSync(join(root, s, 'src', 'head.html'), 'utf8');
-      assert.match(head, /const PIECE_FORMATS = \["16:9","9:16"\];/);
+      // a 9:16-only demo head gets the FORMATS block; an already format-aware head gets 16:9 as its main format
+      assert.match(head, /const PIECE_FORMATS = \["16:9","9:16"\];|\|\| "16:9";/);
       assert.match(head, /window\.__easel && window\.__easel\.aspect/);
       assert.doesNotMatch(head, /aspect-ratio: 9 \/ 16/);
       assert.match(head, new RegExp(`<title>A ${s} test</title>`));
@@ -124,9 +127,11 @@ test('new-piece: a 9:16-only demo piece keeps its head; templates need cut-paper
 test('the skills name only engine tools and plugin files that exist', () => {
   const engineTools = new Set([...readFileSync(join(PLUGIN, '..', 'easel-core', 'engine', 'tools.mjs'), 'utf8').matchAll(/^ {2}(\w+): \{$/gm)].map((m) => m[1]));
   assert.ok(engineTools.has('render_video') && engineTools.has('measure_image'), [...engineTools].join(','));
-  for (const skill of ['animate', 'style-match']) {
+  for (const skill of ['animate', 'style-match', 'ui-motion']) {
     const dir = join(PLUGIN, 'skills', skill), text = readdirSync(dir).filter((f) => f.endsWith('.md')).map((f) => readFileSync(join(dir, f), 'utf8')).join('\n');
     for (const t of text.match(/mcp__plugin_easel-core_easel__\w+/g) || []) assert.ok(engineTools.has(t.split('__').pop()), `${skill}: ${t}`);
+    // bare tool names in backticks (`render_still`, `qa` ...) must be engine tools too
+    for (const [, t] of text.matchAll(/`((?:render|contact|audio|mux|measure|compare)_\w+|filmstrip)`/g)) assert.ok(engineTools.has(t), `${skill}: \`${t}\` is not an engine tool`);
     for (const rel of text.match(/<easel-motion>\/[\w./-]+/g) || []) {
       const p = join(PLUGIN, rel.replace('<easel-motion>/', '').replace(/\/<id>\/.*$/, '').replace(/\/$/, ''));
       assert.ok(existsSync(p), `${skill}: ${rel} -> ${p}`);
@@ -169,4 +174,53 @@ test('translated grammars and recipes: English bodies, attribution headers, no c
     assert.doesNotMatch(body, /[\u3000-\u9fff\uff00-\uffef]/, `${f}: Chinese text outside the header`);
     assert.doesNotMatch(body, names, f);
   }
+});
+
+// QA D-1 #20: a mixed kit may declare any top-level name, even the wrapper's own
+test('mix: a kit with a top-level `k` (or any common name) still mixes in', () => {
+  const code = wrapKit('mine', 'const k = 1;\nconst STYLE = { name: "mine" };\nfunction draw() { return k; }\n');
+  const ctx = { KITS: {} };
+  new vm.Script(code).runInNewContext(ctx);
+  assert.equal(ctx.KITS.mine.draw(), 1);
+  assert.equal(ctx.KITS.mine.k, 1);
+});
+
+// QA D-1 #6: the supplied track's beat map is piece/beatmap.json, separate from the story beats.json
+test('beatmap.json is injected as BEATS; a map without a bpm is refused', () => {
+  const d = copy('templates/blank');
+  try {
+    writeFileSync(join(d, 'beatmap.json'), JSON.stringify({ bpm: 96, offset: 0.42 }));
+    const r = build(d);
+    assert.deepEqual(r.extras, ['beatmap.json']);
+    assert.match(readFileSync(r.file, 'utf8'), /const BEATS = \{"offset":0\.42,"bpm":96\};|const BEATS = \{"bpm":96,"offset":0\.42\};/);
+    writeFileSync(join(d, 'beatmap.json'), JSON.stringify({ beats: [0.5, 1] }));
+    assert.throws(() => build(d), /needs "bpm"/);
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
+
+// QA D-1 #9 and #22: the command lines run (also through a symlinked plugin folder) and refuse unknown flags
+test('tools run as commands, also through a symlink; new-piece and new-style refuse unknown flags', () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-cli-'));
+  try {
+    let tools = join(PLUGIN, 'tools');
+    try { symlinkSync(PLUGIN, join(root, 'link'), process.platform === 'win32' ? 'junction' : 'dir'); tools = join(root, 'link', 'tools'); } catch { /* no symlinks here: the plain path still runs the commands */ }
+    const run = (tool, ...args) => spawnSync(process.execPath, [join(tools, tool), ...args], { encoding: 'utf8', cwd: root, windowsHide: true });
+    const np = run('new-piece.mjs', join(root, 'p'), '--style', 'riso', '--formats', '16:9');
+    assert.equal(np.status, 0, np.stderr);
+    assert.match(np.stdout, /new piece in .* formats 16:9/);
+    const b = run('build.mjs', join(root, 'p'));
+    assert.equal(b.status, 0, b.stderr);
+    assert.match(b.stdout, /^built /);
+    assert.ok(existsSync(join(root, 'p', 'index.html')) && existsSync(join(root, 'p', 'board.html')));
+    const typo = run('new-piece.mjs', join(root, 'q'), '--format', '16:9');
+    assert.equal(typo.status, 2);
+    assert.match(typo.stderr, /bad option "--format"/);
+    assert.ok(!existsSync(join(root, 'q')), 'nothing is written on a bad flag');
+    assert.equal(run('new-piece.mjs', join(root, 'q'), '--style').status, 2, 'a flag without a value');
+    mkdirSync(join(root, 'proj'));
+    const ns = run('new-style.mjs', join(root, 'proj', 'styles', 'mine'), '--from', 'riso');
+    assert.equal(ns.status, 0, ns.stderr);
+    assert.match(ns.stdout, /new style "mine"/);
+    assert.equal(run('new-style.mjs', join(root, 'proj', 'styles', 'other'), '--form', 'riso').status, 2);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

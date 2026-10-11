@@ -1,6 +1,7 @@
 // audio_score: a cue sheet (cues.json) -> a synthesized score (music + sound effects) -> a WAV mastered
 // to -14 LUFS. The synth runs in the engine's offline browser page (Web Audio OfflineAudioContext), so
-// it needs no extra dependency, and it is deterministic: the same cue sheet gives the same file.
+// it needs no extra dependency, and it is repeatable: the same cue sheet gives the same file to within a few
+// LSB (Chromium's Web Audio rounds a little differently between runs; D16).
 // The instruments (pluck, pad, bass, sub, noiseHit, sweep, riser, chime, blip) are adapted for Easel
 // from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263 (kit/score-head.js), MIT License,
 // Copyright (c) 2026 cth9191. Modified by Easel (2026-10-11): driven by a cue-sheet plan instead of a
@@ -44,7 +45,8 @@ export function planScore(cues, { palette = 'warm' } = {}) {
   for (const s of sections) {
     events.push({ type: 'pad', t0: s.t0, t1: s.t1, notes: s.chord.map((n) => n + 12) });
     events.push({ type: 'motif', t: s.t0, notes: [s.chord[0] + 24, s.chord[2] + 24] });
-    for (let t = s.t0; t < s.t1 - 1e-6; t += beat) events.push({ type: 'bass', t, note: s.chord[0] - 12, accent: Math.abs(((t - m0) / beat) % 4) < 1e-6 });
+    // bass on the BPM grid from the music start (not from each scene start), an accent on every bar's downbeat
+    for (let k = Math.ceil((s.t0 - m0) / beat - 1e-6); m0 + k * beat < s.t1 - 1e-6; k++) events.push({ type: 'bass', t: m0 + k * beat, note: s.chord[0] - 12, accent: k % 4 === 0 });
   }
   for (const c of sorted) {
     const t = at(c);
@@ -96,13 +98,14 @@ function synthInPage(plan) {
     function sweep(t0, t1, vel, f0, f1, pan = 0) {
       const src = ac.createBufferSource(); src.buffer = noise; src.loop = true; const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.1;
       f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(f1, t1);
-      const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vel, t1 - 0.03); g.gain.linearRampToValueAtTime(0.0001, t1 + 0.005);
+      const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vel, Math.max(t0 + 0.005, t1 - 0.03)); g.gain.linearRampToValueAtTime(0.0001, t1 + 0.005);   // never before t0 (a cue on frame 0)
       src.connect(f); f.connect(g); out(g, pan, 0.2); src.start(t0, (t0 * 3.1) % 1.0); src.stop(t1 + 0.05);
     }
     function riser(t0, t1, vel) {
+      t1 = Math.max(t1, t0 + 0.05);   // a riser on frame 0 still has a length
       const o = osc('sawtooth', 110, t0, t1 + 0.02); o.frequency.exponentialRampToValueAtTime(1320, t1);
       const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 6; lp.frequency.setValueAtTime(300, t0); lp.frequency.exponentialRampToValueAtTime(5000, t1);
-      const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vel, t1 - 0.01); g.gain.linearRampToValueAtTime(0.0001, t1 + 0.01);
+      const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vel, Math.max(t0 + 0.005, t1 - 0.01)); g.gain.linearRampToValueAtTime(0.0001, t1 + 0.01);
       o.connect(lp); lp.connect(g); out(g, 0, 0.3); sweep(t0, t1, vel * 0.9, 400, 7000);
     }
     function chime(t, freqs, vel, pan = 0) { freqs.forEach((f, i) => { const g = ac.createGain(), ti = t + i * 0.012; env(g, ti, 0.002, vel / (1 + i * 0.4), 1.3); osc('sine', f, ti, ti + 1.5).connect(g); out(g, pan + (i - 1) * 0.25, 0.6); }); }

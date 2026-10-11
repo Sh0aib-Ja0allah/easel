@@ -1,6 +1,6 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/styles/isometric/STYLE.md).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): links follow the Easel layout (grammars/). -->
 # Isometric line art
 
@@ -24,7 +24,7 @@ Calm, precise product illustration: objects in 2:1 dimetric isometric on a white
 | figure : frame width | ~34% (a gallery view) | ~75-80% of 1080 (a phone frame) |
 | shadows, texture, grain | none | none |
 
-Palette as `compare.mjs` buckets (crop of the terminal figure vs our t=2.35s): ref 248 96.2% · 232 2.6% · 216 0.9%; ours 248 97.1% · 168 1.0% · 232 0.5%. The reference's hairlines land in the 216-232 buckets only because the 0.9px lines were downsampled to ~0.5px in the screenshot; the SVG says 164 and 224.
+Palette as grey-level buckets (measured upstream; easel-core's `compare_images` reports the same kind of palette) (crop of the terminal figure vs our t=2.35s): ref 248 96.2% · 232 2.6% · 216 0.9%; ours 248 97.1% · 168 1.0% · 232 0.5%. The reference's hairlines land in the 216-232 buckets only because the 0.9px lines were downsampled to ~0.5px in the screenshot; the SVG says 164 and 224.
 
 ## Palette and meaning (`PAL` in kit.js)
 

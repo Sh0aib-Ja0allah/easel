@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/y1_kurzgesagt.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; replaced channel, course and composer names with neutral descriptions; removed source-project paths, scripts, function names and demo-film references (useful demo values kept, tagged [tested]); replaced named characters with generic ones; rewrote the implementation notes engine-neutrally; condensed the review and QA sections into tool-independent lessons; dropped reference links. -->
 
 # Science-cartoon explainer
@@ -59,7 +59,7 @@ Tags used below:
 - **Dual-tone facets [tested]:** inside each shape, offset the shape twice. Leave a shadow band at the lower right and a thin highlight edge at the upper left. Offset about (10,12)px, width about (4,5)px. Pass every part of every character through the same step, so characters and scene are drawn the same way and do not look pasted on.
 - **Layout:** put the subject on the lower-third line, a little below centre. Leave sky above for stars and callouts. Split the scene into 5-6 parallax layers [tested]: starfield d=0.05, moon 0.12, far hills 0.3, near slope 0.65, subject 1.0, foreground leaves 1.5 (the near layer blurred and dark). The channel has not published its layer count; the samples show 2-5 [inferred].
 - **Characters:**
-  - The channel's mascot birds: egg-shaped body, big white eyes, small black pupils set toward the front, orange triangular beak. Wings are leaf shapes one step darker than the body. Each bird gets a different colour [first-hand + inferred].
+  - A small critter of your own: egg-shaped body, big white eyes, small black pupils set toward the front, one simple triangular feature (a beak, a nose or a horn). Limbs or wings are leaf shapes one step darker than the body. Give each critter in a cast a different body colour. Do not reproduce any channel's mascots.
   - [tested] An animal character: teardrop body with a round head, triangular ears with magenta inner ears, big white eyes. A robot: rounded shell, dark screen face, one glowing lens eye. The hero: every part goes through the dual-tone facet step.
 
 ## 3. Motion

@@ -3,8 +3,8 @@ name: animate
 description: >-
   Make a short animated video in code (an explainer, a history, a little story, a product reel)
   as a canvas piece with a synthesized score, rendered offline to MP4 in every format asked for
-  (16:9, 9:16, 1:1, 4:5). Seven styles ship (cut-paper, crosshatch ink, riso print, sketchbook,
-  math, pixel art, isometric line art) and can be mixed in one piece. Runs the brief check-ins
+  (16:9, 9:16, 1:1, 4:5). Eleven styles ship (cut-paper, crosshatch ink, riso print, sketchbook,
+  math, pixel art, isometric line art, synthwave, liquid, aurora glass, HUD) and can be mixed. Runs the brief check-ins
   (story, look, storyboard) before animating, then proves the result with measured checks and a
   critic's review.
 when_to_use: >-
@@ -13,12 +13,12 @@ when_to_use: >-
   effects, GSAP on their site) use easel-motion:ui-motion; for matching a look from reference
   images use easel-motion:style-match first.
 argument-hint: "[what the video is about] [style] [formats]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__doctor Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__doctor Bash(node:*) Read Write Edit Glob Grep
 ---
 
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/SKILL.md).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): rendering, review and storyboards go through easel-core's
      engine; pieces live in ./easel-out/<slug>/; check-ins follow easel-core:brief; styles can mix;
      upstream's own scripts, voice and capture tools are not used. -->
@@ -152,8 +152,10 @@ For **each format**:
    (text cut off or overlapping fails; text under the phone UI on 9:16 warns; cuts and morphs off
    the 8th grid fail). Deliberate crowding goes in `piece.json` `review.textIgnore` and is passed
    as `textIgnore` with the reason.
-2. `qa` on the video: `video` = `renders/<slug>-<WxH>.mp4` (stillness, colour cast, loudness).
-3. A `filmstrip` of one frame a second (`count` = the duration) into `review/`; Read it.
+2. `qa` on the video: `video` = `renders/<slug>-16x9.mp4` (the format tag: `-16x9`, `-9x16`, `-1x1`,
+   `-4x5`; stillness, colour cast, loudness).
+3. A `filmstrip` of one frame a second (`count` = the duration in seconds, at most 48; for longer
+   pieces give `times` for the stretch you are checking) into `review/`; Read it.
 
 Fix every hard failure, rebuild, re-render and run `qa` again. Then get a cold read: run the
 `easel-core:critique` procedure on the filmstrips with the **motion** rubric (it starts the
@@ -176,11 +178,12 @@ Append to `LOG.md`. If something new went wrong or worked, propose a one-line ru
 
 Ask at intake (question 6). Without a track the score is composed in code on a 120 BPM grid.
 With one, the user gives a WAV, MP3 or M4A they own or licensed; never fetch music from a site
-they didn't point to. Write its tempo and first beat to `piece/beats.json` (`{ "bpm", "offset",
-... }`, checked with `validate` kind `beats`); the build injects it as `BEATS`, the head reads
-`BPM` and `GRID0` from it and `onBeat(t)` snaps to the song's grid. Put the turn on its drop and
-the payoff on its loudest hit. Render with `audio` = the track; keep `src/score.js` to sound
-effects (`to = 's'`).
+they didn't point to. Write its tempo and first beat (in seconds) to `piece/beatmap.json`
+(`{ "bpm": 96, "offset": 0.42 }`; this is not the story `beats.json`, so don't `validate` it as
+`beats`); the build injects it as `BEATS`, the head reads `BPM` and `GRID0` from it and
+`onBeat(t)` snaps to the song's grid. Put the turn on its drop and the payoff on its loudest hit.
+Render with `audio` = the track: a render has one sound source, so the track replaces the page's
+own score (`src/score.js` still plays in the live preview).
 
 ## Assets: the user's own screenshots and logos (optional)
 

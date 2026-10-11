@@ -3,14 +3,15 @@
 Code-drawn animation and video: the `animate` entry skill, a style catalog, explainer grammars,
 `style-match` and GSAP-based `ui-motion`.
 
-**Status:** in development (v0.0.1): the `animate` skill, the kit and seven styles are in; the
-other skills arrive by v0.2.0 (see [the roadmap](../../docs/roadmap.md)).
+**Status:** all three skills, the kit and eleven styles are in (Phase 2; see
+[the roadmap](../../docs/roadmap.md)).
 
 ## Skills
 
 | Skill | Use it for |
 |---|---|
 | `/easel-motion:animate` | A short animated video made in code, in every format you need (16:9, 9:16, 1:1, 4:5): story, look and storyboard check-ins first, then a render with its own score and measured checks |
+| `/easel-motion:ui-motion` | Motion in your own site or app: micro-interactions, transitions, scroll, GSAP timelines, reduced motion, previewed and checked offline |
 | `/easel-motion:style-match` | A new style from your reference images: measured, matched side by side on a proportion grid, saved as `styles/<name>/` |
 
 **Requires:** `easel-core` (installed automatically as a dependency). Pieces are rendered by its
@@ -23,7 +24,8 @@ engine (`render_video`, `filmstrip`, `render_still`).
 | `kit/` | The renderer every piece shares: drawing kit (`core.js`), eras joined by shape morphs (`morph.js`), storyboard sheet (`board.js`), synth score (`score-head.js`, `score-tail.js`) |
 | `styles/<id>/` | A look: `STYLE.md` (rules), `kit.js` (drawing functions and `STYLE` hooks), `demo/` (a 6 s piece) |
 | `templates/` | Starter pieces (`piece`: a morph chain in every format; `beat-cut`; `blank`: runs in any style) and a starter style kit |
-| `grammars/` | Story structure: formats, what goes in a frame, beat-by-beat story rules |
+| `grammars/` | Story structure (formats, what goes in a frame, beat-by-beat story rules) and nine explainer grammars: math explainer, keynote UI, finance chart, science cartoon, editorial collage, whiteboard, storytime, kinetic type, presenter |
+| `recipes/` | Ten style recipes: the look, palette and motion of a genre, as a starting point for a new style |
 | `tools/build.mjs` | Assembles `<piece>/index.html` (and `board.html`, the storyboard page) from the piece's `src/` parts, the kit and its style(s) |
 | `tools/new-piece.mjs` | Starts a piece from a style's demo or a template, format-aware for the formats you list |
 | `tools/new-style.mjs` | Starts a style folder (`kit.js` + a `STYLE.md` skeleton) for style-match |
@@ -31,7 +33,8 @@ engine (`render_video`, `filmstrip`, `render_still`).
 | `examples/style-match/` | Three reference sheets, the `blueprint` style made from them, a piece in it and the comparison sheets |
 | `skills/animate/` | The entry skill, its intake questions and the craft rules |
 
-Styles: crosshatch, cut-paper, isometric, math, pixel, riso, sketchbook. A piece names one in
+Styles: crosshatch, cut-paper, isometric, math, pixel, riso, sketchbook (adapted from animate), and
+synthwave, liquid, aurora-glass, hud (Easel originals after mg-styles-15's style notes). A piece names one in
 `piece.json` (`"style"`) and can mix in more (`"mix": ["riso"]`); an era then picks its style as
 the fourth item of its `ERA_LIST` entry and takes that style's drawing functions from
 `KITS.<name>`. See [styles/README.md](styles/README.md).

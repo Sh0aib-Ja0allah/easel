@@ -30,11 +30,28 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   finance chart, science cartoon, editorial collage, whiteboard, storytime, kinetic type,
   presenter) and ten style recipes (cave painting to analytic cubist), translated from
   huashu-art-motion and named after the look, never an artist or channel.
+- **easel-motion styles synthwave, liquid, aurora-glass and hud** (Easel originals after
+  mg-styles-15's style notes; decision D17), each with a 6 s demo in 9:16 and 16:9 and a golden
+  frame. Eleven styles in all.
+- **easel-motion `ui-motion` skill:** CSS-first UI motion, GSAP when there is a sequence or scroll
+  (the eight official GSAP skills as references, from greensock/gsap-skills), patterns from
+  designskills' motion-design, reduced motion always, previewed offline as a paused timeline and
+  checked with qa in UI mode. Example: `examples/ui-motion/card-reveal.html`.
 - **easel-motion `style-match` skill:** a new style from the user's references: measure, start
   the kit (`tools/new-style.mjs`), draw the piece's own frames, compare on a proportion grid, one
   check-in, save `styles/<name>/`. A blank starter piece (`templates/blank`) runs in any style.
   Example: `examples/style-match` (three reference sheets -> the `blueprint` style -> a piece in
   9:16 and 16:9 -> comparison sheets).
+- **easel-core `mux_audio` tool:** puts a score or the user's own track on a video that already
+  exists (video stream copied, optional mastering, never overwrites the input).
+- **easel-core:** `reducedMotion: "reduce"` on `render_still`, `render_video`, `filmstrip` and `qa`
+  renders a page's reduced-motion path; `beat_grid` allows 16ths inside a piece's fast window
+  (`TIMELINE.fastFrom` to `fastTo`) and fails when asked for on a piece without a BPM.
+- **Licensing:** every plugin carries its own `LICENSE`; easel-core and easel-motion carry a
+  `NOTICE.md` with the license texts their adapted files need, so the notices travel with an
+  installed plugin.
+- **Phase 2 QA (team/qa D-1):** 23 findings; 22 fixed with tests, one part rejected with a reason
+  (see `docs/findings-and-decisions.md`).
 
 ## easel-core 0.1.0 (2026-10-11)
 

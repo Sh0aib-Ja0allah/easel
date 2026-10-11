@@ -1,6 +1,6 @@
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/styles/pixel/demo/src/score.js).
-// MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+// MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
 // Modified by Easel (2026-10-11): no changes beyond this header.
   // SCORE BODY — pixel demo (inside buildScore(); see kit/score-head.js). Chiptune: square and pulse plucks,
   // a triangle bass, noise hats; a jump sweep and a two-note coin ding. D major, 120 BPM.

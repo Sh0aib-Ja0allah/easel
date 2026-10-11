@@ -1,0 +1,68 @@
+<!doctype html>
+<!-- Easel (MIT): the hud demo. Head from templates/blank (adapted from cth9191/animate @
+     7e5eb56feb2dd573f890e1b7b34748af43d58263, MIT, Copyright (c) 2026 cth9191); the piece is Easel's own. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HUD demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1b1714; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { max-width: 100vw; max-height: 100vh; width: auto; height: auto; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+"use strict";
+// =====================================================================
+//  HUD DEMO: 6.0 s, 9:16 and 16:9. A scan builds up in staggered layers (hex grid, rings, radar, data); the radar closes in on a target, lock-on brackets snap and the display flips to alert orange.
+//  Build: node <easel-motion>/tools/build.mjs <easel-motion>/styles/hud/demo
+// =====================================================================
+const FORMATS = { '9:16': [1080, 1920], '4:5': [1080, 1350], '1:1': [1080, 1080], '16:9': [1920, 1080] };
+// the format: ?format=16:9 in a browser; the Easel engine says which one it renders in window.__easel.aspect
+const FORMAT = new URLSearchParams(location.search).get('format') || (window.__easel && window.__easel.aspect) || '9:16';   // the piece's main format first
+const FPS = 24, [W, H] = FORMATS[FORMAT];
+{ const cv = document.getElementById('c'); cv.width = W; cv.height = H; }
+// a supplied music track: its beat map piece/beatmap.json ({ bpm, offset }) is injected by build.mjs as BEATS (see SKILL.md -> Music)
+const BPM = typeof BEATS !== 'undefined' ? BEATS.bpm : 120, GRID0 = typeof BEATS !== 'undefined' ? BEATS.offset : 0;
+const BEAT = 60 / BPM, E8 = BEAT / 2, E16 = BEAT / 4;   // at 120 BPM: 0.5 / 0.25 / 0.125s = 12 / 6 / 3 frames
+const DURATION = 6.0;
+const NFRAMES = Math.round(DURATION * FPS);
+const LOOP_T = NFRAMES / FPS;
+// the platform UI per format (9:16: keep content in x 60–940, y 250–1500)
+const SAFE = { '9:16': { top: 240, bottom: 420, right: 140 }, '4:5': { top: 80, bottom: 160, right: 60 }, '1:1': { top: 60, bottom: 110, right: 60 }, '16:9': { top: 60, bottom: 110, right: 60 } }[FORMAT];
+const HAND = '"Caveat", cursive';   // bundled OFL font (easel-core/fonts): the same on every OS
+const CX = (W - SAFE.right) / 2;                              // caption centre (left of the right-hand UI strip on 9:16)
+
+// onBeat(t): the nearest 8th of the grid — the song's when a track is supplied (BEATS), else 120 BPM from 0.
+// Put every cut, morph and big cue on it, so a supplied track only shifts them to its own beats.
+const onBeat = (t) => +(GRID0 + Math.round((t - GRID0) / E8) * E8).toFixed(4);
+const M1 = onBeat(3.0);   // the morph
+// eras: [t0, t1, scene]. Boundaries with a BRIDGE (src/bridges.js) morph; the rest are hard cuts.
+const ERA_LIST = [[0, M1, () => sceneScan()], [M1, DURATION, () => sceneLock()]];
+const SHOTS = [
+  //  key        era  t0    t1        title
+  ['scan', 0, 0.0, M1, "the HUD draws on and scans"],
+  ['lock', 1, M1, DURATION, "brackets snap; the display flips to alert"],
+];
+const TIMELINE = {
+  width: W, height: H, fps: FPS, bpm: BPM, gridOffset: GRID0, duration: DURATION, frames: NFRAMES, loop: LOOP_T, safe: SAFE, aspect: FORMAT,
+  format: 'morph-chain',   // 'F2' adds the fixed-stage checks (a year counter, a still stage); 'F4' adds the mission checks
+  shots: SHOTS.map(([key, era, t0, t1, title], i) => ({ id: i + 1, key, era, t0, t1, title })),
+  cuts: [],              // hard cuts (seconds, on the 8th grid)
+  morphs: [M1],          // morph bridge centres (seconds, on the 8th grid)
+  cues: { rings: onBeat(0.25), data: onBeat(1.0), lock: onBeat(3.75) },
+  acts: [
+    { name: '1 scan', role: 'build', t0: 0.0, t1: M1 },
+    { name: '2 lock', role: 'gift', t0: M1, t1: DURATION },
+  ],
+  // the storyboard: one key frame per beat
+  board: [
+    {t: 2.25, title: "the scan", sound: "a dark pulse, beeps, sweeps", next: "the radar closes on the target"},
+    {t: 5.0, title: "target locked", sound: "a rising tone, an alarm", next: "loops"},
+  ],
+  narration: [],
+};
+window.TIMELINE = TIMELINE;

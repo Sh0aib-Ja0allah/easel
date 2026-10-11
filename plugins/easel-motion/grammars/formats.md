@@ -1,6 +1,6 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/grammar/FORMATS.md).
-     MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): links follow the Easel layout (grammars/);
      review steps point at easel-core qa. -->
 # Formats: the structures short animations are built on
@@ -125,4 +125,4 @@ Every piece is one choice from each column. Read a format as a proven combinatio
 
 ## Measuring a reference
 
-`tools/measure/shotlog.py` misreads three kinds of footage: animation on 2s hides real cuts, dissolves of 6–8 frames read as one hard cut, and windows that straddle a cut look like stepping. For cut counts use a coarse 16×16 colour diff; for grids, test the specific BPM against chance (the fraction of a frame window over the grid period). Pass the real fps.
+A frame-difference shot log (upstream's helper was not ported; `filmstrip` and `measure_image` cover most of it) misreads three kinds of footage: animation on 2s hides real cuts, dissolves of 6–8 frames read as one hard cut, and windows that straddle a cut look like stepping. For cut counts use a coarse 16×16 colour diff; for grids, test the specific BPM against chance (the fraction of a frame window over the grid period). Pass the real fps.

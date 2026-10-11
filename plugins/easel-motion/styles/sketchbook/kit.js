@@ -1,6 +1,6 @@
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/styles/sketchbook/kit.js).
-// MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
+// MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
 // Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts; the hero's
 // crown mark is a cream shine, not an asterisk.
 // =====================================================================
@@ -149,7 +149,7 @@ function smudgeOn(g, x, y, rx, ry, a = 0.12, rot = 0) {
 const smudge = (x, y, rx, ry, a, rot) => smudgeOn(ctx, x, y, rx, ry, a, rot);
 
 // ---------------------------------------------------------------------
-//  THE HAND: lettering (local system fonts; per-glyph jitter on the boil; letters write on one by one)
+//  THE HAND: lettering (the bundled Caveat font; per-glyph jitter on the boil; letters write on one by one)
 // ---------------------------------------------------------------------
 const SK_GLYPH = new Map();   // static measurements, keyed by font + string
 const skFont = (size, face = 'hand', weight) => face === 'marker' ? `${weight ?? 700} ${size}px ${SK_MARKER}` : `${weight ?? 400} ${size}px ${SK_HAND}`;

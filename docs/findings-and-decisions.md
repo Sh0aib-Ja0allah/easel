@@ -218,7 +218,7 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 
 - **Decision:** easel-motion's `tools/build.mjs` keeps the piece's own style global (as upstream) and wraps every style listed in `piece.json` `"mix"` in its own function scope, exposed as `KITS.<name>` with live getters for all of that kit's top-level names. An era names its style as a 4th `ERA_LIST` item; `kit/morph.js` draws each era's paper, windows and `post()` with that era's `STYLE` hooks (shrink with the old era's style, the morph switches at its midpoint, grow with the new era's).
 - **Reason:** upstream concatenated kits into one script, so two kits that both declare `PAL`, `hand`, `rect` and so on could not be in one piece (a `SyntaxError`, tested). Wrapping only the extra styles leaves every existing piece and demo unchanged, which a namespace for all styles would not.
-- **Evidence:** `plugins/easel-motion/test/build.test.mjs` (all seven kits in one piece) and `test/render.test.mjs` (a riso era inside a cut-paper piece; the cut-paper era is pixel-identical to the unmixed build).
+- **Evidence:** `plugins/easel-motion/test/build.test.mjs` (all eleven kits in one piece) and `test/render.test.mjs` (a riso era inside a cut-paper piece; the cut-paper era is pixel-identical to the unmixed build).
 
 ### D14. The animate kit uses only bundled fonts ✅ (decided by Claude for the owner, 2026-10-11)
 
@@ -236,3 +236,15 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 - **Reason:** mg-styles-15's `mgaudio` is about 8,700 lines of Python built on NumPy; a Node port is a project of its own, and depending on it would make Python plus NumPy a required install on Windows. The browser synth is already a dependency (Chromium), runs offline, and is used by every animate piece. mgaudio's genre recipes (chill, club, retro, world) are kept as ideas: `audio_score` has warm, bright and retro palettes.
 - **Determinism note:** Chromium's Web Audio rounds a few hundred samples per render differently (1 LSB of 16-bit audio); two renders of the same cue sheet match to within 8 LSB after mastering (tested), not byte for byte.
 - **Deviates from:** architecture.md section 4 "Audio", which preferred a Node port of mgaudio.
+
+### D17. The four mg-styles looks are original Canvas kits, not ports of the films ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** task T2.6's liquid, aurora-glass, synthwave and HUD styles are written by Easel as animate-kit styles (`styles/<id>/kit.js` + `STYLE.md` + a 6 s demo in 9:16 and 16:9 + a golden frame), following the signature features in mg-styles-15's prompts. No code, media or fonts from mg-styles-15 are used.
+- **Reason:** the mg-styles films are one-off 10 s pieces built on three.js, simplex-noise, opentype.js, WebGL shaders and their own fonts and photos; porting them would add four runtime libraries to the engine and media whose sources would each need tracing, and the result would still be four fixed films, not reusable styles. As kits they mix with the other styles, run offline in Canvas 2D and lay out in every format.
+- **Not matched (recorded in each STYLE.md):** no WebGL bloom or 3D in synthwave and HUD; liquid's field is computed at quarter resolution; the aurora lens magnifies the aurora only.
+
+### D18. Phase 2 QA follow-ups: mux tool, beat map name, per-plugin notices ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** (a) a new engine tool `mux_audio` puts a track on an existing video, rather than widening `render_video`; (b) a supplied track's beat map is `piece/beatmap.json` (`{ bpm, offset }`), so it can't be confused with the story `beats.json` (an upstream piece's `piece/beats.json` is still read); (c) each plugin carries its own `LICENSE`, and plugins with adapted material carry a `NOTICE.md` holding the license texts, because an installed plugin is copied on its own without the repo root; (d) the terracotta accent `#d97757` in the ported crosshatch and sketchbook heroes and the blank style kit stays.
+- **Reason:** (a) `render_video` renders pages; muxing a file is a different job with different inputs (copy the video stream, never re-encode); (b) QA D-1 #6 showed the two formats under one name fail validation; (c) MIT and Apache-2.0 require the notice in every copy (QA D-1 #8); (d) a single colour value is not a trademark use and D8 forbids brand-named systems, not hues; it comes from the MIT upstream palette, and changing it would re-open three reviewed goldens for no licensing gain (QA D-1 #18, the rest of that finding was fixed).
+- **Evidence:** `team/qa/D-1-phase2.md` (disposition table); tests `engine/test/mux.test.mjs`, `easel-motion/test/build.test.mjs` (beatmap, tool command lines).

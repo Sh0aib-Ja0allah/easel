@@ -1,6 +1,6 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/t2_keynote_ui.md).
-     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in THIRD_PARTY_NOTICES.md.
+     MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
      Modified by Easel (2026-10-11): translated to English; replaced company, product, framework, event, font-brand and book names and the reference URLs with neutral descriptions; replaced the fictional product name in the voice-over example; removed the source engine's paths, scripts, spec fields, function names and demo-render lines; restated the implementation notes and pitfalls without the source's library; renamed the demo shots to Shot 1-3; adapted CJK character-count limits with rough English equivalents; wrote the review severity icons as words; pointed cross-references at other grammars by description. -->
 
 # Keynote UI
