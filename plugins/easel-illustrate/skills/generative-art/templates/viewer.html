@@ -47,7 +47,9 @@ const CONTROLS = [ /* { key: 'count', min: 100, max: 4000, step: 100 }, ... */ ]
 // ---- YOUR ALGORITHM -------------------------------------------------------
 // Precompute what does not depend on t in build() (called after every seed or parameter change),
 // then paint frame t in paint(t). For a seamless loop, make paint(0) equal paint(PIECE.duration):
-// drive motion with angle = TWO_PI * t / PIECE.duration (sin/cos, noise on a circle).
+// drive motion with a = TWO_PI * t / PIECE.duration: sin(a) and cos(a), or noise sampled around a
+// circle, noise(x * s + r * cos(a), y * s + r * sin(a)). p5 1.x noise() takes three coordinates at
+// most: a fourth is dropped silently and the loop plays forward, then backward.
 let state = null;
 function build() {
   randomSeed(params.seed); noiseSeed(params.seed);

@@ -1,4 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+  <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
+       (github.com/linyaosky/svg-skill, examples.md, the loading spinner), MIT License, Copyright (c)
+       2026 svg-skill contributors; see NOTICE.md. Modified by Easel (2026-10-11): as in
+       skills/svg/reference/examples.md (a reduced-motion rule that slows the spinner). -->
   <style>
     .spinner { transform-origin: 12px 12px; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }

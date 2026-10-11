@@ -1,7 +1,7 @@
 <!-- Easel: adapted from aishwaryaashok14/peanut-illustrations @ 1e5c645892a2d70242062f23ee2277b18240e05c
      (github.com/aishwaryaashok14/peanut-illustrations, peanut-illustrations/references/prompt-template.md), MIT License,
      Copyright (c) 2026 Aishwarya Ashok, with portions adapted from ian-xiaohei-illustrations, Copyright (c)
-     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): an optional path through easel-ai-media; the peanut description replaced by the mascot slot; watermark lines removed. -->
+     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): an optional path through easel-ai-media; the peanut description replaced by the mascot slot; watermark lines removed (the constraints keep the rest). -->
 
 # AI raster path (optional)
 
@@ -43,8 +43,8 @@ Handwritten English labels:
 Color use:
 Black for all line art and the mascot. One warm orange as the single accent, used only for the one most important thing (the main flow, the key arrow, the result, or the critical word). Use no other colors.
 
-
 Constraints:
+One image explains only one core structure. Keep the main subject around 40%-60% of the canvas. Preserve at least 35% blank white space. Use at most 5-8 short handwritten English labels. Do not write a title in the top-left corner. Do not write the structure type on the image. Do not make it a formal diagram, course slide, or dense explainer. Invent a fresh visual metaphor for this specific prompt. It should be clear but not instructional, interesting but not childish, strange but clean.
 ```
 
 ## Image edit prompts

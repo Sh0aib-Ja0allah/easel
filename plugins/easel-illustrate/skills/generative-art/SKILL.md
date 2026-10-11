@@ -7,9 +7,11 @@ description: >-
   Flow fields, particle systems, noise, recursion, packing, tilings, harmonic patterns.
 when_to_use: >-
   The user asks for generative art, algorithmic art, creative coding, a flow field, particles,
-  p5.js, a looping abstract animation or "art made with code". For a story-driven animation use
-  easel-motion:animate; for a poster or print layout use easel-design:poster; for a hand-drawn
-  concept sketch use easel-illustrate:concept-illustration. GLSL shaders are not covered yet.
+  p5.js, a looping abstract animation or "art made with code". A looping animation that is
+  abstract and algorithmic (noise, particles, fields) belongs here; for one of designed shapes,
+  text or characters, or one that tells a story, use easel-motion:animate; for a poster or print
+  layout use easel-design:poster; for a hand-drawn concept sketch use
+  easel-illustrate:concept-illustration. GLSL shaders are not covered yet.
 argument-hint: "[idea or mood] [still | loop] [size]"
 allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
@@ -19,7 +21,8 @@ allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core
      (github.com/anthropics/skills, skills/algorithmic-art/SKILL.md and templates/generator_template.js),
      Apache License 2.0, Copyright 2026 Anthropic, PBC; license text in licenses/Apache-2.0.txt, see NOTICE.md.
      Modified by Easel (2026-10-11): Easel's own offline viewer (no upstream branding), a time-seekable
-     render contract for the engine, renders and loops through the Easel engine. -->
+     render contract for the engine, renders and loops through the Easel engine; a seamless p5 1.x
+     noise loop; routing beside easel-motion:animate. -->
 
 # Generative art
 
@@ -52,7 +55,11 @@ In the copied viewer, fill only the marked part:
   order and the same t must give the same picture. Trails are drawn by re-tracing them inside
   `paint(t)` (integrate each particle from its start for a fixed number of steps, offset by t).
 - **Loops:** make `paint(0)` equal `paint(duration)`: drive motion by the angle
-  `TWO_PI * t / duration` (sin and cos, or noise sampled on a circle).
+  `a = TWO_PI * t / duration`, through `sin(a)` and `cos(a)`, or noise whose sampling point moves
+  around a circle: `noise(x * s + r * cos(a), y * s + r * sin(a))` (s the noise scale, r the
+  loop radius). p5 1.x `noise()` takes at most three coordinates and silently drops a fourth, so
+  `noise(x, y, r * cos(a), r * sin(a))` loses the sine term and the loop plays forward, then
+  backward.
 - Palette: 3-6 colours chosen on purpose (from `.easel/brand.md` when the art is for a brand).
 - p5.js 1.x only (the viewer loads 1.11.13; the engine refuses p5 2.x and the p5.sound add-on
   offline). Use the 1.x API.

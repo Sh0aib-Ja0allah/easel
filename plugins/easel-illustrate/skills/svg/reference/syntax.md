@@ -1,6 +1,6 @@
 <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
      (github.com/linyaosky/svg-skill, reference.md), MIT License, Copyright (c) 2026 svg-skill contributors;
-     see NOTICE.md. Modified by Easel (2026-10-11): renamed syntax.md; xmllint replaced by svg-check.mjs; chart math centres bars and pins them to the baseline; contrast and bundled-font notes added; legacy-browser row removed; non-ASCII declaration is a convention (svg-check warns); text delivered with embedded faces. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): renamed syntax.md; xmllint replaced by svg-check.mjs; chart math centres bars and pins them to the baseline; contrast and bundled-font notes added; legacy-browser row removed; non-ASCII declaration is a convention (svg-check warns); text delivered with embedded faces (never in email). -->
 
 # SVG syntax reference
 
@@ -9,14 +9,18 @@ Indexed from [../SKILL.md](../SKILL.md). Steps per scenario in [scenarios.md](sc
 ## Encoding and text
 
 Standalone files with non-ASCII characters: save as UTF-8, with
-`<?xml version="1.0" encoding="UTF-8"?>` as the first line (XML reads a file without it as
-UTF-8, so it is a convention for older tools; `svg-check.mjs` warns when it is missing).
+`<?xml version="1.0" encoding="UTF-8"?>` as the very first characters (XML reads a file without
+it as UTF-8, so it is a convention for older tools; `svg-check.mjs` warns when it is missing).
 
 Pure icons may omit the XML declaration. Formal logos are made with easel-design:logo. Text that
 stays text: `font-family="Inter, sans-serif"` (or Space Grotesk, Newsreader, JetBrains Mono,
 Caveat, STIX Two Text, Noto Sans Math, the faces the Easel engine bundles); never a web-font link.
 A standalone file with `<text>` is delivered with its face embedded (`embed_fonts`, see
-[../SKILL.md](../SKILL.md)), because the user's site does not have the bundled fonts.
+[../SKILL.md](../SKILL.md)), because the user's site does not have the bundled fonts; not in
+email, and the bundled faces carry Latin letters only (drawing rules 9 and 10 there).
+
+XML, not HTML: `&amp;` for a literal "&", `&lt;` for "<" (also inside attribute values), and
+numeric references such as `&#160;` instead of HTML entities like `&nbsp;`.
 
 ## Coordinate system
 
@@ -150,4 +154,4 @@ Example: r = 9 -> C = 56.55; p = 0.75 -> offset 14.14.
 | Current browsers | full support |
 | WebKit-based browsers, mask | needs `-webkit-mask` as well as `mask` |
 | SVG as `<img>` or CSS background | no scripts, no external resources, CSS animation inside the file still runs, no `currentColor` from the page |
-| Email clients | no defs, animation or `<style>`; inline attributes; PNG fallback |
+| Email clients | no defs, animation or `<style>` (so no embedded fonts: outline the text or use `sans-serif`); inline attributes; PNG fallback |

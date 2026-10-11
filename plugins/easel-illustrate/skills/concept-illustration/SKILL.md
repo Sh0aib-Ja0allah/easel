@@ -13,7 +13,7 @@ when_to_use: >-
   illustration use easel-illustrate:svg-illustration; for icons, charts or UI graphics use
   easel-illustrate:svg; for an infographic with data use easel-design:infographic.
 argument-hint: "[the idea in one sentence] [the mascot, if any]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__embed_fonts Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__embed_fonts Bash(node:*) Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: the method (compose first, one idea per image, structure types, fresh metaphors, the
@@ -22,7 +22,7 @@ allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core
      MIT License, Copyright (c) 2026 Aishwarya Ashok, itself adapted in part from ian-xiaohei-illustrations,
      Copyright (c) 2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): neither project's character
      is used (a user-supplied mascot or Easel's neutral default instead); vector output through the
-     Easel engine by default; no watermark. -->
+     Easel engine by default; no watermark; svg-check before rendering. -->
 
 # Concept illustration
 
@@ -64,9 +64,11 @@ Wrap it in a page (`<html>` with the SVG at 1600 x 900) if you want CSS.
 
 ## 4. Render, look, check
 
-`mcp__plugin_easel-core_easel__render_still` at 1600 x 900, then look at it at full size and small
-(a 400 px wide copy). Run `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping",
-"contrast"]`, `fixedFrame: true`) and the QA checklist, including the removal test. Fix the
+First run `node "${CLAUDE_PLUGIN_ROOT}/tools/svg-check.mjs" ./easel-out/<slug>/` and fix every
+FAIL (most often a label with a bare "&": write `&amp;`, or the file opens as an XML error).
+Then `mcp__plugin_easel-core_easel__render_still` at 1600 x 900, and look at it at full size and
+small (a 400 px wide copy). Run `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping",
+"contrast"]`, `fixedFrame: true`) and the QA checklist, including the mascot test. Fix the
 single worst failure and re-render; at most three passes.
 
 Then `easel-core:critique` with the **illustration** rubric on the PNG (the cold read must name
@@ -79,7 +81,11 @@ First give the SVG its font: the labels are `<text>` in Caveat, which Easel's re
 user's site, slides or editor do not (there the labels fall back to a default font and the
 handwriting is gone). Run `mcp__plugin_easel-core_easel__embed_fonts` `{"file": ".../01-<slug>.svg"}`
 and deliver the `-embedded.svg` it writes (Caveat inlined as base64 WOFF2), not the bare SVG. Keep
-every `<text>` in a bundled face (Caveat, Inter, ...): embed_fonts refuses any other.
+every `<text>` in a bundled face (Caveat, Inter, ...): embed_fonts refuses any other. The bundled
+faces carry Latin letters only: labels in another script (Cyrillic, Greek, CJK, Arabic) are drawn
+by the viewer's own font even when embedded, so say so, or keep the labels in English as the style
+asks. For an email or a newsletter, deliver the PNG, not the SVG: mail clients drop the embedded
+`<style>` and the wobble filter.
 
 Deliver that SVG and the PNG (and a 1200 x 675 PNG with `sizes` if it is for social), named
 `01-<slug>.png`, `02-...` in order when there are several. Report what each image shows in one

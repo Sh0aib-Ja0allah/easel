@@ -2,17 +2,18 @@
 name: svg-illustration
 description: >-
   Draw rich SVG illustrations by hand and refine them by looking at real renders: scenes and
-  landscapes, characters, mascots and animals, spot illustrations, lit object studies,
-  app-icon tiles with depth, and patterns and backgrounds. Uses multi-stop gradients,
+  landscapes, characters, mascots and animals, spot and empty-state illustrations, lit object
+  studies, icon tiles with depth, and patterns and backgrounds. Uses multi-stop gradients,
   five-zone lighting, coloured shadows, filter recipes (shadows, glow, grain, paper, specular
   and diffuse light, glass), material looks (metal, gold, glass, wood, water, stone, fabric),
   layered composition, atmosphere, and CSS or SMIL animation with a reduced-motion path. Every
   draft is rendered through the Easel engine, read and fixed before delivery.
 when_to_use: >-
-  The user wants an illustration, a scene, a character or mascot, a hero or spot image, an
-  object with lighting and texture, or an animated illustrative SVG. Routing - for icons, UI
-  graphics, charts, diagrams, sprites, masks, framework components or email-safe SVG use
-  easel-illustrate:svg; for a logo use easel-design:logo; for a full icon family use
+  The user wants an illustration, a scene, a character or mascot, a hero, spot or empty-state
+  image for an app, an object with lighting and texture, or an animated illustrative SVG.
+  Routing - for icons, UI graphics, charts, diagrams, icon sprite sheets, masks, framework
+  components or email-safe SVG use easel-illustrate:svg; for a logo, or a favicon or app icon
+  (the icon and its sizes), use easel-design:logo; for a full icon family use
   easel-design:icons; for one idea as a hand-drawn sketch with a mascot use
   easel-illustrate:concept-illustration; for p5.js or algorithmic art use
   easel-illustrate:generative-art; for a data infographic use easel-design:infographic; for
@@ -23,7 +24,7 @@ allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core
 
 <!-- Easel: adapted from upbrew-tech/svg-creator-skill @ 1eb83d602a992b69a1771c4e0116a9f7de6ffaa2
      (github.com/upbrew-tech/svg-creator-skill, SKILL.md), Apache License 2.0, Copyright 2025 SVG Creator Skill Contributors;
-     license text in licenses/Apache-2.0.txt, see NOTICE.md. Modified by Easel (2026-10-11): Easel frontmatter and routing; the svg_loop.py render/finish loop replaced by Easel engine renders and svg-check.mjs; heredocs, fixed paths and present_files removed; animated characters use an inline forward-kinematics script rendered by the engine instead of a React artifact; logos, icons and charts routed to sibling skills; bundled fonts, embedded in delivered files with text. -->
+     license text in licenses/Apache-2.0.txt, see NOTICE.md. Modified by Easel (2026-10-11): Easel frontmatter and routing; the svg_loop.py render/finish loop replaced by Easel engine renders and svg-check.mjs; heredocs, fixed paths and present_files removed; animated characters use an inline forward-kinematics script rendered by the engine instead of a React artifact; logos, icons and charts routed to sibling skills; bundled fonts, embedded in delivered files with text; favicons, app icons and empty states routed, the famous-character refusal and the dark render check added. -->
 
 # SVG illustration
 
@@ -42,7 +43,9 @@ heredocs). Start from the document structure below.
 **2. Render it** with `mcp__plugin_easel-core_easel__render_still`:
 `file` (the SVG), `width` and `height` at the viewBox aspect, `scale: 2` for fine detail; the
 PNG lands in `./easel-out/<slug>/`. Add `theme: "both"` when the piece uses `currentColor` or
-must sit on dark and light pages.
+must sit on dark and light pages: the dark render paints a dark page background behind the SVG,
+as a dark UI would, so `currentColor` turns light there, and a dark detail that would sink into
+a dark page is visibly lost.
 
 **3. Read the PNG.** Actually look at it with the Read tool. Study what you see, not what you
 meant to draw.
@@ -61,8 +64,10 @@ meant to draw.
 `node "${CLAUDE_PLUGIN_ROOT}/tools/svg-check.mjs" ./easel-out/<slug>/` and fix every FAIL
 (xmlns and viewBox, unique ids, every `url(#id)` defined, an accessible name or
 `aria-hidden="true"`, no scripts or external references, UTF-8 declaration for non-ASCII
-text), render once more, then hand over the SVG with the PNG you looked at. Deliver only what
-you have rendered and seen.
+text, a well-formed file: `&amp;` for "&"), render once more, then hand over the SVG with the PNG
+you looked at. Deliver only what you have rendered and seen. For an email, hand over the PNG:
+mail clients drop gradients, filters and an embedded font's `<style>` (an email-safe SVG is
+easel-illustrate:svg's job).
 
 ### Iteration guidelines
 
@@ -145,13 +150,22 @@ Apply at 5-15% opacity on surfaces and backgrounds.
   Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math); no web-font links, no
   external URLs. Deliver a file with `<text>` as the `-embedded.svg` that
   `mcp__plugin_easel-core_easel__embed_fonts` writes: the user's site does not have the bundled
-  fonts, so bare `<text>` falls back to a default font there
+  fonts, so bare `<text>` falls back to a default font there. The bundled faces are Latin only:
+  text in another script (Cyrillic, Greek, CJK, Arabic) is drawn by the viewer's own font even
+  when embedded, so tell the user, and outline a short label (draw it as paths) when its look
+  matters
 
 ---
 
 ## Category guidance
 
 ### Characters, figures, animals
+
+Never recreate a copyrighted or trademarked character (a famous game, film, comic or cartoon
+character, or a brand's mascot): offer an original character with the qualities the user wants
+instead. The alternative shares the mood or genre, never the character's signature features: no
+matching outfit, headwear, facial hair, colour scheme, job or name pun, so it cannot read as the
+original. Never name a living artist or studio as a style either: describe the look.
 
 The hardest category. Build in steps with aggressive feedback:
 
@@ -179,12 +193,18 @@ A mascot is a character: same build order. Keep a limited palette (3-5 colours p
 and highlight tints), a clear silhouette, and test it at small sizes on a `contact_sheet`. A
 mascot used to explain one idea as a sketch: easel-illustrate:concept-illustration.
 
+An empty-state or onboarding illustration sits inside an app's UI: keep it flat and calm (2-4
+colours from the app's palette, few or no gradients and filters, no text in the art), size it
+for the slot (often 160-240 px wide), and check it on light and dark with `theme: "both"` when
+the app has a dark mode.
+
 ### Icons with depth and app-icon tiles
 
 Grid-aligned, 2px stroke, `stroke-linecap="round"`, `stroke-linejoin="round"`, `fill="none"`,
 `stroke="currentColor"`; stay within the 2-22 range on a 24 grid. A tile with depth (gradient,
 shine, shadow) is in the composition reference. Plain UI icons: easel-illustrate:svg; a full
-family: easel-design:icons.
+family: easel-design:icons; a favicon or app icon for a brand or app (the icon and its export
+sizes): easel-design:logo, which can use a tile painted here as its art.
 
 ### Logos and badges
 

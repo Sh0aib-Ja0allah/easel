@@ -4,9 +4,10 @@ description: >-
   Entry point for illustration and drawing with Easel: decides what kind of picture is wanted and
   hands it to the right easel-illustrate skill (svg for UI graphics, icons, charts and diagrams;
   svg-illustration for scenes and characters; concept-illustration for one idea drawn as a sketch
-  with a mascot; generative-art for p5.js algorithmic art), or to easel-design (logos, posters)
-  and easel-ai-media (photographic or painted rasters, when installed). Vector work is drawn as
-  code and checked through the Easel engine, with no API key.
+  with a mascot; generative-art for p5.js algorithmic art), or to easel-design (logos, favicons,
+  icon families, posters), easel-pixel (pixel art and game sprites) and easel-ai-media
+  (photographic or painted rasters), when installed. Vector work is drawn as code and checked
+  through the Easel engine, with no API key.
 when_to_use: >-
   The user says "draw", "illustrate", "make an illustration", "make a picture of", or asks for a
   graphic without saying what kind, such as art for an app screen (an empty state, onboarding, a
@@ -30,18 +31,20 @@ and free.
 
 | The user wants | Kind | Use |
 |---|---|---|
-| An icon, a UI graphic, a chart, a diagram, a progress ring, a sprite, an email-safe SVG, a React/Vue SVG component | vector for code | `easel-illustrate:svg` |
+| An icon or a few icons, a UI graphic, a chart or diagram for a page or app, a progress ring, an SVG loader, an icon sprite sheet, an email-safe SVG, a React/Vue SVG component | vector for code | `easel-illustrate:svg` |
 | A scene, a character, a mascot, a spot or empty-state illustration, an object study | vector illustration | `easel-illustrate:svg-illustration` |
 | One idea, metaphor or process drawn as a quick sketch for an article or a post | concept sketch | `easel-illustrate:concept-illustration` |
 | Generative, algorithmic or "code" art, a flow field, particles, an abstract loop | generative | `easel-illustrate:generative-art` |
 | A logo, wordmark, favicon or app icon | brand mark | `easel-design:logo` |
+| A family of icons in one style | icon system | `easel-design:icons` |
+| Pixel art: a game sprite, its animation frames, a tileset | pixel art | `easel-pixel:pixel` when installed (it drives the user's own Aseprite) |
 | A poster, social graphic or other layout with text | composed layout | `easel-design:design` |
 | A photo-like or painted image | raster | `easel-ai-media:image` when installed (the user's own key, a cost estimate first); otherwise say so and offer a vector route |
 | Moving pictures with a story | video | `easel-motion:animate` |
 
 Whichever skill makes it, the picture is rendered, looked at and critiqued with
-`easel-core:critique` (**illustration** rubric; **design** for UI graphics) before it is called
-finished.
+`easel-core:critique` (**illustration** rubric; **design** for charts, diagrams and graphics
+carried by their text) before it is called finished.
 
 If two fit, take the one closest to where the picture will be used and say so in one line. Never
 copy a well-known character or another artist's work, and never name a living artist or studio

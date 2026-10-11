@@ -10,8 +10,10 @@ file starts with a header naming its source file, the commit and what Easel chan
 `skills/svg/` (the skill and its scenarios, syntax and examples references) is adapted from
 [linyaosky/svg-skill](https://github.com/linyaosky/svg-skill) at commit
 `2103b92cb47f588a97a6c38aa6c40571fadbd4f8`, and `tools/svg-check.mjs` follows its quality
-checklist. Copyright (c) 2026 svg-skill contributors. MIT License (text below). Easel fixed the
-upstream bar chart example (the bars did not sit on the axis and were not proportional).
+checklist. The three files in `examples/svg/` (the bar chart, the progress ring and the spinner)
+are its examples as corrected in the skill's examples reference; each carries the header.
+Copyright (c) 2026 svg-skill contributors. MIT License (text below). Easel fixed the upstream bar
+chart example (the bars did not sit on the axis and were not proportional).
 
 ## upbrew-tech/svg-creator-skill (Apache-2.0)
 
@@ -57,8 +59,8 @@ doctor into the plugin data folder and served to pages offline; Easel does not s
 
 ## Easel's own
 
-The mascot ("the card"), the viewer template, `examples/` and the routing tables are Easel's own
-work under the MIT License.
+The mascot ("the card"), the viewer template, `examples/` (except the three linyaosky examples in
+`examples/svg/`) and the routing tables are Easel's own work under the MIT License.
 
 ## The MIT License (text, for each MIT source above)
 

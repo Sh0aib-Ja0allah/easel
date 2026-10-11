@@ -53,7 +53,8 @@ const CONTROLS = [
 // ---- YOUR ALGORITHM -------------------------------------------------------
 // Precompute what does not depend on t in build() (called after every seed or parameter change),
 // then paint frame t in paint(t). For a seamless loop, make paint(0) equal paint(PIECE.duration):
-// drive motion with angle = TWO_PI * t / PIECE.duration (sin/cos, noise on a circle).
+// drive motion with a = TWO_PI * t / PIECE.duration: sin(a) and cos(a), or noise sampled around a
+// circle, noise(x * s + r * cos(a), y * s + r * sin(a)) (p5 1.x noise() takes three coordinates at most).
 // Tidal Script: strands of ink combed by a slow noise current. Each strand starts at a seeded point
 // and is traced through the field for a fixed number of steps; the field itself drifts around a
 // circle in noise space, so the frame at t = duration is the frame at t = 0 (a seamless loop).

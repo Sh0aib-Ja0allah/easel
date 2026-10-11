@@ -1,5 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img"
      aria-labelledby="chart-title chart-desc">
+  <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
+       (github.com/linyaosky/svg-skill, examples.md, the bar chart), MIT License, Copyright (c) 2026
+       svg-skill contributors; see NOTICE.md. Modified by Easel (2026-10-11): bars rewritten to sit on
+       the baseline with heights to scale (the scale is in the comment below); title and desc state
+       the data; bundled Inter for text. The same chart is in skills/svg/reference/examples.md. -->
   <title id="chart-title">Quarterly sales: Q1 40, Q2 65, Q3 50, Q4 80</title>
   <desc id="chart-desc">Bar chart. Sales rise from 40 in Q1 to 65 in Q2, dip to 50 in Q3 and peak at 80 in Q4.</desc>
   <!-- Plot area x 50..370 (320 wide), y 40..240 (200 high); baseline y = 240.

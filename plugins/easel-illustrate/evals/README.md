@@ -1,9 +1,10 @@
 # easel-illustrate evals
 
-Seven routing cases: one per skill, plus one where a famous character must be declined and one
-unclear request that must be routed by kind of picture. Each has a "skill fired" grader and an
-LLM grader on the plan the skill produces. Renders are covered by the plugin's tests
-(`npm --prefix plugins/easel-illustrate test`).
+Ten routing cases: one per skill, one where a famous character must be declined, one unclear
+request that must be routed by kind of picture, and three ambiguous phrases that another plugin
+also claims ("a sprite" for a game, "a bar chart" with no format named, "a looping
+animation"). Each has a "skill fired" grader and an LLM grader on the plan the skill produces.
+Renders are covered by the plugin's tests (`npm --prefix plugins/easel-illustrate test`).
 
 ## Run (real model calls on your account; once per release)
 

@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="75% complete">
+  <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
+       (github.com/linyaosky/svg-skill, examples.md, the progress ring), MIT License, Copyright (c)
+       2026 svg-skill contributors; see NOTICE.md. Modified by Easel (2026-10-11): as in
+       skills/svg/reference/examples.md (track in currentColor at low opacity), plus an accessible
+       name and butt caps so the arc reads exactly 75%. -->
   <!-- r 9 -> C = 2 x pi x 9 = 56.55; 75% -> offset 56.55 x 0.25 = 14.14.
        Track and arc are both currentColor (the track at low opacity), so the ring follows the
        text colour and shows on light and dark pages. Butt caps so the arc reads exactly 75%. -->

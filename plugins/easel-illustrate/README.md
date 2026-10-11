@@ -15,8 +15,8 @@ generative art). Photographic or painted rasters go through `easel-ai-media` whe
 | Skill | Use it for |
 |---|---|
 | `/easel-illustrate:illustrate` | Not sure which kind of picture: it routes |
-| `/easel-illustrate:svg` | Icons, UI graphics, charts, diagrams, progress rings, sprites, masks, React/Vue SVG, email-safe SVG |
-| `/easel-illustrate:svg-illustration` | Scenes, characters, mascots, spot illustrations with lighting, materials and filters |
+| `/easel-illustrate:svg` | Icons, UI graphics, charts and diagrams for a page or app, progress rings, icon sprite sheets, masks, React/Vue SVG, email-safe SVG |
+| `/easel-illustrate:svg-illustration` | Scenes, characters, mascots, spot and empty-state illustrations, with lighting, materials and filters |
 | `/easel-illustrate:concept-illustration` | One idea drawn as a deadpan sketch with a mascot (yours, or the default card) |
 | `/easel-illustrate:generative-art` | p5.js algorithmic art: a philosophy, a seeded sketch, stills and a seamless loop |
 
@@ -25,7 +25,7 @@ generative art). Photographic or painted rasters go through `easel-ai-media` whe
 | Folder | What it is |
 |---|---|
 | `skills/<name>/` | Each skill's procedure and references (`generative-art/templates/viewer.html` is the p5.js starting page) |
-| `tools/svg-check.mjs` | Checks SVG files before delivery: `node tools/svg-check.mjs <file or folder> [--email]` |
+| `tools/svg-check.mjs` | Checks SVG files before delivery (well-formed XML, structure, accessibility, no scripts or external references): `node tools/svg-check.mjs <file or folder> [--email]` |
 | `examples/` | A finished example per skill, rendered and checked by the tests (`examples/manifest.json`) |
 | `evals/` | Routing evals (see its README) |
 

@@ -1,7 +1,7 @@
 <!-- Easel: adapted from aishwaryaashok14/peanut-illustrations @ 1e5c645892a2d70242062f23ee2277b18240e05c
      (github.com/aishwaryaashok14/peanut-illustrations, peanut-illustrations/references/style-dna.md), MIT License,
      Copyright (c) 2026 Aishwarya Ashok, with portions adapted from ian-xiaohei-illustrations, Copyright (c)
-     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): the peanut and its watermark removed (Easel images carry no watermark); the upstream author line dropped (credited in NOTICE.md); "not vector" reworded for SVG drawing; a section on drawing the style as SVG added. -->
+     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): the peanut and its watermark removed (Easel images carry no watermark); the upstream author line dropped (credited in NOTICE.md); "not vector" reworded for SVG drawing; a section on drawing the style as SVG added, with a text shade of the accent that passes AA. -->
 
 # Style DNA
 
@@ -60,6 +60,8 @@ Avoid cute, childish, over-complicated, or stiff.
   wobble from an SVG filter (`feTurbulence` with `baseFrequency` about 0.02 and a fixed `seed`,
   then `feDisplacementMap` with `scale` 2-3) applied to the line-art group, never to the labels.
 - Labels in the bundled handwriting face, Caveat (400 or 700), 30-44 px, black; the one key word
-  may take the accent.
+  may take the accent in its text shade `#B8561A` (4.8:1 on white, so it passes AA; the bright
+  `#E8772E` is 2.95:1, too light for text). With another accent colour, darken it for text
+  until it reaches 4.5:1 on white.
 - The accent is one colour (default warm orange `#E8772E`) on one element: the main arrow, the
-  result, the key word.
+  result, the key word (in its text shade).

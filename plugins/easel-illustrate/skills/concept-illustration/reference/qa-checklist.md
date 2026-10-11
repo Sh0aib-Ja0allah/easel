@@ -1,7 +1,7 @@
 <!-- Easel: adapted from aishwaryaashok14/peanut-illustrations @ 1e5c645892a2d70242062f23ee2277b18240e05c
      (github.com/aishwaryaashok14/peanut-illustrations, peanut-illustrations/references/qa-checklist.md), MIT License,
      Copyright (c) 2026 Aishwarya Ashok, with portions adapted from ian-xiaohei-illustrations, Copyright (c)
-     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): the peanut and its watermark checks removed; the removal test and the engine checks added. -->
+     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): the peanut and its watermark checks removed; the mascot test and the engine checks added. -->
 
 # QA Checklist
 
@@ -10,13 +10,13 @@
 - It is 16:9 horizontal.
 - The background is clean white.
 - The mascot is present.
-- The mascot performs the core action, not just decoration (the removal test: delete the mascot; if the idea reads exactly the same, it was decoration).
+- The mascot performs the core action, not just decoration (the mascot test: delete the mascot; if the idea reads exactly the same, it was decoration).
 - The metaphor is freshly invented for this prompt.
 - The image is deadpan, inventive, and interesting.
 - Clean and sparse — the main subject is under ~60% of the canvas.
 - One image expresses only one core structure.
 - Labels are few, short, and readable English.
-- Exactly one accent color (warm orange by default), used only for the single point of emphasis.
+- Exactly one accent color (warm orange by default), used only for the single point of emphasis (a key word in the accent's darker text shade is the same accent).
 - No second or third color crept in.
 
 ## Failure signals

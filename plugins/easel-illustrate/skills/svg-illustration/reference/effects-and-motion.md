@@ -1,6 +1,6 @@
 <!-- Easel: adapted from upbrew-tech/svg-creator-skill @ 1eb83d602a992b69a1771c4e0116a9f7de6ffaa2
      (github.com/upbrew-tech/svg-creator-skill, references/advanced-techniques.md), Apache License 2.0, Copyright 2025 SVG Creator Skill Contributors;
-     license text in licenses/Apache-2.0.txt, see NOTICE.md. Modified by Easel (2026-10-11): split from advanced-techniques.md (this file holds sections 6-13); fog mask placed over the fog; app-icon shadow filter fixed; SMIL notes corrected and engine checks added; reduced motion extended; the React forward-kinematics artifact replaced by an HTML page with an inline script rendered by the Easel engine; third-party animation products made generic. -->
+     license text in licenses/Apache-2.0.txt, see NOTICE.md. Modified by Easel (2026-10-11): split from advanced-techniques.md (this file holds sections 6-13); fog mask placed over the fog; app-icon shadow filter fixed; SMIL notes corrected and engine checks (filmstrip seeks SMIL too) added; reduced motion extended; the React forward-kinematics artifact replaced by an HTML page with an inline script rendered by the Easel engine; third-party animation products made generic. -->
 
 # Advanced SVG techniques (2 of 2)
 
@@ -262,10 +262,10 @@ SMIL motion small and slow, or build the motion in CSS when it must stop for red
   of frames with timestamps. Look for jumps, parts that drift apart, loops that do not close.
 - `mcp__plugin_easel-core_easel__render_still` with `t` for a single moment, and with
   `reducedMotion: "reduce"` for the reduced-motion still.
-- The engine seeks CSS animations itself. SMIL keeps its own clock, so for SMIL frames write a
-  small HTML page that inlines the SVG and defines
-  `window.renderAt = (t) => { svg.pauseAnimations(); svg.setCurrentTime(t); }`, and render
-  that page.
+- The engine seeks CSS animations and SMIL (`<animate>`, `<animateTransform>`,
+  `<animateMotion>`) alike: at each capture time it pauses the SVG's animations and sets them
+  to that time, so check SMIL with `filmstrip` too (`times`, or `count` with `duration` set to
+  the SMIL cycle) and the same `t` gives the same frame on every run.
 - For video output, use easel-motion:animate.
 
 ---

@@ -10,8 +10,11 @@ learn it once, then read each new image faster.
 If the user or their brand has a mascot, use it: ask for a reference image or a description,
 and write down in five or six lines its silhouette, line weight, face (how the eyes and mouth
 are drawn), limbs and the one or two things that make it recognisable. Draw it the same way in
-every image. Never use a well-known character from a film, a game, a comic, a channel or another
-illustrator's series, even when asked: offer the default card or a new character instead.
+every image. Never use or recreate a well-known, copyrighted or trademarked character (from a
+film, a game, a comic, a channel or another illustrator's series), even when asked: offer the
+default card or a new character with the qualities the user wants instead. The alternative
+shares the mood or genre, never the character's signature features: no matching outfit,
+headwear, facial hair, colour scheme, job or name pun, so it cannot read as the original.
 
 ## The default: the card
 

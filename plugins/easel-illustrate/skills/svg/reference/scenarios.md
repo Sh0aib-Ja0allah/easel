@@ -1,6 +1,6 @@
 <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
      (github.com/linyaosky/svg-skill, scenarios.md), MIT License, Copyright (c) 2026 svg-skill contributors;
-     see NOTICE.md. Modified by Easel (2026-10-11): render checks through the Easel engine and svg-check.mjs added per scenario; chart steps state the plot area and baseline; logos and icon families routed to easel-design; bundled fonts; email client names made generic. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): render checks through the Easel engine and svg-check.mjs added per scenario; chart steps state the plot area and baseline; logos and icon families routed to easel-design; bundled fonts; email client names made generic; favicons, empty states, game sprites and UI motion code routed to their skills; email text never embedded. -->
 
 # SVG scenario guide
 
@@ -29,21 +29,21 @@ shared grid and keyline shapes: use easel-design:icons.
 **Logo**: 10% safe margin; prefer path outlines over `<text>` that depends on a font. A full
 logo (concept, wordmark, lockups, usage) is easel-design:logo.
 
-**Favicon 32x32**: 1-2 shapes at most; avoid thin strokes (under 2 units); high contrast.
-
-Export both: the larger mark plus a simplified favicon variant. Check the favicon on a
-`contact_sheet` at 16 and 32 on light and dark.
+**Favicon 32x32**: a favicon or app icon for a brand or app (the icon and its export sizes) is
+easel-design:logo. Here only an SVG of a mark the user already has: 1-2 shapes at most; avoid
+thin strokes (under 2 units); high contrast. Check it on a `contact_sheet` at 16 and 32 on light
+and dark.
 
 ---
 
-## 3. Illustration / empty state
+## 3. Simple flat decoration
+
+An empty-state, onboarding or spot illustration is easel-illustrate:svg-illustration (it keeps
+them flat when the UI needs flat). Here only small decorations that sit beside UI:
 
 - Flat colour blocks and simple shapes, minimal detail
-- Characters: round head + body rect/ellipse + limb lines
-- Empty box/folder: trapezoid or path for perspective
+- Simple objects: an empty box or folder as a trapezoid or path for perspective
 - viewBox 100x100 or 200x200
-
-Anything with lighting, materials or a real character: easel-illustrate:svg-illustration.
 
 ---
 
@@ -147,9 +147,11 @@ Teardrop path, or triangle + base circle; small centre dot. Usually 24x24, point
 Usage: `<svg><use href="#icon-home" width="24" height="24"/></svg>` (same page) or an
 external sprite with `<use href="sprite.svg#icon-home">`.
 
-Each symbol uses currentColor inside; ids unique across the page. **Never preview a sprite
-file directly**: its root is `display:none`. To check it, write each symbol out as its own
-small SVG (or an HTML page with one `<use>` per symbol) and render a `contact_sheet`.
+This is an icon sprite sheet; a game or pixel-art sprite (a character, its frames, a tileset)
+is easel-pixel:pixel. Each symbol uses currentColor inside; ids unique across the page.
+**Never preview a sprite file directly**: its root is `display:none`. To check it, write each
+symbol out as its own small SVG (or an HTML page with one `<use>` per symbol) and render a
+`contact_sheet`.
 
 ---
 
@@ -195,8 +197,10 @@ Always add a reduced-motion path:
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
 ```
 
-Check with `filmstrip` (`count: 6`) and with `render_still` `reducedMotion: "reduce"`. No
-animation in email.
+Check with `filmstrip` (`count: 6`) and with `render_still` `reducedMotion: "reduce"`; the
+engine seeks SMIL too, so check it the same way (`times`, or `count` with `duration`). No
+animation in email. A loader or hover effect written as motion code in the user's own components
+(transitions, GSAP, their framework) is easel-motion:ui-motion; here the SVG asset.
 
 ---
 
@@ -239,6 +243,9 @@ To check a component, write the same markup as a plain `.svg` file and render it
 - Set `width` and `height` on the root
 - Simplify paths; avoid `<defs>` references (several desktop mail clients drop them)
 - Many clients block SVG entirely: offer a PNG fallback rendered with `render_still`
+- Text: never deliver it through `embed_fonts` (its `<style>` is dropped by mail clients and fails
+  `--email`). Outline a short label (draw it as paths), or give `<text>` a generic family
+  (`font-family="sans-serif"`) and accept the reader's font; longer words go in the email's HTML
 
 Validate with `svg-check.mjs <file> --email`.
 
