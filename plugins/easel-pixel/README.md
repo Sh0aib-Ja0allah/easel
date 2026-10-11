@@ -31,8 +31,9 @@ node "<plugin folder>/server/launch.mjs" setup --data "<plugin data folder>"
 It installs the pinned bridge, `@pebbly/aseprite-ai-artist` 0.8.0 (MIT, by with-pebbly), into the
 plugin's data folder, then its Aseprite extension. Quit and reopen Aseprite, and run `/mcp` to
 reconnect the `aseprite` server if its tools are missing. `doctor` instead of `setup` diagnoses a
-broken connection. Settings (`/plugin configure easel-pixel`): `headless` (draw with no window)
-and `aseprite_path` (needed for headless mode if Aseprite is not found).
+broken connection and installs nothing (without the bridge it says to run `setup`). Settings
+(`/plugin configure easel-pixel`): `headless` (draw with no window) and `aseprite_path` (needed
+for headless mode if Aseprite is not found).
 
 ## Skills and agents
 

@@ -159,9 +159,14 @@ Gates - run before every commit, never commit red:
   Claude Code config, uses every plugin from its installed copy, checks `claude mcp list`
   connects the engine and media servers, and installs easel-motion alone into a second config to
   check easel-core arrives as a dependency (needs network; run before a release, not per commit).
-- CI (`.github/workflows/ci.yml`): `validate plugins` (ubuntu), `engine` (every plugin's tests) on
-  ubuntu, windows and macos, and on pushes to main `clean install` (install-check with
-  `--expect-sha`) on all three.
+- `node scripts/release-check.mjs` (since the v1.0.0 review fixes): for each plugin, fails when its
+  files differ from its latest `<plugin>--v<version>` tag but the version is unchanged (or went
+  backwards). Run before each release, not per commit: between releases it fails by design.
+- CI (`.github/workflows/ci.yml`): `validate plugins` (ubuntu; with a tree-hygiene step: no empty
+  tracked file, no tracked `node_modules`, `easel-out`, eval results or key files, LF in the index),
+  `node 20 (runtime)` (ubuntu: `node --check` and the engine and media MCP servers started on
+  Node 20), `engine` (every plugin's tests) on ubuntu, windows and macos, and on pushes to main
+  `clean install` (install-check with `--expect-sha`) on all three.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`
 until green. A green local run is not enough once CI exists.

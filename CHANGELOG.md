@@ -33,6 +33,44 @@ release bumps them. Decisions D27-D34 in `docs/findings-and-decisions.md`.
   `claude mcp list` and the easel-core dependency install; a version-consistency test; docs
   reconciled (tasks and roadmap list what is deferred or below threshold).
 
+Fixes from the full check of `972821c` (2026-10-11, report Q-01..Q-44), also unreleased.
+Decisions D35-D47.
+
+- **Safety and data loss:** `mux_audio` can no longer overwrite its own input through a link or a
+  case-variant name, and writes every output through a partial file renamed into place; engine
+  outputs are never written through a link. The voice-clone gate needs an English statement with
+  a consenting sentence that names the speaker and carries no refusal word, refuses other
+  languages with an explicit message, and also recognises Easel's own speech by its decoded sound.
+  Quotes are signed with a per-install key and cover the bytes of every reference and sample; the
+  dry run shows every quoted field; each provider either sends an argument as quoted or refuses
+  it before any spend; a paid result is reported even when bookkeeping fails, and an empty result
+  is an error that says it may have been charged; references are parsed to their end and hard
+  links are refused.
+- **Gates that lied:** `qa` text_clipping measures the letters, not the font's line box; contrast
+  scores each line on its own, measures form fields, shadow DOM and filtered text, lists what it
+  cannot measure, and fails a named contrast check that measured nothing; inactive controls and
+  art marked `data-easel-bleed` are exempt and listed; canvas_text refuses an incomplete TIMELINE;
+  media checks run without blocking the server. SVG files must be well-formed XML in the engine,
+  `svg-check` and `embed_fonts`; SVG SMIL animation is seeked; a dark render of an SVG has a dark
+  page; wrapper pages go in the job folder, never beside the user's files.
+- **Skills that could not finish:** `filmstrip` reads local video files; `assemble` and the
+  engine's mastering land on -14 LUFS (measured gain and a true-peak limiter, not loudnorm), and
+  `assemble` takes narration per clip or per time; `embed_fonts` takes HTML pages, and the design
+  skills that deliver HTML deliver the `-embedded.html`; design skills run qa at the piece's own
+  size with `fixedFrame`; synthwave, liquid and aurora-glass call qa with `castMaxRatio: 1`;
+  image and ai-video end in a critique; allowed-tools gaps closed.
+- **Routing:** one tie-break sentence in each skill of every overlapping pair (favicons, sprites,
+  charts, loaders and hover effects, "a video", looping animation, product shots, reviewing UI
+  motion, empty states) and new routing eval cases.
+- **Docs, lints and small items:** name lints catch CLAUDE.md's own examples after folding
+  accents and dashes; design systems name only bundled weights (checked); `svg-check` fails XML
+  errors, more external-reference forms and email-unsafe elements, and accepts honest labels;
+  linyaosky-derived example SVGs carry attribution; easel-pixel's Preview text is one string on
+  every surface and its `doctor` installs nothing; CI gained a tree-hygiene step and a Node 20
+  runtime job; `scripts/release-check.mjs` reports plugins changed since their tag without a
+  version bump; engine, CLI and argument bounds tightened (render_pdf sizes, `t`, seeds, crops,
+  points, `lufsMin`/`lufsMax`, cancellation).
+
 ## 1.0.0: easel-core, easel-motion, easel-design, easel-illustrate, easel-ai-media, easel-pixel (2026-10-11)
 
 The first stable release of the whole marketplace. Every plugin is 1.0.0; the five that build on

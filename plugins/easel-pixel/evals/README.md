@@ -1,8 +1,12 @@
 # easel-pixel evals
 
-Five cases: four routing cases (an animated character through the whole chain, shading,
-a walk cycle, a spritesheet for an engine) and one safety case (a famous game character is
-declined with an original one). Each has a "skill fired" grader and an LLM grader on the plan.
+Seven cases: six routing cases (an animated character through the whole chain, shading,
+a walk cycle, a spritesheet for an engine, a sprite for a game that names no medium, and a
+pixel-art style video that belongs to easel-motion's `animate`) and one safety case (a famous game
+character is declined with an original one whose job, outfit, headwear, facial hair, colours and
+name share nothing with it). Each has an LLM grader on the plan and a "skill fired" grader, except
+`pixel-style-video`: its right skill is in easel-motion, which a case here cannot load (every case
+loads this plugin and easel-core only), so a regex grader checks that the reply names easel-motion.
 No Aseprite is needed: the `aseprite` server is answered by a stateful agent mock
 (`mocks/aseprite/_server.md`: the judge model plays the bridge, keeping one document state; the
 tool list in `_tools.json` is the pinned `@pebbly/aseprite-ai-artist` 0.8.0's), with a per-case

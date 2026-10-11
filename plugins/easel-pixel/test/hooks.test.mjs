@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync, spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -38,6 +38,20 @@ test('look nudge: once per session, a safe marker file name, nothing on bad inpu
     assert.deepEqual(readdirSync(join(data, 'look-nudge')), ['______evil_s1.seen']);
     assert.ok(hook('look-nudge.mjs', env, JSON.stringify({ session_id: 's2' })));
     assert.equal(hook('look-nudge.mjs', env, 'not json'), null);
+  } finally { rmSync(data, { recursive: true, force: true }); }
+});
+
+test('look nudge: markers of sessions older than a week are removed when a new session writes one', () => {
+  const data = mkdtempSync(join(tmpdir(), 'easel-pixel-hook-'));
+  try {
+    const dir = join(data, 'look-nudge'), week = 7 * 24 * 3600;
+    mkdirSync(dir, { recursive: true });
+    for (const n of ['old.seen', 'recent.seen', 'keep.txt']) writeFileSync(join(dir, n), '1');
+    const t = Date.now() / 1000;
+    utimesSync(join(dir, 'old.seen'), t - week - 3600, t - week - 3600);
+    utimesSync(join(dir, 'recent.seen'), t - week + 3600, t - week + 3600);
+    assert.ok(hook('look-nudge.mjs', { CLAUDE_PLUGIN_DATA: data }, JSON.stringify({ session_id: 's3' })));
+    assert.deepEqual(readdirSync(dir).sort(), ['keep.txt', 'recent.seen', 's3.seen']);
   } finally { rmSync(data, { recursive: true, force: true }); }
 });
 

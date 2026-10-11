@@ -5,7 +5,7 @@
 //
 //   node launch.mjs serve                  the MCP server (what .mcp.json starts); never installs
 //   node launch.mjs setup  --data <dir>    install the pinned package, then the Aseprite extension
-//   node launch.mjs doctor --data <dir>    the package's own diagnosis
+//   node launch.mjs doctor --data <dir>    the package's own diagnosis; never installs (says when setup is due)
 //   node launch.mjs version                the pinned version and whether it is installed
 //
 // setup installs into <data>/aseprite-ai-artist-<version>/ (CLAUDE_PLUGIN_DATA, never the plugin
@@ -157,9 +157,17 @@ export async function main(argv = process.argv.slice(2)) {
     if (!pkg0 || pkg0.stale) { log(`the Aseprite bridge (${PACKAGE}@${VERSION}) is not set up yet. Ask for pixel art and the easel-pixel:pixel skill runs its setup step, then reconnect "aseprite" with /mcp.`); return 1; }
     return run(pkg0.cli, ['serve'], 'inherit');
   }
+  // doctor is a diagnosis: it reports a missing or stale install instead of installing
+  if (cmd === 'doctor') {
+    if (!pkg0 || pkg0.stale) {
+      const found = pkg0 ? `${pkg0.version} is installed, but the pinned version is ${VERSION}` : `${PACKAGE}@${VERSION} is not installed${data ? ` in ${packageDir(data)}` : ''}`;
+      log(`the Aseprite bridge is not set up yet: ${found}. Run: node "${fileURLToPath(import.meta.url)}" setup --data "${data}"`);
+      return 1;
+    }
+    return run(pkg0.cli, ['doctor'], 'inherit');
+  }
   let pkg;
   try { pkg = install(data); } catch (err) { log(String(err.message || err)); return 1; }
-  if (cmd === 'doctor') return run(pkg.cli, ['doctor'], 'inherit');
   // setup: the package is in place; now the Lua extension into Aseprite's user folder.
   log(`${PACKAGE}@${VERSION} is installed in ${packageDir(data)}`);
   const code = await run(pkg.cli, ['install-extension'], 'inherit');

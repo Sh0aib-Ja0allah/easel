@@ -92,7 +92,7 @@ Sizes are relative effort, not dates:
 > **Released with gaps:** `easel-design--v0.3.0`, `easel-illustrate--v0.3.0`.
 >
 > - Met: the logo contact sheet and the critique loop run on the engine (the logo ladder test; every example of both plugins is rendered and checked by their tests).
-> - Not met: **Each skill has at least 2 eval cases: routing and output.** 12 of the 13 design skills have one case (only `logo` has two), and 3 of the 5 illustrate skills have one (`svg` and `concept-illustration` have two). No design or illustrate case has an output grader: each is a skill-fired check plus an LLM judge on the reply's plan, because the eval mocks write no files. Unblocked by: a second case per skill with a grader on the produced files, which needs eval mocks (or a real engine) that write them.
+> - Not met: **Each skill has at least 2 eval cases: routing and output.** 10 of the 13 design skills have one case (`logo` has three, `icons` and `infographic` two), and 2 of the 5 illustrate skills have one (`illustrate` and `svg-illustration`; `svg` has four, `concept-illustration` and `generative-art` two). No design or illustrate case has an output grader: each is a skill-fired check plus an LLM judge on the reply's plan, because the eval mocks write no files. Unblocked by: a second case per skill with a grader on the produced files, which needs eval mocks (or a real engine) that write them.
 
 
 **Goal:** cover design, illustration and drawing for still output.

@@ -20,7 +20,7 @@ const known = (t) => {
   let m;
   if ((m = /^mcp__plugin_easel-pixel_aseprite__(\w+)$/.exec(t))) return Object.hasOwn(PEBBLY.tools, m[1]);
   if ((m = /^mcp__plugin_easel-core_easel__(\w+)$/.exec(t))) return coreTools.has(m[1]);
-  return BUILTIN.has(t);
+  return BUILTIN.has(t) || t === 'Bash(node:*)';
 };
 const SKILLS = ['pixel', 'pixel-animate', 'pixel-draw', 'pixel-export'];
 const AGENTS = ['animation-director.md', 'palette-smith.md', 'rig-builder.md'];
@@ -123,6 +123,76 @@ test('honest about status and the bridge: a preview until the end-to-end run; Lu
   const launcher = read('server/launch.mjs');
   assert.doesNotMatch(launcher, /Lua execution \(run_lua\) stays off/);
   assert.match(launcher, /no\s+(?:\/\/ )?authentication or Origin check/);
-  assert.match(body('skills/pixel/SKILL.md'), /any program on\s+this computer can send Aseprite commands through it/);
+  assert.match(body('skills/pixel/SKILL.md'), /any program on\s+this computer can send Aseprite\s+commands through it/);
+});
+
+// D30: every surface a user reads says the same four things. Whitespace and blockquote markers are
+// folded so wrapped Markdown lines match.
+const flat = (s) => s.replace(/\s*\n>?\s*/g, ' ');
+test('one Preview description everywhere: untested end to end, not affiliated, the bridge accepts Lua (D30)', () => {
+  const REPO = join(PLUGIN, '..', '..');
+  const entry = JSON.parse(readFileSync(join(REPO, '.claude-plugin', 'marketplace.json'), 'utf8')).plugins.find((p) => p.name === 'easel-pixel');
+  const pj = json('.claude-plugin/plugin.json');
+  assert.equal(entry.description, pj.description, 'the marketplace entry and plugin.json carry one description');
+  const rootRow = readFileSync(join(REPO, 'README.md'), 'utf8').split('\n').find((l) => l.startsWith('| `easel-pixel` |'));
+  assert.ok(rootRow, 'the root README lists easel-pixel');
+  const surfaces = { 'plugin.json': pj.description, 'README.md': flat(read('README.md')), 'skills/pixel/SKILL.md': flat(body('skills/pixel/SKILL.md')), 'root README row': rootRow };
+  for (const [name, text] of Object.entries(surfaces)) {
+    assert.match(text, /\bpreview\b/i, `${name}: Preview`);
+    assert.match(text, /(?:not yet|never)(?: been)? (?:tested|run) end to end with a real Aseprite/i, `${name}: not tested end to end`);
+    assert.match(text, /any program on (?:this|your) computer/i, `${name}: the bridge takes commands from any local program`);
+    assert.match(text, /\bLua\b/, `${name}: Lua included`);
+  }
+  for (const name of ['plugin.json', 'README.md', 'skills/pixel/SKILL.md']) assert.match(surfaces[name], /not affiliated with[\s\S]{0,40}Aseprite[\s\S]{0,20}Igara Studio/i, `${name}: not affiliated`);
+  // only the MCP tool is off; the skill may not name run_lua (the first test), so it says "the Lua tool"
+  for (const name of ['plugin.json', 'README.md']) assert.match(surfaces[name], /only[\s\S]{0,40}run_lua/, `${name}: only run_lua is off`);
+  assert.match(surfaces['skills/pixel/SKILL.md'], /only keeps the Lua tool away from Claude/, 'skill: only the Lua tool is off');
+});
+
+test('setup and doctor run with Bash: the skill pre-approves node, every command starts with node, and it asks first', () => {
+  const text = read('skills/pixel/SKILL.md'), fm = /^---\n([\s\S]*?)\n---\n/.exec(text)[1];
+  assert.ok(field(fm, 'allowed-tools').split(/\s+/).includes('Bash(node:*)'), 'Bash(node:*) in allowed-tools');
+  const cmds = [...body('skills/pixel/SKILL.md').matchAll(/`([^`]*)`/g)].map((m) => m[1]).filter((c) => c.includes('launch.mjs'));
+  assert.ok(cmds.length >= 2, cmds.join('\n'));
+  for (const c of cmds) assert.match(c, /^node "\$\{CLAUDE_PLUGIN_ROOT\}\/server\/launch\.mjs" (setup|doctor) --data "\$\{CLAUDE_PLUGIN_DATA\}"$/, c);
+  assert.match(flat(body('skills/pixel/SKILL.md')), /run it when they agree/, 'setup installs packages and an extension: the user agrees first');
+  for (const s of SKILLS.filter((x) => x !== 'pixel')) assert.doesNotMatch(read(`skills/${s}/SKILL.md`), /Bash tool|launch\.mjs" (setup|doctor)/, `${s}: setup lives in the pixel skill`);
+});
+
+test('critique views: the real size and a zoom, and frame numbers that say which frame a file is', () => {
+  const critique = flat(body('skills/pixel/SKILL.md').split('## 5. Critique')[1].split('**Ship rule.**')[0]);
+  assert.match(critique, /scale=1\b/, 'a 1x view (the pixel rubric looks at 1x and a zoom)');
+  assert.match(critique, /scale=8\b/);
+  assert.match(critique, /`f_0\.png` is frame 1/, 'export op=frames numbers files from 0; the tools count frames from 1');
+  assert.doesNotMatch(critique, /labelled by frame\)/, 'say which numbering a label uses');
+  // the pinned 0.8.0's schemas: `frame` is "1-based" (dist/tools/kit.js), and op "frames" expands
+  // {frame} "into one file per frame, numbered from 0" (dist/tools/assets.js)
+  assert.match(flat(body('skills/pixel-export/SKILL.md')), /numbered from 0 \(`<slug>_0\.png` is frame 1/);
+});
+
+test('routing: a game sprite in Aseprite (pixel), an SVG sprite sheet (svg), a pixel-art style video (animate); every routed skill exists', () => {
+  const fm = /^---\n([\s\S]*?)\n---\n/.exec(read('skills/pixel/SKILL.md'))[1];
+  const routing = `${field(fm, 'description')} ${field(fm, 'when_to_use')}`;
+  assert.match(routing, /sprite[^.;]*game[^.;]*Aseprite[^.;]*this skill/i, 'a game sprite drawn in Aseprite: this skill');
+  assert.match(routing, /SVG sprite sheet[^.;]*easel-illustrate:svg\b/, 'an SVG sprite sheet: svg');
+  assert.match(routing, /pixel-art style[^.;]*video[^.;]*easel-motion:animate|video[^.;]*pixel-art style[^.;]*easel-motion:animate/, 'a pixel-art style video: animate');
+  for (const f of files()) {
+    // a skill or an agent of that plugin (not the MCP server name plugin:easel-pixel:aseprite)
+    for (const [, p, s] of read(f).matchAll(/(?<!plugin:)\b(easel-[a-z-]+?):([a-z][a-z-]*[a-z])\b/g)) {
+      assert.ok(existsSync(join(PLUGIN, '..', p, 'skills', s, 'SKILL.md')) || existsSync(join(PLUGIN, '..', p, 'agents', `${s}.md`)), `${f}: ${p}:${s}`);
+    }
+  }
+  // the routing evals: no word that gives the answer away
+  assert.doesNotMatch(read('evals/pixel-game-sprite/prompt.md').split('---').pop(), /pixel|aseprite|8-bit/i);
+  assert.match(read('evals/pixel-game-sprite/graders/skill-fired.md'), /easel-pixel:\)\?pixel"/);
+  assert.match(read('evals/pixel-style-video/graders/names-animate.md'), /^type: regex$/m);
+});
+
+test('the famous-character eval fails an alternative that keeps any signature feature', () => {
+  const g = read('evals/pixel-famous-character/graders/plan.md');
+  const pass = /^PASS .*$/m.exec(g)[0], fail = /^FAIL .*$/m.exec(g)[0];
+  assert.doesNotMatch(pass, /plumber|overalls|moustache|mustache|\bcap\b/i, 'the PASS example shares only genre and mood');
+  for (const k of ['job', 'outfit', 'headwear', 'facial hair', 'colour', 'name']) assert.match(fail, new RegExp(k, 'i'), `FAIL names ${k}`);
+  assert.match(body('skills/pixel/SKILL.md'), /no matching\s+outfit, headwear, facial hair, colour scheme, job or name pun/);
 });
 

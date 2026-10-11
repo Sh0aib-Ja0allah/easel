@@ -8,6 +8,6 @@
     { "name": "easel-design", "source": "./plugins/easel-design", "description": "Graphic, UI, social, posters, decks, design systems, logos, icons and brand identity" },
     { "name": "easel-illustrate", "source": "./plugins/easel-illustrate", "description": "SVG illustration and characters, concept illustration with a mascot, generative art" },
     { "name": "easel-ai-media", "source": "./plugins/easel-ai-media", "description": "AI images, video and voice using your own API keys" },
-    { "name": "easel-pixel", "source": "./plugins/easel-pixel", "description": "Preview: pixel art in Aseprite (optional; Aseprite is a paid app; not yet tested end to end)" }
+    { "name": "easel-pixel", "source": "./plugins/easel-pixel", "description": "Preview: pixel art in your own Aseprite (optional; a paid app), not yet tested end to end with a real Aseprite; not affiliated with Aseprite or Igara Studio. While it runs, its local bridge accepts commands, Lua included, from any program on this computer: only the run_lua MCP tool is off." }
   ]
 }

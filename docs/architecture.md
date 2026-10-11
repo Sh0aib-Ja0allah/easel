@@ -95,7 +95,7 @@ Reference: <https://code.claude.com/docs/en/plugins/manifest-reference>
 }
 ```
 
-**Versioning.** Once `version` is set, users only receive updates when it is bumped. Every release therefore bumps `version` and tags `<plugin>--v<version>` with `claude plugin tag --push`. Dependency version ranges resolve against those tags: since v1.0.0 the five plugins that build on core declare `{ "name": "easel-core", "version": "^1.0.0" }`, matched against the `easel-core--v1.0.0` tag (D24). See <https://code.claude.com/docs/en/plugins/dependencies>.
+**Versioning.** Once `version` is set, users only receive updates when it is bumped. Every release therefore bumps `version` and tags `<plugin>--v<version>` with `claude plugin tag --push`; before tagging, `node scripts/release-check.mjs` fails for any plugin whose files changed since its latest tag while its version did not ([CONTRIBUTING.md §7](../CONTRIBUTING.md#7-releases)). Since v1.0.0 the five plugins that build on core declare `{ "name": "easel-core", "version": "^1.0.0" }` (D24). In this marketplace that range is not resolved to a tag: installing easel-motion alone (CI run 38139487971, Claude Code 2.1.296) installed easel-core from the marketplace head, the same commit as easel-motion, and checked `^1.0.0` against that copy's version. So the easel-core version on `main` must satisfy every dependent's range (`versions.test.mjs` checks this), and a major bump of easel-core raises the dependents' ranges in the same commit. See <https://code.claude.com/docs/en/plugins/dependencies>.
 
 ## 3. How plugins share code
 
@@ -124,17 +124,17 @@ Every visual artifact is a web page that can be put into an exact state at any t
   - `window.renderAt(t)` (the mg-styles-15 contract), or
   - `window.renderFrame(t)` (the animate kit's canvas contract, easel-motion), with `window.TIMELINE` (or `window.__composition`) giving `width`, `height`, `fps` and `duration`; `window.renderAudioWav()` returns the piece's score as a base64 WAV, which `render_video` uses with `audio: "page"`; `window.ASSETS_READY` (a promise) holds rendering until embedded images are decoded, or
   - the HyperFrames composition contract: a root element with `data-composition-id`, `data-start`, `data-duration`, `data-width`, `data-height` (optional `data-fps`), and a paused GSAP timeline at `window.__timelines[<composition id>]`. CSS animations and transitions on the page are seeked through the Web Animations API (`animation.currentTime`).
-- `window.__ready = true` signals that fonts and assets have loaded. The engine waits for it only when a page script mentions `__ready`; it always waits for the load event, `document.fonts.ready` and decoded images.
-- Time `t` is in seconds. The seek order is `renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry, then every CSS animation.
+- `window.__ready = true` signals that fonts and assets have loaded. The engine waits for it when the page assigns `__ready` before load (an init-script setter sees the assignment) or a script names it (an inline script, or a local external script read from disk, matching the whole word `__ready`); it always waits for the load event, `document.fonts.ready` and decoded images.
+- Time `t` is in seconds. The seek order is `renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry, then every CSS animation and the SMIL clock of every outermost `<svg>` (paused and set to `t`).
 - The engine tells a page which format it is rendering in `window.__easel.aspect` (`'16:9'`, `'9:16'`, `'1:1'`, `'4:5'`, or `null` for the page's own size), so a piece can lay itself out per format instead of being cropped.
 
 ### Implementation (decision D7 = B, 2026-10-11)
 
-**Our own capture loop.** Playwright launches Chromium's headless shell from `${CLAUDE_PLUGIN_DATA}`, opens the page, waits for `__ready` and `document.fonts.ready`, and for each frame `n` seeks to `t = n / fps` (`renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry with `seek(t, false)`, then every Web Animation's `currentTime`). It screenshots each frame and pipes the frames to ffmpeg. The engine itself does no motion blur; the animate kit's `renderFrame(t, canvas, sub)` can draw sub-frame times for it. HyperFrames was evaluated and not adopted; see [spikes/hyperframes.md](spikes/hyperframes.md). Its composition format is supported so compositions stay portable.
+**Our own capture loop.** Playwright launches Chromium's headless shell from `${CLAUDE_PLUGIN_DATA}`, opens the page, waits for `__ready` and `document.fonts.ready`, and for each frame `n` seeks to `t = n / fps` (`renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry with `seek(t, false)`, then every Web Animation's `currentTime` and the SMIL clock of every outermost `<svg>`). It screenshots each frame and pipes the frames to ffmpeg. The engine itself does no motion blur; the animate kit's `renderFrame(t, canvas, sub)` can draw sub-frame times for it. HyperFrames was evaluated and not adopted; see [spikes/hyperframes.md](spikes/hyperframes.md). Its composition format is supported so compositions stay portable.
 
-### MCP tools (v1.0.0)
+### MCP tools
 
-Fourteen tools in v1.0.0, defined in `plugins/easel-core/engine/tools.mjs`, each named `mcp__plugin_easel-core_easel__<tool>`:
+Fifteen tools, defined in `plugins/easel-core/engine/tools.mjs`, each named `mcp__plugin_easel-core_easel__<tool>`. Fourteen shipped in v1.0.0; `embed_fonts` was added after it in the QA fixes (D32) and is in no v1.0.0 tag.
 
 | Tool | Purpose |
 | --- | --- |
@@ -143,7 +143,7 @@ Fourteen tools in v1.0.0, defined in `plugins/easel-core/engine/tools.mjs`, each
 | `render_still` | HTML/SVG/canvas → PNG at given sizes; light/dark |
 | `contact_sheet` | Many renders or sizes on one sheet (logo 16–512 px, storyboard panels) |
 | `render_video` | Page + duration + fps + aspect ratios → MP4 (and ProRes with alpha, v2) |
-| `filmstrip` | Frames at chosen times side by side, so a vision model can review motion |
+| `filmstrip` | Frames at chosen times side by side, from a page or a local video file, so a vision model can review motion |
 | `qa` | Measured checks: text clipping, contrast, canvas text (cut off, overlapping, under the phone UI) and beat grid for canvas pieces, dead or still stretches, loudness, colour-cast gate |
 | `audio_score` | Cue sheet → synthesized music and SFX (warm, bright or retro) → WAV mastered to −14 LUFS |
 | `mux_audio` | Put a track (a score or the user's own) on a video that already exists; the video stream is copied |
@@ -152,12 +152,14 @@ Fourteen tools in v1.0.0, defined in `plugins/easel-core/engine/tools.mjs`, each
 | `craft` | Return a craft rulebook or rubric by name |
 | `render_pdf` | A page or SVG → print PDF at its `@page` size, a paper format or explicit sizes |
 | `validate` | Schema validation of brand/brief/beats/cues/provenance files, or the schema itself (`schema: true`) |
-| `embed_fonts` | Added after v1.0.0 in the QA fixes (not in any v1.0.0 tag); its exact behaviour is in `tools.mjs` and the CHANGELOG once it lands |
+| `embed_fonts` | Make an SVG or HTML page carry the bundled fonts its text uses: writes a `-embedded` copy whose `@font-face` rules hold, as base64 WOFF2, each family, weight and style the text really uses. Never overwrites a file; refuses a family Easel does not bundle (D32). The skills deliver that copy |
 
 ### Determinism
 
 - Every page receives a seed: the engine replaces `Math.random` with a seeded generator (`seed`, default 1).
 - `Date`, `Date.now()` and `performance.now()` return the render time `t`, not the clock.
+- `crypto.getRandomValues` and `crypto.randomUUID` follow the seed as well, from a stream of their own.
+- Every page runs in the UTC time zone with the `en-US` locale, whatever the machine's settings, so dates and number formats render the same on every computer (D31).
 - Fonts are local or embedded, never loaded from a CDN at render time. The headless browser is offline: names do not resolve and other requests are blocked; GSAP and p5.js URLs are answered from the copies `doctor` installed.
 
 ### Audio
@@ -188,7 +190,7 @@ providers()                       keys set (names only), kinds, models, prices a
 estimate({ kind, provider?, model?, size?, quality?, seconds?, text?, count? })  -> { usd, basis, source }
 generate({ kind: image|video|tts|music|voice-clone, ..., confirm?, approvedUsd?, slug?, name? })
   -> without confirm: a dry run { estimate, request, next }; with confirm: { files[], estimate }
-assemble({ clips[], narration?, music?, overlays[], size, fps })  -> one film (local ffmpeg)
+assemble({ clips[], narration? (file | [{file, clip|start}]), music?, musicDb?, lufs?, overlays[], size, fps })  -> one film mastered to -14 LUFS (local ffmpeg)
 consent_template()                -> the statement a voice owner gives before cloning
 ```
 
@@ -254,7 +256,7 @@ Every visual skill ends with the same loop:
 
 - **`claude plugin validate . --strict`:** run in CI on every push. See <https://code.claude.com/docs/en/plugins/cli-reference>.
 - **`claude plugin eval`:** for each plugin, cases in `plugins/<plugin>/evals/<case>/prompt.md` with `graders/*.md`; engine tools are answered by mocks in `plugins/<plugin>/evals/mocks/easel/`. See <https://code.claude.com/docs/en/plugin-evals>.
-  - In v1.0.0 nearly every case is a routing case: a `tool_used` grader checks that the right skill triggered, plus an LLM judge on the reply (57 cases; 63 `tool_used`, 47 `llm`, 6 `regex` and 2 `file_exists` graders). The engine mocks write no files, so only two easel-core `brand` cases check an output file (`.easel/brand.md`); design, illustrate, ai-media and pixel cases judge the plan in the reply. Rendered output is checked by each plugin's tests instead.
+  - In v1.0.0 nearly every case is a routing case: a `tool_used` grader checks that the right skill triggered, plus an LLM judge on the reply (57 cases at v1.0.0; 71 after the review fixes, which added routing cases for overlapping skills: 77 `tool_used`, 61 `llm`, 7 `regex` and 2 `file_exists` graders). The engine mocks write no files, so only two easel-core `brand` cases check an output file (`.easel/brand.md`); design, illustrate, ai-media and pixel cases judge the plan in the reply. Rendered output is checked by each plugin's tests instead.
   - A baseline run without the plugin shows what the plugin adds ([evals-v1.md](evals-v1.md)).
   - Evals are real model calls, so they run on demand and before releases, not on every push.
 - **Plugin tests** (`npm --prefix <engine or plugin> test`, list in CLAUDE.md): golden-frame comparisons for the engine fixtures and every motion style, every design and illustrate example rendered and checked through the engine, the provider server with synthetic fixtures, the pixel launcher with a stand-in package, and the notices test.

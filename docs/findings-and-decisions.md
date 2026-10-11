@@ -279,7 +279,7 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 
 - **Decision:** easel-core 0.2.0 was not tagged when its CHANGELOG section was written; it is tagged at the commit that also carries p5.js serving, `render_pdf`, the CSS-length fallback for filmstrip and render_video, and the wrapper clean-up, so every plugin built on those can require it. Every other plugin declares `{ "name": "easel-core", "version": ">=0.2.0" }` (a relative-path plugin: the constraint is checked at load).
 - **Reason:** QA E-1 #5 (new plugins depended on unreleased engine features with no version).
-- **Update (v1.0.0, 2026-10-11):** at v1.0.0 the five dependent plugins switched from `>=0.2.0` to `{ "name": "easel-core", "version": "^1.0.0" }` (commit `b65a6c9`). Decided by Claude for the owner, 2026-10-11; reason: a semver range resolved against the `easel-core--v1.0.0` tag, so a dependent gets 1.x fixes but not a breaking 2.0. The text above records the 0.2.0-0.4.0 releases.
+- **Update (v1.0.0, 2026-10-11):** at v1.0.0 the five dependent plugins switched from `>=0.2.0` to `{ "name": "easel-core", "version": "^1.0.0" }` (commit `b65a6c9`). Decided by Claude for the owner, 2026-10-11; reason: a semver range, so a dependent accepts 1.x fixes but not a breaking 2.0. Correction (2026-10-11, CI run 38139487971, Claude Code 2.1.296): the range is checked against the version of easel-core on the marketplace head; the dependency is installed from the head, not from the `easel-core--v1.0.0` tag. The text above records the 0.2.0-0.4.0 releases.
 
 ### D25. score-own-track eval: gap reported, grader kept ✅ (decided by Claude for the owner, 2026-10-11)
 
@@ -346,8 +346,196 @@ motion/design/illustrate and docs commits that follow them):
 - **Decision:** easel-design's and easel-illustrate's name lints scan skills, references, systems, examples and file and folder names case-insensitively; a brand or creator named as a look ("-style", "-like", "-inspired", "look", "aesthetic") always fails; platform names appear only in a per-file allow list with a reason, which fails when it goes stale. Every design-system colour below 4.5:1 says "not for text", and every role named "... text" passes AA; systems gained text-safe variants where needed. The face lint reads every Typography line.
 - **Reason:** QA: "stripe-like", "vercel-style", "Pixar warmth" and a folder named `stripe-like` passed; "Body: Arial, 16px" passed; several text-role colours were below AA with no note.
 
+Decisions from the full check of `972821c` (report Q-01..Q-44, 2026-10-11; fixed in the commits
+that follow it):
+
+### D35. Voice-clone consent is an English statement in a fixed affirmative form ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the consent statement must contain a sentence that starts "I, <speaker>, consent"
+  (or "give my consent") to their voice being cloned, with no negator or refusal word in that
+  sentence; any other sentence may say "no" only as a limit on use, a right to withdraw or "have
+  not been pressured". Statements in another script or language are refused with an explicit
+  "the consent check reads English only" message (a speaker of another language reads and agrees
+  to an English translation). The outputs ledger also stores a hash of each Easel audio output's
+  decoded sound (16 kHz mono, edge silence trimmed), so a lossless re-encode or appended bytes are
+  still recognised as Easel's own; a file that cannot be decoded is refused. Lossy re-encodes and
+  added noise are not caught, which is why D28's "procedure, not proof" stands.
+- **Reason:** the review reproduced ten refusal phrasings that passed (including Spanish, French
+  and Portuguese ones) and genuine consent in Spanish, Arabic and Chinese that was refused; a
+  re-encoded Easel voice passed as a recording. Fail safe rather than guess at other languages.
+
+### D36. The quote is keyed, covers file bytes, and every quoted field is shown ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the D27 quote is an HMAC-SHA256 (12 hex characters) with a per-install key in
+  `<EASEL_MEDIA_DATA>/quote.key` (created once, mode 0600, never printed; per process when there
+  is no data folder, so no secret is written into a project). It covers the sha256 of every
+  reference and sample. The dry-run preview is built from the quoted material, so it shows every
+  field the quote covers (count, resolution, instructions, language, voice name, files) and the
+  values sent in another form.
+- **Reason:** a quote could be forged offline and paid for; swapping a reference's bytes after the
+  dry run kept the quote; price-relevant fields were quoted but not shown.
+
+### D37. Each provider sends an argument as quoted or refuses it before any spend ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** every adapter declares the arguments it sends. An argument a model does not use is
+  refused in the dry run, the confirmed call and `estimate`. Arguments are mapped only where the
+  provider has an exact equivalent, and the mapped value is what is priced and shown (OpenAI
+  `aspect` as the nearest of 1024x1024, 1024x1536, 1536x1024; aspect-only models take `size` as a
+  ratio; clip seconds as sent).
+- **Reason:** `aspect` and `refs` were shown and quoted but silently dropped (an OpenAI 9:16
+  keyframe made square, Atlas references ignored), so the user paid for something else.
+
+### D38. A paid result is never lost to bookkeeping, and references are checked to their last byte ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the "paid, not saved" line is logged before any clean-up, and clean-up retries;
+  a broken `provenance.json` is left alone (this call's entries go to `provenance-unmerged.json`
+  with a warning); 0 results is an error that says the call may have been charged, and fewer
+  results than `count` are saved and reported as partial. Reference images are parsed to their
+  end (PNG IEND, JPEG EOI, WebP RIFF size); trailing data and hard links are refused, and so is a
+  WAV sample longer than its header.
+- **Reason:** an EBUSY on Windows could hide the charge; a malformed provenance file turned a paid
+  success into a bare JSON error; a PNG header followed by keystore bytes was uploaded in full.
+
+### D39. Engine outputs are written through a partial file and never through a link ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** `mux_audio` compares real paths (case-folded on Windows and macOS) and device and
+  inode, and refuses an output that is its input video or audio. Media and sheet outputs are
+  written to a hidden `.<name>-<pid>-<hex>.partial` and renamed into place (a failed run keeps the
+  earlier file and leaves nothing); on Windows an abort or timeout kills the process tree. Page
+  outputs (render_still, render_pdf, contact_sheet) go through `safeOutput`, which refuses a
+  symbolic link, a hard-linked file, or a folder whose real path leaves the job folder. Wrapper
+  pages for SVG and image inputs are written in the job folder with a `<base href>` to the source
+  folder. ffmpeg runs asynchronously with timeouts in `mux_audio`, `audio_score`, `filmstrip` and
+  `qa`.
+- **Reason:** a symlinked or case-variant name let `mux_audio` truncate its input and report
+  success; outputs were written through links planted in a job folder; wrappers were left among
+  the user's assets; a long qa blocked every other MCP call.
+
+### D40. Mastering is a measured gain and a true-peak limiter, not loudnorm ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** `assemble` (ai-media) and the engine's `masterWav` (`mux_audio master`, `lufs`,
+  `audio_score`) measure with ebur128, the filter qa uses, apply a plain gain when the peaks allow
+  it, and otherwise a 4x-oversampled limiter with make-up passes, to -14 LUFS integrated and a true
+  peak of -1 dBTP (assemble: `lufs` -18..-10). `assemble` masters every film, and its narration
+  takes one file or a list placed at clips (`{file, clip}`) or times (`{file, start}`). In
+  `mux_audio`, `lufs` implies mastering. A lone narration file is mastered by assemble (in a film)
+  or `mux_audio` (onto a video); there is no tool for a bare audio file.
+- **Reason:** films took the narration's loudness and qa refused them with no way to fix it;
+  loudnorm's dynamic mode undershot short lines by several LU (a 2 s line at -24 LUFS came out at
+  -22.9).
+
+### D41. qa measures ink and lines, says what it could not measure, and exempts only what WCAG exempts ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** text_clipping compares where the letters are, not the font's line box, and a box
+  that scrolls only cuts text with `fixedFrame`. Contrast scores each line of an element's own
+  text, measures form-field values and placeholders, open shadow DOM and `filter: opacity()`, and
+  lists the rest (other filters, blend modes, pseudo-element text) as unmeasured. A contrast check
+  named in `checks` that measured nothing fails; run by default it is reported as not run, which
+  does not count as a check that ran. Text of disabled controls (`:disabled`,
+  `aria-disabled="true"`, a disabled fieldset) is exempt from contrast, and art marked
+  `data-easel-bleed` from `frame_overflow`; both are listed. Text inside a bleed element is not
+  exempt from text_clipping. canvas_text refuses a missing or non-finite TIMELINE value, fails
+  when no frame was sampled, and passes a piece that draws no text with a note. A media file
+  ffmpeg cannot decode is refused with an error.
+- **Reason:** false refusals (a tight wordmark, an inline `<code>`, a float) and false passes
+  (inputs, pseudo-elements, a canvas page passing contrast with nothing measured) from the review;
+  WCAG 1.4.3 exempts inactive components.
+
+### D42. SVG files are well-formed XML, seeked on their SMIL clock, and rendered dark on a dark page ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the engine parses every `.svg` input with DOMParser and refuses any XML error with
+  the parser's message and the usual fix (`&amp;`, numeric entities); `svg-check` fails the same
+  errors (plus valueless attributes and undeclared prefixes) and `embed_fonts` refuses them. Every
+  seek pauses SVG SMIL animation and sets its time. `theme: "dark"` paints `#141414` behind an SVG
+  (the contact sheet's dark), which `transparent` still clears.
+- **Reason:** "R&D" in a label passed every check and shipped a file that shows an XML error page;
+  SMIL renders were wall-clock and not repeatable; the dark check showed a currentColor icon on
+  white.
+
+### D43. HTML deliverables carry their fonts ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** `embed_fonts` takes `.html`/`.htm` and writes `<stem>-embedded.html` with one
+  `<style data-easel-fonts>` of base64 WOFF2 `@font-face` rules for the faces the page's text uses
+  at desktop and phone widths (linked CSS, pseudo-elements, inputs and `<use>` included); it never
+  replaces any file and warns about characters the bundled (Latin) faces do not cover, embedding a
+  bundled fallback family that does. landing-page, ui-design, presentation, brand-identity and
+  ad-creative deliver the `-embedded.html` (ad-creative weighs it against the network's cap); work
+  inside the user's own project is not embedded, and the skills say which OFL faces to load there.
+  Email SVGs are never embedded.
+- **Reason:** D32 fixed SVG only; delivered HTML fell back to system faces in the user's browser.
+
+### D44. Design pieces are checked at their own size, in both themes, with bundled weights only ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** every fixed-size design skill runs qa with the piece's `width`, `height` and
+  `fixedFrame: true` (decks per slide at 1280x720) and fixes every contrast finding, graphic mode
+  included; ui-design and design-system also run qa with `theme: "dark"`. Systems and examples name
+  only bundled weights (500 became 400 and 600 became 700, which is what rendered), and a lint
+  checks every named weight against `fonts.json`. `palette --from` keeps the exact brand hex at its
+  nearest step, and `palette --contrast` is the hand check for non-text contrast, which qa does not
+  measure. Brand and creator lints fold accents, curly quotes and dashes and include CLAUDE.md's
+  own examples.
+- **Reason:** an overflowing 1080x1350 post passed qa at 1200x630; 500/600 weights rendered as
+  400/700; "a Vox-style explainer" and "Dalí-esque" passed the lints.
+
+### D45. Overlapping skills name each other, and pixel's Preview is one sentence everywhere ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** each skill of an overlapping pair carries one tie-break sentence (favicon or app
+  icon -> logo; a game sprite drawn in Aseprite -> pixel, an SVG sprite sheet -> svg; a chart as a
+  standalone graphic -> infographic, for a page -> svg; loaders and hover effects in the user's
+  components -> ui-motion, an SVG asset -> svg; "a video" of AI footage -> ai-video, designed
+  animation -> animate; abstract loops -> generative-art; a product photograph -> image, a designed
+  layout -> design; empty states -> svg-illustration), with routing eval cases that leave out the
+  deciding word. easel-pixel's marketplace entry and plugin.json share one description (Preview,
+  not tested end to end, not affiliated with Aseprite / Igara Studio, the bridge risk), checked by
+  a test; its `doctor` diagnoses only, and the skill asks before `setup` installs anything.
+- **Reason:** the review's overlap table found eight phrases claimed by several skills with no
+  tie-break, and four easel-pixel surfaces that disagreed.
+
+### D46. Releases are checked against their tags; CI checks the tree and Node 20 ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** `scripts/release-check.mjs` fails a plugin whose files differ from its latest tag
+  while its version is unchanged (or moved backwards); it is a pre-release check, not a per-commit
+  gate, and it fails between releases by design (today 0/6, because these fixes are unreleased).
+  CI's validate job has a tree-hygiene step, and a Node 20 job proves the runtime claim (`node
+  --check`, both MCP servers started and called); the suites themselves need Node 22 for the
+  test-file glob.
+- **Reason:** eight commits of fixes sat behind version 1.0.0 with nothing to flag it; the README
+  claims Node >= 20 and nothing ran it.
+
+### D47. The blue-purple motion styles say how they pass colour_cast; pixel art stays square in every format ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** synthwave, liquid and aurora-glass document a qa call with `castMaxRatio: 1` in
+  their STYLE.md (the user chose a palette that is blue-purple by design), and the animate skill
+  and the motion rubric say no other style gets it; qa itself is unchanged. The pixel style reads a
+  `[w, h]` resolution by its short side, so its pixels stay square in 16:9 and 1:1 and a frame the
+  pixel size does not divide is cropped, never stretched (the 9:16 demo is byte-identical). Motion
+  is reviewed at a frame every 0.5 s, one filmstrip per 24 s stretch (a call takes at most 48
+  frames). With reference images, animate's intake and story check come first and style-match
+  runs as its look check.
+- **Reason:** three of the eleven styles failed colour_cast on every frame, so animate's "done
+  when every hard check passes" could never be met for them; the pixel style came out 3.2:1
+  non-square in 16:9.
+
 ### Open for the owner (not decided)
 
 - **GSAP's licence.** GSAP is installed by `doctor` (D10) under GreenSock's "standard no-charge" license, which is not an open-source licence; setup now names it and its URL before installing. Read https://gsap.com/standard-license and decide whether Easel may keep installing it for previews or should make it opt-in.
 - **The style name `riso`.** RISO and RISOGRAPH are registered marks of Riso Kagaku; CLAUDE.md forbids naming a style after a trademark. Rename (for example `three-ink-print`) or record an exception.
 - **D7 = B** awaits the owner's confirmation (above).
+- **From the full check's fixes (D35-D47), for the owner to confirm or decide:**
+  - Voice-clone consent statements are English only (D35); confirm that is acceptable.
+  - Decorative display type that bleeds off the frame on purpose still fails text_clipping
+    (D41): keep that, or exempt text inside a `data-easel-bleed` element and list it.
+  - The blue-purple motion styles pass colour_cast with a documented `castMaxRatio: 1` (D47):
+    keep it documented, or make qa exempt those styles itself.
+  - Two generic design systems put their primary in qa's blue-purple band (clean-product
+    `#2F5BEA`, playful `#5B3FD6`); moving them changes several examples.
+  - A tool to master a lone audio file (D40 covers films and videos only).
+  - fal Kling v3's start-image field and price (`start_image_url`?) are unverified: the provider
+    docs were unreachable from the review's sandbox.
+  - linyaosky/svg-skill's LICENSE at `2103b92` was not re-fetched for the three example SVGs
+    now credited to it (the recorded MIT pin was used).
+  - Verbatim upstream text in easel-motion `skills/ui-motion/gsap/frameworks.md` points to
+    `examples/vue/` and `examples/nuxt/`, which Easel does not ship.
+  - CLAUDE.md's plugin-facts line on dependencies still says ranges resolve against tags; CI
+    showed they install from the marketplace head (D24's correction). Only the owner edits that
+    section.

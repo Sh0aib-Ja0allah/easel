@@ -155,10 +155,14 @@ The render tests need Playwright, Chromium (and p5.js for illustrate) in the dat
 plugins/easel-core/engine/cli.mjs doctor --install`); without them they are skipped, so a local run
 must show 0 skipped before a render change is committed. [CLAUDE.md](CLAUDE.md) ("Commands") has
 the details and the exceptions to `node --check`. CI (on pushes to `main` and on pull requests)
-validates the plugins on Linux and runs all six suites on Windows, macOS and Linux; pushes to
-`main` also get a clean install of the marketplace on all three. Before a release,
+validates the plugins and checks the tree on Linux (no empty tracked file; no `node_modules`,
+`easel-out`, eval results or key files tracked; LF in the index), checks that every script parses
+and the engine and media servers answer on Node 20 (the promised minimum), and runs all six suites
+on Windows, macOS and Linux on Node 22; pushes to `main` also get a clean install of the
+marketplace on all three. Before a release,
 `node scripts/install-check.mjs --work <empty folder>` installs the marketplace from GitHub into an
-empty config (needs network).
+empty config (needs network), and `node scripts/release-check.mjs` checks that every plugin changed
+since its last tag has a new version (section 7).
 
 **Eval cases** live in `plugins/<plugin>/evals/`. The target is at least three routing cases per
 skill, plus output cases (graders on the produced files) for visual skills. It is not met yet: in
@@ -169,6 +173,25 @@ makes real model calls, so it runs before releases, not on every push.
 
 ## 7. Releases
 
-Bump `version` in the plugin's `plugin.json` (users get nothing until it changes), then
-`claude plugin tag --push` in the plugin folder to create the `<plugin>--v<version>` tag that
-dependency ranges resolve against.
+Bump `version` in the plugin's `plugin.json` (users get nothing until it changes; easel-core's
+version also lives in `engine/package.json` and `ENGINE_VERSION`, easel-ai-media's in
+`MEDIA_VERSION`, and `versions.test.mjs` checks they agree). With the bump committed, run the
+release check, then tag:
+
+```text
+node scripts/release-check.mjs
+claude plugin tag --push            (in each released plugin's folder)
+```
+
+`release-check` compares each plugin's files at `HEAD` with its latest `<plugin>--v<version>` tag
+and prints a table. It fails when a plugin's files changed but its version is still the tagged
+one, when the version went backwards, or when it is not plain semver; it needs the tags locally
+(`git fetch --tags`). It is a pre-release check, not a per-commit gate: between releases it fails
+by design for every plugin with unreleased changes.
+
+The tags mark releases; dependency ranges are not resolved against them in this marketplace.
+Installing a plugin that depends on easel-core installs easel-core from the marketplace head (the
+same commit) and checks the range, such as `^1.0.0`, against that copy's version (CI run
+38139487971, Claude Code 2.1.296). So the easel-core version on `main` must satisfy every
+dependent's range (`versions.test.mjs` checks this), and a major bump of easel-core raises the
+dependents' ranges in the same commit.

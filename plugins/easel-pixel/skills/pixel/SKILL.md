@@ -10,10 +10,12 @@ when_to_use: >-
   The user says "pixel art", "sprite", "Aseprite", "8-bit look", "tileset" or "spritesheet", or a
   pixel job spans several steps ("an animated knight for my game"). Routing - for one drawing,
   shading or palette job use easel-pixel:pixel-draw; for rigging and cycles on an existing sprite
-  use easel-pixel:pixel-animate; for files out of a finished sprite use easel-pixel:pixel-export;
-  for vector icons use easel-illustrate:svg.
+  use easel-pixel:pixel-animate; for files out of a finished sprite use easel-pixel:pixel-export.
+  A sprite or animated character for a game, drawn in Aseprite, is this skill; an SVG sprite
+  sheet (icons as SVG symbols for a web page) or vector icons use easel-illustrate:svg; a video in
+  a pixel-art style (an MP4 to watch, not game art) uses easel-motion:animate.
 argument-hint: "[what to make] [size, palette or engine if known] [--headless | --live]"
-allowed-tools: mcp__plugin_easel-pixel_aseprite__preflight mcp__plugin_easel-pixel_aseprite__sprite_info mcp__plugin_easel-pixel_aseprite__sprite_manage mcp__plugin_easel-pixel_aseprite__look mcp__plugin_easel-pixel_aseprite__validate mcp__plugin_easel-pixel_aseprite__export mcp__plugin_easel-pixel_aseprite__reference mcp__plugin_easel-core_easel__contact_sheet Agent Read Write Glob ReadMcpResourceTool ListMcpResourcesTool
+allowed-tools: mcp__plugin_easel-pixel_aseprite__preflight mcp__plugin_easel-pixel_aseprite__sprite_info mcp__plugin_easel-pixel_aseprite__sprite_manage mcp__plugin_easel-pixel_aseprite__look mcp__plugin_easel-pixel_aseprite__validate mcp__plugin_easel-pixel_aseprite__export mcp__plugin_easel-pixel_aseprite__reference mcp__plugin_easel-core_easel__contact_sheet Agent Bash(node:*) Read Write Glob ReadMcpResourceTool ListMcpResourcesTool
 ---
 
 <!-- Easel: adapted from with-pebbly/aseprite-ai-artist @ f51fe6908223ef9ac476de1568234c699594722d
@@ -36,21 +38,26 @@ outfit, headwear, facial hair, colour scheme, job or name pun, so it cannot read
 
 ## 1. Connect
 
-Aseprite 1.3 or later is the user's own app, bought and installed by them. Easel is not
-affiliated with, endorsed by or sponsored by Aseprite or Igara Studio; say this once, the first
-time you set up. Say this once too: while the bridge runs and Aseprite is open, any program on
-this computer can send Aseprite commands through it, Lua scripts included (the bridge has no
-password), so close Aseprite when not drawing (the plugin README has the details).
+Aseprite 1.3 or later is the user's own app, bought and installed by them. The first time you
+set up, tell the user these three things once:
+
+- easel-pixel is a Preview: it has not yet been tested end to end with a real Aseprite, so report
+  plainly anything that does not work the way the tools describe.
+- Easel is not affiliated with, endorsed by or sponsored by Aseprite or Igara Studio.
+- While the bridge runs and Aseprite is open, any program on this computer can send Aseprite
+  commands through it, Lua scripts included: the bridge has no password, and Easel only keeps the
+  Lua tool away from Claude. Close Aseprite when not drawing (the plugin README has the details).
 
 1. Call `mcp__plugin_easel-pixel_aseprite__preflight`. If `ready` is true, go to step 2.
-2. If the `aseprite` tools are missing or preflight is not ready on first use, run setup once in
-   a terminal (Bash tool):
+2. If the `aseprite` tools are missing or preflight is not ready on first use, the bridge needs
+   its one-time setup. Tell the user what it installs (the pinned `@pebbly/aseprite-ai-artist`
+   0.8.0 and its locked dependencies into the plugin data folder, then its extension into
+   Aseprite) and run it when they agree, with the Bash tool:
    `node "${CLAUDE_PLUGIN_ROOT}/server/launch.mjs" setup --data "${CLAUDE_PLUGIN_DATA}"`.
-   It installs the pinned `@pebbly/aseprite-ai-artist` 0.8.0 into the plugin data folder and the
-   Aseprite extension. Then the user quits and reopens Aseprite, and runs `/mcp` to reconnect the
-   `aseprite` server if its tools are still missing. Call preflight again.
+   Then the user quits and reopens Aseprite, and runs `/mcp` to reconnect the `aseprite` server
+   if its tools are still missing. Call preflight again.
 3. Still not ready: run `node "${CLAUDE_PLUGIN_ROOT}/server/launch.mjs" doctor --data "${CLAUDE_PLUGIN_DATA}"`
-   and tell the user exactly what it reports. Stop there.
+   (it diagnoses and installs nothing) and tell the user exactly what it reports. Stop there.
 
 Nothing below works without Aseprite. Never write sprite files by another route when it is not
 connected; that is not a recovery, it is a file the user never sees.
@@ -116,10 +123,14 @@ stage is done when you have seen its result, not when a tool reported success.
 
 Never grade your own work in place of the critic: you know what you meant, so you see it.
 
-1. Export views to `./easel-out/<slug>/review/` with `mcp__plugin_easel-pixel_aseprite__export`:
-   `op="png" scale=8` of the sprite (one per key frame, `frame=n`), and for an animation
-   `op="frames" scale=8 path=".../review/f_{frame}.png"`. Put the frames side by side with
-   `mcp__plugin_easel-core_easel__contact_sheet` (`items` = the PNGs, labelled by frame).
+1. Export views to `./easel-out/<slug>/review/` with `mcp__plugin_easel-pixel_aseprite__export`.
+   The pixel rubric reads the sprite at its real size and at a zoom, so for each key frame `n`
+   export `op="png" frame=n scale=1 path=".../review/frame<n>@1x.png"` and the same with
+   `scale=8` and `@8x`. For an animation also `op="frames" scale=8 path=".../review/f_{frame}.png"`:
+   the tools count frames from 1, but `{frame}` in a file name counts from 0, so `f_0.png` is
+   frame 1. Put the views side by side with `mcp__plugin_easel-core_easel__contact_sheet`
+   (`items` = the PNGs, each labelled with its frame as the tools count it and its scale, such as
+   "frame 1, 8x").
 2. Run `mcp__plugin_easel-pixel_aseprite__validate` and keep its findings.
 3. Start the critic with the **Agent** tool, `subagent_type: "easel-core:critic"`. In its prompt:
    the paths of every view, the validate findings, domain `pixel`, and the brief as a separate

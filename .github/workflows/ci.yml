@@ -14,6 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Tree hygiene (no empty tracked file; no node_modules, easel-out, eval results or key files tracked; LF in the index)
+        run: |
+          fail=0
+          empty=$(git ls-files -z | while IFS= read -r -d '' f; do if [ -f "$f" ] && [ ! -s "$f" ] && [ "${f##*/}" != .gitkeep ]; then printf '%s\n' "$f"; fi; done)
+          if [ -n "$empty" ]; then echo "$empty" | sed 's/^/::error::empty tracked file (a truncated write?): /'; fail=1; fi
+          never=$(git -c core.quotePath=false ls-files | grep -E '(^|/)(node_modules|easel-out)/|(^|/)evals/results/|(^|/)\.env$|\.(keystore|jks|pem|p12|pfx)$' || true)
+          if [ -n "$never" ]; then echo "$never" | sed 's/^/::error::must never be committed: /'; fail=1; fi
+          crlf=$(git -c core.quotePath=false ls-files --eol | grep -E '^i/(crlf|mixed)' || true)
+          if [ -n "$crlf" ]; then echo "$crlf" | sed 's/^/::error::CRLF in the index (.gitattributes keeps text LF): /'; fail=1; fi
+          exit $fail
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
@@ -36,6 +46,41 @@ jobs:
           # kit/score-head.js and score-tail.js are fragments that wrap a piece's score; tools/build.mjs
           # compiles them inside every built piece (easel-motion tests).
           find . -type f \( -name '*.mjs' -o -name '*.js' \) -not -path '*/node_modules/*' -not -path './plugins/easel-motion/kit/score-*.js' -print0 | xargs -0 -r -n1 node --check
+
+  node20:
+    # The root README promises Node 20+ for easel-core (engine/package.json: engines >=20); the other jobs
+    # run Node 22. The suites cannot run here as they are: `node --test "test/*.test.mjs"` relies on
+    # the test runner expanding the glob, which Node 20 does not. So this checks the runtime on 20
+    # cheaply: every script parses, and the engine and media MCP servers start and answer over stdio.
+    # (easel-pixel needs Node 22.6+ for its bridge package and says so.)
+    name: node 20 (runtime)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+      - name: node --check every script on Node 20
+        run: |
+          node --version | tee node-version.txt
+          grep -q '^v20\.' node-version.txt
+          find . -type f \( -name '*.mjs' -o -name '*.js' \) -not -path '*/node_modules/*' -not -path './plugins/easel-motion/kit/score-*.js' -print0 | xargs -0 -r -n1 node --check
+      - name: Engine and media MCP servers on Node 20 (initialize, tools/list, one tool call each)
+        run: |
+          init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}'
+          list='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+          printf '%s\n' "$init" "$list" '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"ping","arguments":{}}}' \
+            | node plugins/easel-core/engine/server.mjs | tee engine.out
+          grep -q '"protocolVersion":"2025-06-18"' engine.out
+          grep -q '"name":"render_video"' engine.out
+          grep -q 'pong' engine.out
+          grep -q 'v20\.' engine.out
+          printf '%s\n' "$init" "$list" '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"providers","arguments":{}}}' \
+            | node plugins/easel-ai-media/server/server.mjs | tee media.out
+          grep -q '"protocolVersion":"2025-06-18"' media.out
+          grep -q '"name":"generate"' media.out
+          grep '"id":3,' media.out | grep -q '"isError":false'
+          node plugins/easel-core/engine/cli.mjs ping | grep -q '"node": "v20\.'
 
   engine:
     name: engine (${{ matrix.os }})
@@ -94,7 +139,7 @@ jobs:
           npm --prefix plugins/easel-illustrate test 2>&1 | tee illustrate-test.txt
           test "${PIPESTATUS[0]}" -eq 0
           grep -q 'skipped 0' illustrate-test.txt
-      - name: easel-ai-media tests (provider server with recorded fixtures and no network, consent gate, assembly with ffmpeg, skills and settings; must not be skipped)
+      - name: easel-ai-media tests (provider server with synthetic fixtures and no network, consent gate, assembly with ffmpeg, skills and settings; must not be skipped)
         run: |
           npm --prefix plugins/easel-ai-media test 2>&1 | tee media-test.txt
           test "${PIPESTATUS[0]}" -eq 0

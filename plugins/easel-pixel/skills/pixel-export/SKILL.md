@@ -77,7 +77,7 @@ bounds) or `pivot={x,y}`. A spritesheet export carries slices into its atlas.
 - Still: `export op="png" path=".../<slug>@8x.png" scale=8 frame=1`. A single-frame export uses
   the active frame unless you pass `frame`; name it.
 - Numbered frames: `export op="frames" path=".../frames/<slug>_{frame}.png" scale=1`, numbered
-  from 0.
+  from 0 (`<slug>_0.png` is frame 1; the tools count frames from 1).
 
 Integer scale only, nearest-neighbour. Any other resize destroys what you made. Check a scaled
 export by opening it with Read.

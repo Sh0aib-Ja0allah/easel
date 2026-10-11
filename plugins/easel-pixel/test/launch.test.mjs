@@ -49,6 +49,26 @@ test('serve never installs: without the bridge it stops at once with the setup a
   } finally { rmSync(data, { recursive: true, force: true }); }
 });
 
+test('doctor diagnoses and never installs: without the bridge it says so and gives the setup step', () => {
+  const data = mkdtempSync(join(tmpdir(), 'easel-pixel-')), cache = mkdtempSync(join(tmpdir(), 'easel-pixel-npm-'));
+  // npm offline with an empty cache: if doctor ever installs again, npm fails at once, so neither the
+  // network nor the real package is reached
+  const npmOff = { npm_config_offline: 'true', npm_config_cache: cache };
+  try {
+    const r = run(['doctor', '--data', data], npmOff);
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /not set up yet[\s\S]*launch\.mjs" setup --data/);
+    assert.deepEqual(readdirSync(data), [], 'nothing was installed');
+    const stale = join(L.packageDir(data), 'node_modules', '@pebbly', 'aseprite-ai-artist');
+    mkdirSync(stale, { recursive: true });
+    writeFileSync(join(stale, 'package.json'), JSON.stringify({ name: '@pebbly/aseprite-ai-artist', version: '0.7.1', bin: 'dist/cli.js' }));
+    const old = run(['doctor', '--data', data], npmOff);
+    assert.equal(old.status, 1);
+    assert.match(old.stderr, /0\.7\.1[\s\S]*0\.8\.0[\s\S]*setup/);
+    assert.deepEqual(readdirSync(data), ['aseprite-ai-artist-0.8.0'], 'the stale copy is reported, not replaced');
+  } finally { for (const d of [data, cache]) rmSync(d, { recursive: true, force: true }); }
+});
+
 test('installed(): only the pinned version counts; another version is stale and gets replaced', () => {
   const data = mkdtempSync(join(tmpdir(), 'easel-pixel-'));
   try {

@@ -23,7 +23,7 @@ Linux.
 | `easel-design` | Graphics, posters, social, ads, infographics, decks, UI, landing pages, design systems, brand identities, logos, icons | `easel-core` |
 | `easel-illustrate` | SVG for UI and charts, lit SVG illustration, concept sketches with a mascot, p5.js generative art | `easel-core` |
 | `easel-ai-media` | AI images, narrated AI video and voice through your own provider keys, with a cost estimate before anything is spent. The adapters are tested offline only, not yet against the live APIs | `easel-core`, your API key(s), ffmpeg |
-| `easel-pixel` | **Preview.** Pixel art in your own Aseprite: draw, shade, animate, export. Not yet run end to end with a real Aseprite | `easel-core`, Aseprite 1.3+ (paid), Node 22.6+ with npm |
+| `easel-pixel` | **Preview.** Pixel art in your own Aseprite: draw, shade, animate, export. Not yet tested end to end with a real Aseprite. While it runs, its local bridge accepts commands, Lua included, from any program on this computer ([details](plugins/easel-pixel/README.md#lua-and-the-local-bridge-what-is-switched-off-and-what-is-not)) | `easel-core`, Aseprite 1.3+ (paid), Node 22.6+ with npm |
 
 ## Install
 
