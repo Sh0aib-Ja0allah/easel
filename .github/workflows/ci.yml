@@ -44,8 +44,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       EASEL_DATA: ${{ github.workspace }}/../easel data
-      # Temporary: Linux/macOS goldens are being regenerated after the bundled serif changed.
-      EASEL_GOLDEN_MISSING: write
     defaults:
       run:
         shell: bash
@@ -86,8 +84,8 @@ jobs:
           node plugins/easel-core/engine/cli.mjs render_video --json @smoke.json
           ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=nb_read_frames,width,height -of csv=p=0 smoke-out/video.mp4 | tee probe.txt
           grep -q '640,360,30' probe.txt
-      - name: Upload rendered goldens (for review)
-        if: always()
+      - name: Upload rendered goldens on failure (for review)
+        if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: goldens-${{ runner.os }}

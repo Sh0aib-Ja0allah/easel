@@ -77,9 +77,14 @@ const INIT_SCRIPT = ({ seed, css }) => {
     window.__easel.t = t;
     if (typeof window.renderAt === 'function') window.renderAt(t);
     else if (window.__timelines) for (const tl of Object.values(window.__timelines)) { if (tl && typeof tl.seek === 'function') tl.seek(t, false); }
-    for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; }
-    // A face first used at this time may still be loading: let the caller wait for it.
-    return document.fonts.status === 'loaded' ? null : document.fonts.ready.then(() => null);
+    const anims = document.getAnimations();
+    for (const a of anims) { a.pause(); a.currentTime = t * 1000; }
+    // Let the caller wait for a face first used at this time, and for the paused animation state to
+    // be committed to a frame (two rAFs; 100 ms fallback so nothing can hang).
+    const waits = [];
+    if (document.fonts.status !== 'loaded') waits.push(document.fonts.ready);
+    if (anims.length) waits.push(Promise.race([new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))), new Promise((r) => setTimeout(r, 100))]));
+    return waits.length ? Promise.all(waits).then(() => null) : null;
   };
 };
 
@@ -88,6 +93,9 @@ export async function openBrowser() {
   const browser = await chromium.launch({
     args: [
       '--font-render-hinting=none', '--disable-lcd-text', '--force-color-profile=srgb',
+      // Run CSS animations on the main thread, where __easelSeek pauses them; the compositor thread
+      // otherwise showed a frame of motion before the pause landed (seen on macOS).
+      '--disable-threaded-animation', '--disable-threaded-scrolling',
       // Offline by construction: no name resolves, nothing prefetches, WebRTC cannot go direct.
       '--host-resolver-rules=MAP * ~NOTFOUND', '--dns-prefetch-disable', '--no-pings',
       '--disable-background-networking', '--disable-component-update',
