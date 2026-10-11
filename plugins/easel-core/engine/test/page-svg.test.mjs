@@ -65,7 +65,7 @@ const BAD = {
   'HTML entity': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><text y="15">Acme&nbsp;Co</text></svg>', /Entity 'nbsp' not defined|Unexpected entity: nbsp/, /&#160;/],
   'duplicate attribute': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><rect width="5" height="5" fill="#000" fill="#f00"/></svg>', /Attribute '?fill'? (is )?redefined/, /once/],
   'double hyphen in a comment': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><!-- step 1 -- draft --><rect width="5" height="5"/></svg>', /Double hyphen within comment|Unexpected token '--'/, /remove "--"/],
-  'late XML declaration': ['\n<!-- logo --><?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"/>', /XML declaration allowed only at the start|only allows "<\?xml" at the very beginning/, /very start/],
+  'late XML declaration': ['\n<!-- logo --><?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"/>', /XML declaration allowed only at the start|Invalid processing instruction: <\?xml/, /very start/],
 };
 // No browser needed: the fix Easel names is found in both parsers' wording (v140 and v156 messages)
 test('the fix for each XML error is found in either Chromium parser\'s wording', () => {
@@ -74,7 +74,7 @@ test('the fix for each XML error is found in either Chromium parser\'s wording',
     [["Entity 'nbsp' not defined", 'Unexpected entity: nbsp'], /&nbsp; -> &#160;/, 160],
     [['Attribute fill redefined', "Attribute 'fill' is redefined"], /once per element/],
     [['Double hyphen within comment', "Unexpected token '--' before ' '"], /remove "--"/],
-    [['XML declaration allowed only at the start of the document', 'Invalid processing instruction: <?xml The XML spec only allows "<?xml" at the very beginning of the file'], /very start/],
+    [['XML declaration allowed only at the start of the document', 'Invalid processing instruction: <?xml The XML spec only allows "<?xml" at the very beginning of the file', 'Invalid processing instruction: <?xml'], /very start/],
   ];
   for (const [messages, fix, cp] of cases) for (const message of messages) assert.match(xmlProblem({ file: 'f.svg', message: `error on line 1 at column 9: ${message}`, cp }), fix, message);
 });

@@ -36,7 +36,7 @@ export function xmlProblem({ file, message, cp }) {
     : ent ? `XML knows only &amp; &lt; &gt; &quot; &apos;: write &${name}; as a numeric reference (${cp ? `&${name}; -> &#${cp};` : 'e.g. &nbsp; -> &#160;'})`
     : /redefined/.test(m) ? 'give each attribute once per element'
     : /Double hyphen|'--'/.test(m) ? 'remove "--" from inside the comment'
-    : /XML declaration allowed only at the start|only allows "<\?xml" at the very beginning/.test(m) ? 'put the <?xml ...?> declaration at the very start of the file (nothing before it, not even a comment or a blank line), or delete it'
+    : /XML declaration allowed only at the start|Invalid processing instruction: <\?xml/.test(m) ? 'put the <?xml ...?> declaration at the very start of the file (nothing before it, not even a comment or a blank line), or delete it'
     : /Unescaped '<'|'<'.*attribute|attribute.*'<'/i.test(m) ? 'write < inside an attribute value as &lt;'
     : 'the usual causes are a bare & (write &amp;) and HTML entities such as &nbsp; (write &#160;)';
   return `${file} is not well-formed XML (${m}): it would render here, but browsers, <img> and editors refuse it. Fix: ${fix}, then render again.`;

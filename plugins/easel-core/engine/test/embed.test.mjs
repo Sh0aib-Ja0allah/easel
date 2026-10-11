@@ -147,7 +147,7 @@ test('refuses an SVG that is not well-formed XML, naming the parser\'s message a
     assert.deepEqual(readdirSync(join(out, `bad-${name}`)), [`bad-${name}.svg`], name);
   }
   const late = svgFile('bad-late', `\n<?xml version="1.0" encoding="UTF-8"?>\n${WORDMARK.replace(/^<\?xml[^>]*>\n/, '')}`);
-  await assert.rejects(m.embedFonts({ file: late }), /not well-formed XML[\s\S]*(XML declaration allowed only at the start|only allows "<\?xml" at the very beginning)/);
+  await assert.rejects(m.embedFonts({ file: late }), /not well-formed XML[\s\S]*(XML declaration allowed only at the start|Invalid processing instruction: <\?xml)/);
   const html = svgFile('bad-root', '<html><body><p style="font-family:Inter">Hi</p></body></html>');
   await assert.rejects(m.embedFonts({ file: html }), /root element is <html>, not <svg>/);
   const nons = svgFile('bad-ns', '<svg width="200" height="60"><text y="40" font-family="Inter">Hi</text></svg>');
