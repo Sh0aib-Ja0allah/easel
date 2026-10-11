@@ -121,12 +121,19 @@ generic only (D8): no Stripe, Apple, Linear or other real brands.
 Gates - run before every commit, never commit red:
 
 - `git rev-parse --show-toplevel` -> `C:/Users/shoib/Desktop/Collection/Animation`
-- `node --check <file>` on every changed `.mjs` / `.js` file
+- `node --check <file>` on every changed `.mjs` / `.js` file (except the score fragments
+  `plugins/easel-motion/kit/score-head.js` and `score-tail.js`, which only compile inside a built
+  piece; the easel-motion tests build every demo)
 - `claude plugin validate . --strict` and `claude plugin validate plugins/<each> --strict` (since T0.2)
 - `npm --prefix plugins/easel-core/engine test` (since T1.1). Render tests need Playwright and
   Chromium in the data dir (`node plugins/easel-core/engine/cli.mjs doctor --install`, or set
   `EASEL_DATA` to a folder where doctor installed them); without them they are skipped, so a
   local run must show 0 skipped before a render change is committed.
+- `npm --prefix plugins/easel-motion test` (since T2.1): builds every demo and template, renders
+  every style through the engine (golden frame per style: its `sample.png`, or a per-OS override
+  in `test/golden/`), checks the page score's loudness and style mixing. Same data dir and
+  0-skipped rule as the engine tests. `EASEL_MOTION_FULL=1` renders the demos at full length (CI
+  on Linux does).
 - CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`

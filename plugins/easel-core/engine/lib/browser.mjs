@@ -43,7 +43,7 @@ export function fontFaceCss() {
   return faces.map((f) => `@font-face{font-family:'${f.family}';src:url('${LOCAL_ORIGIN}/fonts/${f.file}') format('woff2');font-weight:${f.weight};font-style:${f.style || 'normal'};font-display:block;}`).join('\n');
 }
 
-const INIT_SCRIPT = ({ seed, css }) => {
+const INIT_SCRIPT = ({ seed, css, aspect }) => {
   // Runs in the page before any of its scripts.
   let s = seed >>> 0 || 1;
   Math.random = function () {
@@ -53,7 +53,9 @@ const INIT_SCRIPT = ({ seed, css }) => {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
   const EPOCH = Date.UTC(2026, 0, 1);
-  window.__easel = { t: 0, seed };
+  // aspect: the format being rendered ('16:9', '9:16', '1:1', '4:5'), for pages that lay themselves
+  // out per format (the animate kit reads it); null when the caller did not ask for one.
+  window.__easel = { t: 0, seed, aspect: aspect || null };
   const RealDate = Date;
   const now = () => EPOCH + Math.round(window.__easel.t * 1000);
   // Date() as a function returns a string; new Date() with no arguments is the render time.
@@ -71,11 +73,13 @@ const INIT_SCRIPT = ({ seed, css }) => {
     const add = () => { const st = document.createElement('style'); st.setAttribute('data-easel', 'fonts'); st.textContent = css; (document.head || document.documentElement).prepend(st); };
     if (document.documentElement) add(); else document.addEventListener('DOMContentLoaded', add, { once: true });
   }
-  // Seek the page to time t (seconds): renderAt(t), else every registered GSAP timeline,
-  // then every CSS animation/transition through the Web Animations API.
+  // Seek the page to time t (seconds): renderAt(t), else renderFrame(t) (the animate kit's canvas
+  // contract), else every registered GSAP timeline; then every CSS animation/transition through the
+  // Web Animations API.
   window.__easelSeek = (t) => {
     window.__easel.t = t;
     if (typeof window.renderAt === 'function') window.renderAt(t);
+    else if (typeof window.renderFrame === 'function') window.renderFrame(t);
     else if (window.__timelines) for (const tl of Object.values(window.__timelines)) { if (tl && typeof tl.seek === 'function') tl.seek(t, false); }
     const anims = document.getAnimations();
     for (const a of anims) { a.pause(); a.currentTime = t * 1000; }
@@ -107,7 +111,9 @@ export async function openBrowser() {
   return browser;
 }
 
-export async function newPage(browser, { width, height, scale = 1, colorScheme = 'light', seed = 1, transparent = false, fonts = true, allowNetwork = false } = {}) {
+export const ASPECTS = { '16:9': [1920, 1080], '9:16': [1080, 1920], '1:1': [1080, 1080], '4:5': [1080, 1350] };
+
+export async function newPage(browser, { width, height, scale = 1, colorScheme = 'light', seed = 1, transparent = false, fonts = true, allowNetwork = false, aspect = null } = {}) {
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, colorScheme, reducedMotion: 'no-preference' });
   const blocked = [];
   await context.route('**/*', async (route) => {
@@ -128,7 +134,7 @@ export async function newPage(browser, { width, height, scale = 1, colorScheme =
     return route.abort('blockedbyclient');
   });
   if (typeof context.routeWebSocket === 'function') await context.routeWebSocket(/.*/, (ws) => { blocked.push(ws.url()); ws.close(); });
-  await context.addInitScript(INIT_SCRIPT, { seed, css: fonts ? fontFaceCss() : '' });
+  await context.addInitScript(INIT_SCRIPT, { seed, css: fonts ? fontFaceCss() : '', aspect });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e.message || e)));
@@ -137,12 +143,16 @@ export async function newPage(browser, { width, height, scale = 1, colorScheme =
   return { page, context, blocked, errors };
 }
 
-// Wait until the page says it is ready (window.__ready, if the page uses it), fonts are loaded
-// and images are decoded.
+// Wait until the page says it is ready (window.__ready, if the page uses it; window.ASSETS_READY,
+// the animate kit's promise for embedded images), fonts are loaded and images are decoded.
 export async function waitReady(page, timeoutMs = 30000) {
   await page.waitForLoadState('load');
   const usesReady = await page.evaluate(() => [...document.scripts].some((s) => s.textContent.includes('__ready')));
   if (usesReady) await page.waitForFunction(() => window.__ready === true, null, { timeout: timeoutMs });
+  if (await page.evaluate(() => !!window.ASSETS_READY)) {
+    await page.evaluate(() => window.ASSETS_READY);
+    await page.waitForFunction(() => typeof window.renderFrame === 'function' || typeof window.renderAt === 'function', null, { timeout: timeoutMs });
+  }
   await page.evaluate(async () => {
     // Load every declared face now (bundled and page fonts), not lazily on first use mid-render.
     await Promise.all([...document.fonts].filter((f) => f.status === 'unloaded').map((f) => f.load().catch(() => null)));

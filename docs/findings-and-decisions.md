@@ -203,3 +203,29 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 - **Decision:** Easel does not commit or redistribute GSAP. The engine's `doctor` installs `gsap` (pinned) from npm into `${CLAUDE_PLUGIN_DATA}` on the user's machine, and the render engine serves that local copy to compositions (no CDN at render time). The engine itself does not depend on GSAP; `renderAt(t)` compositions need no library.
 - **Reason:** GSAP is free to use but under Webflow's "Standard" license, not an OSI license, with use restrictions. Easel's own code stays MIT and the user obtains GSAP from npm under its own terms. `ui-motion` teaches GSAP for the user's own projects. Found by QA review B-2 #3.
 
+### D11. Bundled serif is Newsreader ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the bundled editorial serif is Newsreader (OFL 1.1, no Reserved Font Name), replacing Source Serif 4.
+- **Reason:** Source Serif 4 reserves the name "Source"; the Latin subsets Easel ships are Modified Versions under the OFL, which may not use a Reserved Font Name. Found by QA review C-1 #18.
+
+### D12. Craft rulebooks are Apache-2.0 adaptations ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the five craft rulebooks carry "Adapted from nexu-io/open-design ... Modified by Easel" headers and are listed under Apache-2.0 in `THIRD_PARTY_NOTICES.md`, with `licenses/Apache-2.0.txt` shipped.
+- **Reason:** they were written in new words, but their selection and order of rules follow open-design's `craft/` files closely (QA review C-1 #19). Treating them as adaptations is the conservative reading.
+
+
+### D13. The animate kit's styles mix through per-style scopes ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** easel-motion's `tools/build.mjs` keeps the piece's own style global (as upstream) and wraps every style listed in `piece.json` `"mix"` in its own function scope, exposed as `KITS.<name>` with live getters for all of that kit's top-level names. An era names its style as a 4th `ERA_LIST` item; `kit/morph.js` draws each era's paper, windows and `post()` with that era's `STYLE` hooks (shrink with the old era's style, the morph switches at its midpoint, grow with the new era's).
+- **Reason:** upstream concatenated kits into one script, so two kits that both declare `PAL`, `hand`, `rect` and so on could not be in one piece (a `SyntaxError`, tested). Wrapping only the extra styles leaves every existing piece and demo unchanged, which a namespace for all styles would not.
+- **Evidence:** `plugins/easel-motion/test/build.test.mjs` (all seven kits in one piece) and `test/render.test.mjs` (a riso era inside a cut-paper piece; the cut-paper era is pixel-identical to the unmixed build).
+
+### D14. The animate kit uses only bundled fonts ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the kit's system font stacks are replaced with bundled OFL fonts, and easel-core bundles four more faces: Caveat (handwriting, 400/700), STIX Two Text (math serif, 400/700 and italics), Noto Sans Math (symbols and Greek fallback) and Inter 900 (heavy print type). None declares a Reserved Font Name.
+- **Reason:** upstream named Ink Free, Segoe Print, Cambria Math, Arial Black and Consolas. They exist only on some systems, so the same piece rendered differently per machine, and HANDOFF §5 requires bundled OFL fonts.
+
+### D15. Brand-adjacent and character marks in the ported demos are replaced ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the math style's pi-shaped hero is replaced by an original round hero (`dotHero`), and the crosshatch and sketchbook heroes carry a cream shine instead of a cream asterisk. References to the Manim library's API names stay in code comments and docs as technical notes; no style is named after it.
+- **Reason:** a pi-shaped creature with eyes is a well-known channel's mascot, and a terracotta dot with a cream asterisk reads as a brand mark. HANDOFF §5: originals over copies, no trademarks or protected creators.

@@ -53,6 +53,7 @@ export const tools = {
         fullPage: { type: 'boolean' },
         selector: { type: 'string', description: 'CSS selector: screenshot only this element.' },
         t: { type: 'number', minimum: 0, description: 'Seek animated pages to this time in seconds before capture.' },
+        aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'Render a format-aware page (e.g. an animate piece) in this format; also the default size (1920x1080, 1080x1920, 1080x1080, 1080x1350).' },
         seed: { type: 'integer', description: 'Seed for Math.random (default 1).' },
       },
       additionalProperties: false,
@@ -82,8 +83,8 @@ export const tools = {
   },
   render_video: {
     description:
-      'Render an animated page to MP4 (H.264, yuv420p). The page animates through window.renderAt(t), a paused GSAP timeline at window.__timelines[<data-composition-id>] (HyperFrames format), or CSS animations; every frame is seeked to t = n / fps, so output is deterministic. ' +
-      'Duration, fps and size default to the composition root (data-duration, data-fps, data-width, data-height). aspects renders extra formats (16:9, 9:16, 1:1, 4:5) from the same page, which must lay itself out responsively. audio muxes a track. Review the result with filmstrip.',
+      'Render an animated page to MP4 (H.264, yuv420p). The page animates through window.renderAt(t), window.renderFrame(t) (animate-kit canvas pieces), a paused GSAP timeline at window.__timelines[<data-composition-id>] (HyperFrames format), or CSS animations; every frame is seeked to t = n / fps, so output is deterministic. ' +
+      'Duration, fps and size default to the composition root (data-duration, data-fps, data-width, data-height) or window.TIMELINE / window.__composition. aspects renders extra formats (16:9, 9:16, 1:1, 4:5) from the same page, which lays itself out responsively or reads window.__easel.aspect. audio muxes a track; audio "page" uses the page\'s own score (window.renderAudioWav), mastered to -14 LUFS and also saved as <name>.wav. Review the result with filmstrip.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -92,7 +93,7 @@ export const tools = {
         duration: { type: 'number', minimum: 0.04, maximum: 600 }, fps: { type: 'number', minimum: 1, maximum: 120 },
         width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
         aspects: { type: 'array', maxItems: 4, items: { enum: ['16:9', '9:16', '1:1', '4:5'] } },
-        audio: { type: 'string', description: 'Path to an audio file to mux (trimmed to the video length).' },
+        audio: { type: 'string', description: 'Path to an audio file to mux (trimmed to the video length), or "page" for the page\'s own score (window.renderAudioWav), mastered to -14 LUFS.' },
         crf: { type: 'integer', minimum: 0, maximum: 51, description: 'x264 quality, lower is better (default 18).' },
         preset: { enum: ['ultrafast', 'veryfast', 'fast', 'medium', 'slow'] },
         theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' },
@@ -111,6 +112,7 @@ export const tools = {
         times: { type: 'array', maxItems: 48, items: { type: 'number', minimum: 0 } }, count: { type: 'integer', minimum: 1, maximum: 48 },
         duration: { type: 'number', minimum: 0.04 }, width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
         columns: { type: 'integer', minimum: 1, maximum: 12 }, cellWidth: { type: 'integer', minimum: 64, maximum: 1920 }, title: { type: 'string' },
+        aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'Capture a format-aware page in this format (sets the size unless width/height are given).' },
         theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' },
       },
       additionalProperties: false,

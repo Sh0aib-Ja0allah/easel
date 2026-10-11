@@ -33,7 +33,9 @@ jobs:
           done
       - name: node --check every script
         run: |
-          find . -type f \( -name '*.mjs' -o -name '*.js' \) -not -path '*/node_modules/*' -print0 | xargs -0 -r -n1 node --check
+          # kit/score-head.js and score-tail.js are fragments that wrap a piece's score; tools/build.mjs
+          # compiles them inside every built piece (easel-motion tests).
+          find . -type f \( -name '*.mjs' -o -name '*.js' \) -not -path '*/node_modules/*' -not -path './plugins/easel-motion/kit/score-*.js' -print0 | xargs -0 -r -n1 node --check
 
   engine:
     name: engine (${{ matrix.os }})
@@ -72,6 +74,14 @@ jobs:
           npm --prefix plugins/easel-core/engine test 2>&1 | tee engine-test.txt
           test "${PIPESTATUS[0]}" -eq 0
           grep -q 'skipped 0' engine-test.txt
+      - name: easel-motion tests (build + every style through the engine; must not be skipped)
+        env:
+          # Full-length demo renders on Linux; a 1 s clip per style elsewhere (same code path, faster).
+          EASEL_MOTION_FULL: ${{ runner.os == 'Linux' && '1' || '0' }}
+        run: |
+          npm --prefix plugins/easel-motion test 2>&1 | tee motion-test.txt
+          test "${PIPESTATUS[0]}" -eq 0
+          grep -q 'skipped 0' motion-test.txt
       - name: MCP smoke (initialize + tools/list over stdio)
         run: |
           printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
@@ -89,5 +99,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: goldens-${{ runner.os }}
-          path: plugins/easel-core/engine/test/golden/
+          path: |
+            plugins/easel-core/engine/test/golden/
+            plugins/easel-motion/test/golden/
           if-no-files-found: ignore

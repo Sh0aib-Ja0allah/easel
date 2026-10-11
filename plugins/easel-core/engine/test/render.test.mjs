@@ -70,7 +70,8 @@ test('bundled fonts are used (not a fallback)', { skip }, async () => {
     // Load each bundled face explicitly; a family that only falls back would load zero faces.
     const loaded = await page.evaluate(async () => {
       const out = [];
-      for (const f of ['Inter', 'Space Grotesk', 'Newsreader', 'JetBrains Mono']) for (const w of [400, 700]) out.push([`${f} ${w}`, (await document.fonts.load(`${w} 16px "${f}"`)).length]);
+      for (const f of ['Inter', 'Space Grotesk', 'Newsreader', 'JetBrains Mono', 'Caveat', 'STIX Two Text']) for (const w of [400, 700]) out.push([`${f} ${w}`, (await document.fonts.load(`${w} 16px "${f}"`)).length]);
+      for (const spec of ['900 16px "Inter"', 'italic 400 16px "STIX Two Text"', 'italic 700 16px "STIX Two Text"', '400 16px "Noto Sans Math"']) out.push([spec, (await document.fonts.load(spec, '\u2248')).length]);
       return out;
     });
     for (const [f, n] of loaded) assert.ok(n > 0, `${f} did not load`);

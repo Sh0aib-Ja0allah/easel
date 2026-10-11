@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{display:block}</style></head>
+<body>
+<canvas id="c" width="320" height="180"></canvas>
+<script>
+"use strict";
+// Like an animate piece with embedded assets: renderFrame only appears once ASSETS_READY resolves.
+window.TIMELINE = { width: 320, height: 180, fps: 10, duration: 1 };
+const rf = (t) => { const g = document.getElementById('c').getContext('2d'); g.fillStyle = '#2a9d8f'; g.fillRect(0, 0, 320, 180); };
+window.ASSETS_READY = new Promise((r) => setTimeout(r, 400));
+window.ASSETS_READY.then(() => { window.renderFrame = rf; });
+</script>
+</body>
+</html>

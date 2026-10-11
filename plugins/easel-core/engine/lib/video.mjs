@@ -1,24 +1,28 @@
 // render_video: seek a page frame by frame (t = n / fps) and pipe PNG frames into ffmpeg.
 // filmstrip: a few frames at chosen times on one sheet, so a vision model can review motion.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { newPage, openBrowser, waitReady } from './browser.mjs';
+import { ASPECTS, newPage, openBrowser, waitReady } from './browser.mjs';
+import { masterWav, writeBase64 } from './audio.mjs';
 import { requireBinary } from './binaries.mjs';
 import { outputDir } from './render.mjs';
 import { resolveSource } from './source.mjs';
 import { composeSheet } from './sheet.mjs';
 
-const ASPECTS = { '16:9': [1920, 1080], '9:16': [1080, 1920], '1:1': [1080, 1080], '4:5': [1080, 1350] };
 const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'video';
 
-// Reads the HyperFrames-style root (data-width/height/duration/fps) if the page declares one.
-async function compositionInfo(page) {
+// Size, duration and fps the page declares: the HyperFrames-style root (data-width/height/
+// duration/fps), else a window.__composition or window.TIMELINE object (the animate kit) with
+// width, height, duration and fps.
+export async function compositionInfo(page) {
   return page.evaluate(() => {
+    const num = (v) => (v === undefined || v === null || v === '' || !Number.isFinite(Number(v)) ? undefined : Number(v));
     const root = document.querySelector('[data-composition-id]');
-    const num = (v) => (v === undefined || v === null || v === '' ? undefined : Number(v));
-    if (!root) return {};
-    return { id: root.dataset.compositionId, width: num(root.dataset.width), height: num(root.dataset.height), duration: num(root.dataset.duration), fps: num(root.dataset.fps) };
+    if (root) return { id: root.dataset.compositionId, width: num(root.dataset.width), height: num(root.dataset.height), duration: num(root.dataset.duration), fps: num(root.dataset.fps) };
+    const o = window.__composition || window.TIMELINE;
+    if (o && typeof o === 'object') return { id: o.id || o.name, width: num(o.width), height: num(o.height), duration: num(o.duration), fps: num(o.fps) };
+    return {};
   });
 }
 
@@ -52,7 +56,7 @@ function encoder(ffmpeg, { fps, file, crf, audio, duration, preset }) {
 }
 
 async function renderOne(browser, src, opts) {
-  const { page, context, blocked, errors } = await newPage(browser, { width: opts.width, height: opts.height, seed: opts.seed, colorScheme: opts.theme });
+  const { page, context, blocked, errors } = await newPage(browser, { width: opts.width, height: opts.height, seed: opts.seed, colorScheme: opts.theme, aspect: opts.aspect || null });
   try {
     await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
     await waitReady(page);
@@ -61,7 +65,9 @@ async function renderOne(browser, src, opts) {
     const duration = opts.duration || info.duration;
     if (!duration) throw new Error('No duration: pass duration (seconds) or set data-duration on the [data-composition-id] root.');
     const frames = Math.round(duration * fps);
-    const enc = encoder(opts.ffmpeg, { fps, file: opts.file, crf: opts.crf, audio: opts.audio, duration, preset: opts.preset });
+    let audio = opts.audio;
+    if (audio === 'page') audio = await opts.pageAudio(page);
+    const enc = encoder(opts.ffmpeg, { fps, file: opts.file, crf: opts.crf, audio, duration, preset: opts.preset });
     try {
       for (let n = 0; n < frames; n++) {
         await page.evaluate((t) => window.__easelSeek(t), n / fps);
@@ -70,7 +76,7 @@ async function renderOne(browser, src, opts) {
     } finally {
       await enc.end();
     }
-    return { file: opts.file, width: opts.width + (opts.width % 2), height: opts.height + (opts.height % 2), fps, duration, frames, bytes: statSync(opts.file).size, blocked: [...new Set(blocked)], errors: [...new Set(errors)] };
+    return { file: opts.file, width: opts.width + (opts.width % 2), height: opts.height + (opts.height % 2), fps, duration, frames, bytes: statSync(opts.file).size, ...(opts.aspect ? { aspect: opts.aspect } : {}), ...(audio ? { audio } : {}), blocked: [...new Set(blocked)], errors: [...new Set(errors)] };
   } finally {
     await context.close();
   }
@@ -79,13 +85,25 @@ async function renderOne(browser, src, opts) {
 export async function renderVideo(args) {
   const t0 = Date.now();
   const ffmpeg = requireBinary('ffmpeg');
-  if (args.audio !== undefined) {
+  if (args.audio !== undefined && args.audio !== 'page') {
     // Renders are offline: ffmpeg would happily fetch a URL, so only local files are accepted.
-    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(args.audio) || !existsSync(args.audio)) throw new Error(`audio must be a local file that exists: ${args.audio}`);
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(args.audio) || !existsSync(args.audio)) throw new Error(`audio must be a local file that exists (or "page"): ${args.audio}`);
   }
   const out = outputDir(args);
   mkdirSync(out, { recursive: true });
   const name = slugOf(args.name || 'video');
+  // audio: "page" -> the page's own score (window.renderAudioWav(), a base64 WAV), rendered once,
+  // mastered to -14 LUFS and reused for every aspect.
+  let mastered = null;
+  const pageAudio = async (page) => {
+    if (mastered) return mastered;
+    const b64 = await page.evaluate(async () => (typeof window.renderAudioWav === 'function' ? window.renderAudioWav() : null));
+    if (!b64) throw new Error('audio is "page" but the page has no window.renderAudioWav()');
+    const raw = writeBase64(join(out, `${name}-score-raw.wav`), b64);
+    mastered = masterWav(raw, join(out, `${name}.wav`)).file;
+    rmSync(raw, { force: true });
+    return mastered;
+  };
   const src = resolveSource(args, out, name);
   const browser = await openBrowser();
   const results = [];
@@ -97,11 +115,11 @@ export async function renderVideo(args) {
       try { await page.goto(src.url, { waitUntil: 'load' }); const info = await compositionInfo(page); base = { width: base.width || info.width || 1920, height: base.height || info.height || 1080 }; } finally { await context.close(); }
     }
     const targets = args.aspects && args.aspects.length
-      ? args.aspects.map((a) => ({ tag: a.replace(':', 'x'), width: ASPECTS[a][0], height: ASPECTS[a][1] }))
+      ? args.aspects.map((a) => ({ tag: a.replace(':', 'x'), aspect: a, width: ASPECTS[a][0], height: ASPECTS[a][1] }))
       : [{ tag: '', ...base }];
     for (const tg of targets) {
       const file = join(out, `${name}${tg.tag ? `-${tg.tag}` : ''}.mp4`);
-      results.push(await renderOne(browser, src, { ...args, ...tg, file, ffmpeg, seed: args.seed ?? 1, crf: args.crf ?? 18, preset: args.preset || 'medium', theme: args.theme || 'light' }));
+      results.push(await renderOne(browser, src, { ...args, ...tg, file, ffmpeg, pageAudio, seed: args.seed ?? 1, crf: args.crf ?? 18, preset: args.preset || 'medium', theme: args.theme || 'light' }));
     }
   } finally {
     await browser.close();
@@ -124,13 +142,14 @@ export async function filmstrip(args) {
   const src = resolveSource(args, out, name);
   const browser = await openBrowser();
   try {
-    const { page, context } = await newPage(browser, { width: args.width || 1920, height: args.height || 1080, seed: args.seed ?? 1, colorScheme: args.theme || 'light' });
+    const [aw, ah] = args.aspect ? ASPECTS[args.aspect] : [];
+    const { page, context } = await newPage(browser, { width: args.width || aw || 1920, height: args.height || ah || 1080, seed: args.seed ?? 1, colorScheme: args.theme || 'light', aspect: args.aspect || null });
     let cells = [];
     try {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
       await waitReady(page);
       const info = await compositionInfo(page);
-      if ((!args.width || !args.height) && info.width && info.height) await page.setViewportSize({ width: args.width || info.width, height: args.height || info.height });
+      if ((!args.width || !args.height) && !args.aspect && info.width && info.height) await page.setViewportSize({ width: args.width || info.width, height: args.height || info.height });
       const duration = args.duration || info.duration;
       let times = args.times;
       if (!times || !times.length) {

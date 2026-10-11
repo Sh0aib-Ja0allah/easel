@@ -40,6 +40,48 @@
       "family": "Space Grotesk",
       "file": "space-grotesk/space-grotesk-latin-700-normal.woff2",
       "weight": 700
+    },
+    {
+      "family": "Inter",
+      "file": "inter/inter-latin-900-normal.woff2",
+      "weight": 900
+    },
+    {
+      "family": "Caveat",
+      "file": "caveat/caveat-latin-400-normal.woff2",
+      "weight": 400
+    },
+    {
+      "family": "Caveat",
+      "file": "caveat/caveat-latin-700-normal.woff2",
+      "weight": 700
+    },
+    {
+      "family": "STIX Two Text",
+      "file": "stix-two-text/stix-two-text-latin-400-normal.woff2",
+      "weight": 400
+    },
+    {
+      "family": "STIX Two Text",
+      "file": "stix-two-text/stix-two-text-latin-700-normal.woff2",
+      "weight": 700
+    },
+    {
+      "family": "STIX Two Text",
+      "file": "stix-two-text/stix-two-text-latin-400-italic.woff2",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "family": "STIX Two Text",
+      "file": "stix-two-text/stix-two-text-latin-700-italic.woff2",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "family": "Noto Sans Math",
+      "file": "noto-sans-math/noto-sans-math-latin-400-normal.woff2",
+      "weight": 400
     }
   ]
 }

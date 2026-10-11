@@ -6,7 +6,8 @@ This file lists them with the exact upstream commit each was taken from. Files a
 Apache-2.0 sources carry a "Modified by Easel" header; the Apache License 2.0 text is in
 [licenses/Apache-2.0.txt](licenses/Apache-2.0.txt).
 
-> Status: covers everything shipped up to `easel-core` v0.1.0. Completed for v1.0.0 in task T5.1.
+> Status: covers everything shipped up to `easel-core` v0.1.0, plus easel-motion's animate kit
+> (T2.1). Completed for v1.0.0 in task T5.1.
 
 ## Apache-2.0 sources (adapted)
 
@@ -30,7 +31,7 @@ The MIT License applies to each source below; its text is reproduced once at the
 | [ArnavPuri/designskills](https://github.com/ArnavPuri/designskills) | Copyright (c) 2026 Arnav Puri | Critique procedure ideas in the rubrics and the critique skill | `c7873015add8571ca95043febad0d9e6c97ee5c6` |
 | [Vincentwei1021/mg-styles-15](https://github.com/Vincentwei1021/mg-styles-15) | Copyright (c) 2026 Vincentwei1021 | Rubric ideas (independent jury, calibrated scale); the `renderAt(t)` contract and cue sheet ideas | `49052d80bfaf9fa8412cc9710530e5e95a3b8d8c` |
 | [with-pebbly/aseprite-ai-artist](https://github.com/with-pebbly/aseprite-ai-artist) | Copyright (c) 2026 with-pebbly | Critic agent ideas (cold read, read-only critic) | `f51fe6908223ef9ac476de1568234c699594722d` |
-| [cth9191/animate](https://github.com/cth9191/animate) | Copyright (c) 2026 cth9191 | The three check-ins in the brief skill | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
+| [cth9191/animate](https://github.com/cth9191/animate) | Copyright (c) 2026 cth9191 | The three check-ins in the brief skill; easel-motion's animate kit (`kit/`), seven styles, templates, story grammars and `tools/build.mjs` (headers in each file, list in `plugins/easel-motion/NOTICE.md`); the `renderFrame(t)` page contract the engine reads | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
 
 ## Ideas only (no license; nothing copied)
 
@@ -51,6 +52,9 @@ Latin subsets from Fontsource 5.3.0, in `plugins/easel-core/fonts/` with each fa
 | Newsreader | Copyright 2020 The Newsreader Project Authors (https://github.com/productiontype/Newsreader) | `fonts/newsreader/OFL.txt` |
 | JetBrains Mono | Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono) | `fonts/jetbrains-mono/OFL.txt` |
 | Space Grotesk | Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk) | `fonts/space-grotesk/OFL.txt` |
+| Caveat | Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat) | `fonts/caveat/OFL.txt` |
+| STIX Two Text | Copyright 2001-2021 The STIX Fonts Project Authors (https://github.com/stipub/stixfonts) | `fonts/stix-two-text/OFL.txt` |
+| Noto Sans Math | Copyright 2022 Google LLC | `fonts/noto-sans-math/OFL.txt` |
 
 ## Installed at run time, not redistributed
 

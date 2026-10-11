@@ -2,7 +2,7 @@
 import { mkdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { jobDir } from './paths.mjs';
-import { newPage, openBrowser, waitReady } from './browser.mjs';
+import { ASPECTS, newPage, openBrowser, waitReady } from './browser.mjs';
 import { resolveSource } from './source.mjs';
 
 const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'still';
@@ -16,7 +16,8 @@ export async function renderStill(args, { browser: shared } = {}) {
   const out = outputDir(args);
   mkdirSync(out, { recursive: true });
   const name = slugOf(args.name || 'still');
-  const sizes = args.sizes && args.sizes.length ? args.sizes : [{ width: args.width || 1200, height: args.height || 630 }];
+  const [aw, ah] = args.aspect ? ASPECTS[args.aspect] : [];
+  const sizes = args.sizes && args.sizes.length ? args.sizes : [{ width: args.width || aw || 1200, height: args.height || ah || 630 }];
   const themes = args.theme === 'both' ? ['light', 'dark'] : [args.theme || 'light'];
   const src = resolveSource(args, out, name);
   const browser = shared || (await openBrowser());
@@ -25,7 +26,7 @@ export async function renderStill(args, { browser: shared } = {}) {
   try {
     for (const theme of themes) {
       for (const size of sizes) {
-        const { page, context, blocked, errors } = await newPage(browser, { width: size.width, height: size.height, scale: args.scale || 1, colorScheme: theme, seed: args.seed ?? 1, transparent: !!args.transparent });
+        const { page, context, blocked, errors } = await newPage(browser, { width: size.width, height: size.height, scale: args.scale || 1, colorScheme: theme, seed: args.seed ?? 1, transparent: !!args.transparent, aspect: args.aspect || null });
         try {
           await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
           await waitReady(page);

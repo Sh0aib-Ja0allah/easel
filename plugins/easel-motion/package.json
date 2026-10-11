@@ -1,0 +1,8 @@
+{
+  "name": "easel-motion-tests",
+  "private": true,
+  "description": "Tests for easel-motion (the animate kit build and renders through easel-core's engine). No dependencies.",
+  "scripts": {
+    "test": "node --test --test-reporter=spec \"test/*.test.mjs\""
+  }
+}

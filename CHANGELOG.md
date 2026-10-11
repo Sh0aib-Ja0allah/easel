@@ -2,6 +2,18 @@
 
 Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
 
+## Unreleased
+
+- **easel-core engine:** reads the animate kit's page contract: `window.renderFrame(t)`,
+  `window.TIMELINE` / `window.__composition` (size, fps, duration) and `window.ASSETS_READY`.
+  `render_video` takes `audio: "page"` (the page's own score from `window.renderAudioWav()`,
+  mastered to -14 LUFS with two-pass loudnorm and saved beside the video). Pages learn the format
+  being rendered from `window.__easel.aspect`; `render_still` and `filmstrip` take `aspect`.
+- **easel-core fonts:** Caveat, STIX Two Text (with italics), Noto Sans Math and Inter 900 (OFL).
+- **easel-motion:** the animate kit, seven styles (crosshatch, cut-paper, isometric, math, pixel,
+  riso, sketchbook) with demos and golden frames, starter templates, story grammars and the build
+  tool, adapted from cth9191/animate. Styles can now mix in one piece (`"mix"`, `KITS.<name>`).
+
 ## easel-core 0.1.0 (2026-10-11)
 
 First release of the shared foundation.

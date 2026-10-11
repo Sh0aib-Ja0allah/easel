@@ -20,7 +20,10 @@ easel/
 │   │   └── schemas/              # brief.json, beats.json, cues.json, brand.md
 │   ├── easel-motion/
 │   │   ├── skills/{animate,style-match,ui-motion}/
-│   │   ├── styles/<id>/{STYLE.md,kit.js,sample.png}
+│   │   ├── kit/                  # the animate renderer (core, morph, board, score)
+│   │   ├── styles/<id>/{STYLE.md,kit.js,sample.png,demo/}
+│   │   ├── templates/            # starter pieces and a starter style
+│   │   ├── tools/build.mjs       # assembles a piece's index.html (styles can mix)
 │   │   └── grammars/<id>.md
 │   ├── easel-design/
 │   │   ├── skills/…              # see skill-catalog.md
@@ -103,14 +106,16 @@ Reference: <https://code.claude.com/docs/en/plugins/manifest-reference>
 Every visual artifact is a web page that can be put into an exact state at any time `t`:
 
 - **Stills** (SVG, HTML layouts, canvas art): rendered once at `t = 0`.
-- **Animation**, either of two forms:
-  - `window.renderAt(t)` (the mg-styles-15 contract, also used by the animate kits), or
+- **Animation**, one of these forms:
+  - `window.renderAt(t)` (the mg-styles-15 contract), or
+  - `window.renderFrame(t)` (the animate kit's canvas contract, easel-motion), with `window.TIMELINE` (or `window.__composition`) giving `width`, `height`, `fps` and `duration`; `window.renderAudioWav()` returns the piece's score as a base64 WAV, which `render_video` uses with `audio: "page"`; `window.ASSETS_READY` (a promise) holds rendering until embedded images are decoded, or
   - the HyperFrames composition contract: a root element with `data-composition-id`, `data-start`, `data-duration`, `data-width`, `data-height` (optional `data-fps`), and a paused GSAP timeline at `window.__timelines[<composition id>]`. CSS animations and transitions on the page are seeked through the Web Animations API (`animation.currentTime`).
 - `window.__ready = true` signals that fonts and assets have loaded.
+- The engine tells a page which format it is rendering in `window.__easel.aspect` (`'16:9'`, `'9:16'`, `'1:1'`, `'4:5'`, or `null` for the page's own size), so a piece can lay itself out per format instead of being cropped.
 
 ### Implementation (decision D7 = B, 2026-10-11)
 
-**Our own capture loop.** Playwright launches Chromium's headless shell from `${CLAUDE_PLUGIN_DATA}`, opens the page, waits for `__ready` and `document.fonts.ready`, and for each frame `n` seeks to `t = n / fps` (`renderAt(t)`, else every `__timelines` entry with `seek(t, false)`, then every Web Animation's `currentTime`). It screenshots each frame and pipes the frames to ffmpeg. Motion blur, if wanted, comes from sub-frame sampling. HyperFrames was evaluated and not adopted; see [spikes/hyperframes.md](spikes/hyperframes.md). Its composition format is supported so compositions stay portable.
+**Our own capture loop.** Playwright launches Chromium's headless shell from `${CLAUDE_PLUGIN_DATA}`, opens the page, waits for `__ready` and `document.fonts.ready`, and for each frame `n` seeks to `t = n / fps` (`renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry with `seek(t, false)`, then every Web Animation's `currentTime`). It screenshots each frame and pipes the frames to ffmpeg. Motion blur, if wanted, comes from sub-frame sampling. HyperFrames was evaluated and not adopted; see [spikes/hyperframes.md](spikes/hyperframes.md). Its composition format is supported so compositions stay portable.
 
 ### MCP tools (draft)
 
