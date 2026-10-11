@@ -2,7 +2,8 @@
      (github.com/cth9191/animate, plugins/animate/skills/animate/styles/README.md).
      MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): fonts are the bundled OFL fonts; styles can mix (KITS);
-     upstream's Playwright tools are replaced by easel-core's engine tools. -->
+     upstream's Playwright tools are replaced by easel-core's engine tools; the sample is rendered
+     with aspect 9:16. -->
 # Styles
 
 A style is a plug-in: the story, formats, timing, sound, renderer and tools stay the same, and the style supplies the look. A piece picks one with `"style": "<name>"` in its `piece.json`, and `tools/build.mjs` puts that style's `kit.js` into the built file.
@@ -95,5 +96,5 @@ grow into the next era uses the next style.
 2. Write `STYLE` hooks in the medium.
 3. Build `demo/` (copy `crosshatch/demo/`): two eras, one shape morph, a hero, a caption, 3+ details of background life.
 4. `node tools/build.mjs styles/<name>/demo`, then easel-core's `filmstrip` on the built `index.html` (`count: 8`), and look at it; render one frame twice with `render_still` and check the pixels match.
-5. easel-core's `render_still` on the built `index.html` with `width: 1080, height: 1920, scale: 0.5, t: <a good moment>`, saved as `styles/<name>/sample.png`.
+5. easel-core's `render_still` on the built `index.html` with `aspect: "9:16", width: 1080, height: 1920, scale: 0.5, t: <a good moment>`, saved as `styles/<name>/sample.png` (without `aspect`, a format-aware piece renders its main format letterboxed).
 6. Write `STYLE.md` with its frame checklist.

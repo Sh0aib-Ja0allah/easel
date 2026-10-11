@@ -10,10 +10,15 @@ description: >-
 when_to_use: >-
   The user asks to "animate" something, or wants an animated video, explainer, reel, short, motion
   graphics or a looping animation made in code. For UI or web-page motion (buttons, scroll
-  effects, GSAP on their site) use easel-motion:ui-motion; for matching a look from reference
-  images use easel-motion:style-match first.
+  effects, GSAP on their site) use easel-motion:ui-motion. With reference images for the look,
+  start here when the user wants a video: the look check (step 2) runs easel-motion:style-match.
+  For AI-generated footage on the user's provider keys (paid per clip) use
+  easel-ai-media:ai-video; this skill makes a designed animation in code. An abstract or
+  algorithmic loop (p5.js) is easel-illustrate:generative-art; a loop with designed shapes, text,
+  characters or a story is this skill. A pixel-art game sprite or animation cycle drawn in
+  Aseprite is easel-pixel:pixel; a video in the pixel-art style is this skill.
 argument-hint: "[what the video is about] [style] [formats]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__doctor Bash(node:*) Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__doctor Bash(node:*) Read Write Edit Glob Grep WebSearch Agent AskUserQuestion
 ---
 
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
@@ -57,8 +62,9 @@ ffmpeg is missing, run `mcp__plugin_easel-core_easel__doctor` and follow its fix
    variation. Never `Math.random()` or the clock.
 6. **No creator or brand names** in a piece, a style or a file name, and no known characters:
    describe the look instead (HANDOFF rule; e.g. "watercolour anime", not a studio's name).
-7. **"Done" is measured:** every hard `qa` check passes in every format, and you have looked at
-   the filmstrips. Report the numbers, not "looks good".
+7. **"Done" is measured:** every hard `qa` check passes in every format (a blue-purple style
+   passes colour_cast with the argument its `STYLE.md` gives, step 6), and you have looked at the
+   filmstrips. Report the numbers, not "looks good".
 8. **Ask with options,** the recommended one first, so the user can answer in one click.
 
 ## The flow
@@ -66,11 +72,12 @@ ffmpeg is missing, run `mcp__plugin_easel-core_easel__doctor` and follow its fix
 ### 0. Brief and intake
 
 If `./easel-out/<slug>/brief.json` already has the three check-ins approved (from
-`easel-core:brief`), read it and `beats.json` and go to step 4. Otherwise run the brief's
+`easel-core:brief`), read it and `beats.json`, start the piece with step 2's `new-piece.mjs`
+command (the style and formats the brief chose), and go to step 4. Otherwise run the brief's
 procedure here, with the animate specifics below. Ask the questions in
-[intake.md](intake.md), only the ones you can't infer. For the look, show the gallery:
-`contact_sheet` with one item per `<easel-motion>/styles/<id>/sample.png` (label = the style
-id) into `./easel-out/<slug>/review/`, then Read the sheet and show it.
+[intake.md](intake.md) instead of the brief's six, only the ones you can't infer. For the look,
+show the gallery: `contact_sheet` with one item per `<easel-motion>/styles/<id>/sample.png`
+(label = the style id) into `./easel-out/<slug>/review/`, then Read the sheet and show it.
 
 Default formats when the user names none: **16:9 and 9:16** from one piece (the main one
 first).
@@ -88,6 +95,10 @@ Ask: **approve / change beats / different angle.** Write the approved beats to
 `./easel-out/<slug>/beats.json` and check it with `validate` (`{"kind": "beats", "file": ...}`).
 
 ### 2. Look check (2-4 style frames)
+
+If the user gave references for a look no shipped style covers, run `easel-motion:style-match`
+for this step: it measures them, makes the style, starts the piece in it and matches 2-4 frames
+(its one check-in is this look check); then go on to step 3. Otherwise:
 
 Start the piece (Node, works on Windows, macOS and Linux):
 
@@ -153,9 +164,13 @@ For **each format**:
    the 8th grid fail). Deliberate crowding goes in `piece.json` `review.textIgnore` and is passed
    as `textIgnore` with the reason.
 2. `qa` on the video: `video` = `renders/<slug>-16x9.mp4` (the format tag: `-16x9`, `-9x16`, `-1x1`,
-   `-4x5`; stillness, colour cast, loudness).
-3. A `filmstrip` of one frame a second (`count` = the duration in seconds, at most 48; for longer
-   pieces give `times` for the stretch you are checking) into `review/`; Read it.
+   `-4x5`; stillness, colour cast, loudness). Synthwave, liquid and aurora-glass are blue-purple
+   by design, so colour_cast fails every frame of them: the user chose that palette, so pass
+   `castMaxRatio: 1` for those three styles (their `STYLE.md` says so) and say so in the report.
+   No other style gets it.
+3. A `filmstrip` with a frame every 0.5 s (`times`: 0.25, 0.75, ...; the motion rubric's
+   interval) into `review/`; Read it. A call takes at most 48 times, so a piece longer than 24 s
+   gets one filmstrip per 24 s stretch.
 
 Fix every hard failure, rebuild, re-render and run `qa` again. Then get a cold read: run the
 `easel-core:critique` procedure on the filmstrips with the **motion** rubric (it starts the
@@ -225,6 +240,6 @@ boundary, and run the review.
 Formats F2 (chronology / morph chain) and F4 (mission) have each produced a piece that passed
 every check from the card alone upstream; the others are documented from study but unproven:
 say so when you pick one. Cut-paper and crosshatch have carried full pieces; riso, sketchbook,
-math and pixel come from one or two pieces plus a demo; isometric has only its demo. A style
-made with style-match is new ground until it has carried a piece. Voice-over is not part of
-this skill yet.
+math and pixel come from one or two pieces plus a demo; isometric, synthwave, liquid, aurora
+glass and HUD have only their demos. A style made with style-match is new ground until it has
+carried a piece. Voice-over is not part of this skill yet.

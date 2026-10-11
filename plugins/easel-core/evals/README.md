@@ -1,7 +1,9 @@
 # easel-core evals
 
-Fifteen routing cases, three per skill (`setup`, `brief`, `brand`, `critique`, `score`). Engine tools are
-answered by mocks in `mocks/easel/`, so no real server, browser or ffmpeg is started.
+Sixteen routing cases: three per skill (`setup`, `brief`, `brand`, `critique`, `score`), plus
+`critique-ui-motion` ("review the motion in my UI" with only easel-core installed; with
+easel-motion installed that phrase goes to its ui-motion skill). Engine tools are answered by
+mocks in `mocks/easel/`, so no real server, browser or ffmpeg is started.
 
 Each case has a "skill fired" grader (`tool_used: Skill`) plus graders that need the plugin's
 behaviour: a mocked engine call, the critic agent, or a file the skill writes.

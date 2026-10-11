@@ -1,7 +1,10 @@
 # easel-motion evals
 
-Nine routing cases (`animate` 4, `style-match` 2, `ui-motion` 3), including one that
-must go to `animate` rather than `ui-motion` and one that must refuse a studio name for a style.
+Twelve routing cases (`animate` 6, `style-match` 2, `ui-motion` 4), including one that
+must go to `animate` rather than `ui-motion`, one that must refuse a studio name for a style, and
+three with a phrase another plugin also claims and no word to settle it: "a short video" and "a
+looping animation" (animate, not AI video or generative art) and "a loader" (ui-motion, not an
+SVG asset).
 The skills' render steps call easel-core's engine, which is mocked in the eval (canned results),
 so the graders check routing and the plan or code the skill produces
 (questions before rendering, the story check, measuring before drawing, CSS and GSAP craft), not

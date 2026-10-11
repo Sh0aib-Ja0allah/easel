@@ -39,6 +39,15 @@ flung, never uniform. Motion on 1s.
 `lqWordMask(str, x, y, size, coalesce)`, `lqHero(x, y, r, { mood, key })`, `lqCaption(str)`, `lqEase(u)`; palette `LQ`.
 STYLE hooks: `backdrop` (the ground), `window` (a glossy rim), `blob` (a candy gradient shape with a highlight), `hero`, `ones: true`.
 
+## Review: colour cast
+
+Liquid is blue-purple by design (violet liquid on a deep plum ground), so easel-core's `qa`
+colour_cast check (it refuses a video or still where more than 30% of frames are dominated by
+blue-purple) fails every frame of it. The user chose this palette, so run `qa` on this style's
+videos and stills with `"castMaxRatio": 1` and say so in the review. Every other check keeps its
+default, and so does every other style (only synthwave, liquid and aurora-glass are blue-purple by
+design).
+
 ## Do / don't
 
 - **Do** keep balls few (under a dozen per frame) and large; the field is computed every frame.

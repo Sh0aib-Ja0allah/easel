@@ -8,7 +8,7 @@ description: >-
   For a single quick still (one poster, one icon) go straight to the design or illustration
   skill; for the brand file itself use easel-core:brand.
 when_to_use: The user starts a creative job that has several outputs, takes time to render, or will be reviewed in stages.
-allowed-tools: mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__craft
+allowed-tools: mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__craft Read Write Edit Glob
 ---
 
 # Brief: plan before rendering
@@ -28,7 +28,9 @@ you cannot infer, **in one message, at most six questions, each with a suggested
 5. **Voice:** tone; on-screen text, voice-over or both; language.
 6. **Music** and hard **constraints** (deadline, words that must or must not appear, legal).
 
-If the user says "just go", take your defaults and say which ones you took.
+If the user says "just go", take your defaults and say which ones you took. When the brief runs
+inside a making skill that has its own intake (easel-motion:animate's `intake.md`), ask that
+skill's questions instead of these six, with its budget.
 
 ## 2. Check-in 1: story
 

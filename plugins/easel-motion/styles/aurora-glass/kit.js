@@ -71,11 +71,12 @@ function agToggle(x, y, s, on) {
 }
 // the glass lens: magnifies the aurora layer under (x, y) by zoom, with a dispersed rim and a specular edge
 function agLens(x, y, r, zoom = 1.35) {
-  const [sx, sy] = toScreen(x, y);
+  const [sx, sy] = toScreen(x, y), ri = Math.max(0, r - 3 * UNIT);   // the inner rims; a morph grows the hero from r = 0
+  r = Math.max(0, r);
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.shadowColor = 'rgba(4,2,20,0.5)'; ctx.shadowBlur = 40 * UNIT; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fillStyle = 'rgba(0,0,0,0.01)'; ctx.fill(); ctx.shadowColor = 'transparent';
   ctx.save(); ctx.clip(); ctx.translate(sx, sy); ctx.scale(zoom, zoom); ctx.translate(-sx, -sy); ctx.drawImage(AG_LAYER, 0, 0); ctx.restore();
-  for (const [col, d] of [['rgba(255,80,160,0.5)', -3], ['rgba(80,220,255,0.5)', 3]]) { ctx.lineWidth = 4 * UNIT; ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(sx + d * UNIT, sy, r - 3 * UNIT, 0, TAU); ctx.stroke(); }
+  for (const [col, d] of [['rgba(255,80,160,0.5)', -3], ['rgba(80,220,255,0.5)', 3]]) { ctx.lineWidth = 4 * UNIT; ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(sx + d * UNIT, sy, ri, 0, TAU); ctx.stroke(); }
   const g = ctx.createLinearGradient(sx - r, sy - r, sx + r, sy + r); g.addColorStop(0, 'rgba(255,255,255,0.85)'); g.addColorStop(0.35, 'rgba(255,255,255,0.05)'); g.addColorStop(0.7, 'rgba(255,255,255,0.0)'); g.addColorStop(1, 'rgba(255,255,255,0.4)');
   ctx.lineWidth = 3 * UNIT; ctx.strokeStyle = g; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.stroke();
   ctx.restore();

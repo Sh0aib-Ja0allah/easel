@@ -8,9 +8,10 @@ description: >-
   measured numbers and a frame checklist).
 when_to_use: >-
   The user shows references and says "make it look like this", "match this style", "in the style
-  of these images", or wants an animation in a look none of easel-motion's styles covers. Use it
-  inside easel-motion:animate's look check; for a look a shipped style already covers, go straight
-  to animate.
+  of these images", or wants an animation in a look none of easel-motion's styles covers. It is
+  the look check of easel-motion:animate: for a whole video, animate's intake and story check come
+  first and its step 2 runs this skill; for a look a shipped style already covers, go straight to
+  animate.
 argument-hint: "[reference images or folder] [style name]"
 allowed-tools: mcp__plugin_easel-core_easel__measure_image mcp__plugin_easel-core_easel__compare_images mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__doctor Bash(node:*) Bash(ffmpeg:*) Read Write Edit Glob Grep
 ---
@@ -37,7 +38,10 @@ kind of image (medium, palette, proportions), never their characters or frames. 
 ## Rules
 
 - **References stay local.** Everything with reference pixels in it (copies, trims, crops,
-  comparison sheets) stays in `./easel-out/<slug>/references/`. Never commit it, never copy its
+  comparison sheets) stays in `./easel-out/<slug>/references/`, and every sheet you make (contact
+  and compare sheets) goes in its `sheets/` subfolder, `./easel-out/<slug>/references/sheets/`:
+  `measure_image` on the `references/` folder reads only the images directly in it, so the
+  sheets are never measured as references. Never commit any of it, never copy its
   code, and never name the artist, studio or brand in the style's name, files or published output
   (HANDOFF naming rule): name the style after the look ("blueprint", "neon ink", "woodcut").
 - **Re-create the kind of image, not the image.** Same medium, proportions and palette; your own
@@ -48,13 +52,15 @@ kind of image (medium, palette, proportions), never their characters or frames. 
 ## Steps
 
 1. **Gather** 3-6 references that show the range (a wide, a close-up, text, a character) into
-   `./easel-out/<slug>/references/` (stills from a video: with the ffmpeg `doctor` reports, see
-   new-style.md → Gather). Look at them together with `contact_sheet`.
+   `./easel-out/<slug>/references/` (stills from a video: see new-style.md → Gather). Look at
+   them together with `contact_sheet` (`outDir` = `<job>/references/sheets`).
 2. **Measure** with `mcp__plugin_easel-core_easel__measure_image` (`images: ["<job>/references"]`,
-   `accent: true` for inks on dark grounds, `points` for flat areas, `outDir` in the job folder).
-   Write what each colour *means*. Note line weight relative to the subject, texture, type,
+   `accent: true` for inks on dark grounds, `points` for flat areas, `outDir` =
+   `<job>/references/sheets`). Write what each colour *means*. Note line weight relative to the subject, texture, type,
    motion (on 1s or 2s), camera and composition (new-style.md → Measure).
-3. **Start the style** in the user's project, next to or above where pieces live:
+3. **Start the style** (the piece needs an approved story first: if there is none yet, run
+   `easel-motion:animate`'s intake and story check, its steps 0-1, now) in the user's project,
+   next to or above where pieces live:
    `node "${CLAUDE_PLUGIN_ROOT}/tools/new-style.mjs" styles/<name> --from <closest shipped style or blank>`.
    Then start the piece in it:
    `node "${CLAUDE_PLUGIN_ROOT}/tools/new-piece.mjs" ./easel-out/<slug>/piece --style <name> --formats 16:9,9:16`
@@ -64,7 +70,7 @@ kind of image (medium, palette, proportions), never their characters or frames. 
 4. **Match:** build (`node "${CLAUDE_PLUGIN_ROOT}/tools/build.mjs" ./easel-out/<slug>/piece`),
    render each beat with `render_still` (`aspect`, `t`, `scale: 0.5`), and compare each with its
    closest reference with `mcp__plugin_easel-core_easel__compare_images` (`autoTrim`, `crop` /
-   `cropOurs` for one figure; `outDir` = the job's `references/`). Read every sheet. Check in this
+   `cropOurs` for one figure; `outDir` = `<job>/references/sheets`). Read every sheet. Check in this
    order: proportions on the 10% grid, the palette numbers, the texture, the type. Fix and repeat
    until what still differs is deliberate.
 5. **One check-in:** show the comparison sheets and the frames together. Ask: **thumbs up / closer
@@ -72,7 +78,9 @@ kind of image (medium, palette, proportions), never their characters or frames. 
 6. **Save** after the piece is approved: finish the STYLE hooks, fill every section of
    `styles/<name>/STYLE.md` (the measured table, motion, a frame checklist for this look, the kit
    API, do/don't, **not matched**, proven on), and render `styles/<name>/sample.png` from our own
-   frames with `render_still`. Check `qa` (`canvas_text`) passes on the piece in each format.
+   frames with `render_still` (`aspect: "9:16"`, `scale: 0.5`, so the sample is the 9:16 frame and
+   not the piece's main format letterboxed). Check `qa` (`canvas_text`) passes on the piece in
+   each format.
    Then continue in `easel-motion:animate` (storyboard, build, render, review).
 
 `<easel-motion>/examples/style-match/` is a finished run: three reference sheets, the

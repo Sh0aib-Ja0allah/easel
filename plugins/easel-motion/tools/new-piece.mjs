@@ -41,7 +41,8 @@ export function formatAwareHead(head, formats) {
   const swap = (re, by, what) => { if (!re.test(head)) throw new Error(`head.html: cannot find ${what} to make it format-aware`); head = head.replace(re, by); };
   swap(/^const FPS = 24, W = 1080, H = 1920;.*$/m, `const PIECE_FORMATS = ${JSON.stringify(formats)};   // piece.json "formats" (the first is the main one)\n${FORMAT_BLOCK}`, 'const FPS = 24, W = 1080, H = 1920');
   swap(/^const SAFE = \{ top: 240, bottom: 420, right: 140 \};.*$/m, SAFE_BLOCK, 'const SAFE');
-  swap(/^const CX = \d+;.*$/m, 'const CX = (W - SAFE.right) / 2;   // caption centre (left of the right-hand UI strip on 9:16)', 'const CX');
+  // the demo's own caption centre on 9:16 (500 in some demos), so the 9:16 copy still matches the style's sample
+  swap(/^const CX = (\d+);.*$/m, (m, cx) => `const CX = FORMAT === '9:16' ? ${cx} : (W - SAFE.right) / 2;   // caption centre (left of the right-hand UI strip on 9:16)`, 'const CX');
   swap(/^ {2}canvas \{ height: min\(100vh, calc\(100vw \* 16 \/ 9\)\); width: auto; aspect-ratio: 9 \/ 16; display: block; cursor: pointer;( image-rendering: pixelated;)? \}$/m,
     (m, px) => CANVAS_CSS.replace(' }', `${px || ''} }`), 'the 9:16 canvas CSS');
   head = head.replace(/^(\s*width: W, height: H, fps: FPS,)/m, '$1 aspect: FORMAT,');

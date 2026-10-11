@@ -43,6 +43,15 @@ under a light VHS pass. Motion on 1s; the grid never stops moving.
 `swVHS()`, `swHero(x, y, r, { mood, key })`, `swCaption(str)`; palette `SW`. STYLE hooks: `backdrop` (sky and grid),
 `window` (a neon rim), `blob` (a filled shape with a cyan neon outline), `hero`, `post` (the VHS pass), `ones: true`.
 
+## Review: colour cast
+
+Synthwave is blue-purple by design (a purple sky over a violet floor), so easel-core's `qa`
+colour_cast check (it refuses a video or still where more than 30% of frames are dominated by
+blue-purple) fails every frame of it. The user chose this palette, so run `qa` on this style's
+videos and stills with `"castMaxRatio": 1` and say so in the review. Every other check keeps its
+default, and so does every other style (only synthwave, liquid and aurora-glass are blue-purple by
+design).
+
 ## Do / don't
 
 - **Do** keep the camera low and the grid fast; land the chrome slam on a beat with a riser into it.

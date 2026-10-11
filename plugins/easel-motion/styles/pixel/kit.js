@@ -1,14 +1,16 @@
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/styles/pixel/kit.js).
 // MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
-// Modified by Easel (2026-10-11): no changes beyond this header.
+// Modified by Easel (2026-10-11): pixels stay square in every format (pxOf/resOf read a resolution by
+// its pixel size, and lowres never stretches a low-res picture to a frame of another shape).
 // =====================================================================
 //  styles/pixel/kit.js — pixel art. Every picture is drawn at a low internal resolution with whole-pixel
 //  primitives in a limited palette, then scaled up nearest-neighbour to 1080x1920. Resolution can tell
 //  time: a coarse early era, a sharper later one.  Built on kit/core.js (RNG, EZ, geometry, TT/B/E0/DEFER).
 //  Needs from the piece head: W, H, CX, BEAT.  Optional from the piece (src/bridges.js):
-//    ERA_RES  = [[w, h], ...]   each era's internal resolution (an integer divisor of W x H); the STYLE hooks
-//                               use it for the pixel grid of morph windows, the morphing blob and post FX
+//    ERA_RES  = [[w, h] or a pixel size, ...]   each era's internal resolution; the STYLE hooks use it for the
+//                               pixel grid of morph windows, the morphing blob and post FX. A pair is read by
+//                               its short side, so [90, 160] means 12 px pixels in any format (see resOf)
 //    ERA_POST = [{ scan, lcd, vignette }, ...]   per-era screen effects drawn by STYLE.post
 //  Inside lowres(res, draw) coordinates are LOW-RES PIXELS (0..w, 0..h) and every primitive snaps to them.
 //  No anti-aliasing anywhere: rects only, never arcs, strokes or text from fonts.
@@ -65,13 +67,17 @@ function pixCanvas(w, h, tag) {   // cached offscreen canvases, cleared and full
   if (!PIX_OFF.has(k)) { const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d', { willReadFrequently: true }); PIX_OFF.set(k, c); }
   return PIX_OFF.get(k);
 }
-const resOf = (res) => (Array.isArray(res) ? res : [Math.round(W / res), Math.round(H / res)]);   // [w, h] or a pixel size
+// A resolution is [w, h] or a pixel size. Pixels stay square in every format: a pair is read as the pixel
+// size of its short side (90x160 = 12 px: 90x160 on 9:16, 160x90 on 16:9, 90x90 on 1:1), and where the size
+// does not divide the frame the picture is cropped at the right and bottom, never stretched.
+const pxOf = (res) => (Array.isArray(res) ? Math.min(W, H) / Math.min(res[0], res[1]) : res);
+const resOf = (res) => { const p = pxOf(res); return [Math.ceil(W / p - 1e-9), Math.ceil(H / p - 1e-9)]; };
 // draw(w, h) runs with the global ctx swapped to a w x h canvas; the result is scaled up with hard pixels onto
 // the real ctx (in screen space). A camera on the real ctx (pieceCam) is applied in pixel space, snapped:
 // pans land on whole pixels; keep zoom at 1 (or whole numbers) so pixels stay square.
 // o.fx: { pal: [...], posterize, noise, noiseAmt, blocks, bs, flicker, blur } (see pixFX); o.al: opacity
 function lowres(res, draw, o = {}) {
-  const [w, h] = resOf(res), s = W / w, m = ctx.getTransform(), saved = ctx, keep = { ...PIX };
+  const [w, h] = resOf(res), s = pxOf(res), m = ctx.getTransform(), saved = ctx, keep = { ...PIX };
   const c = pixCanvas(w, h, keep.depth), g = c.getContext('2d');
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'; g.imageSmoothingEnabled = false;
   g.clearRect(0, 0, w, h);
@@ -79,7 +85,7 @@ function lowres(res, draw, o = {}) {
   ctx = g;
   try { draw(w, h); if (o.fx) pixFX(g, w, h, o.fx); } finally { ctx = saved; Object.assign(PIX, keep); }
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = o.al ?? 1; ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(c, 0, 0, w, h, 0, 0, W, H); ctx.restore();
+  ctx.drawImage(c, 0, 0, w, h, 0, 0, w * s, h * s); ctx.restore();
 }
 // draw pixel primitives straight onto the current canvas in screen space, one pixel = G x G screen px
 // (the STYLE hooks use this for the hero and the morph; scenes normally use lowres)
@@ -90,8 +96,8 @@ function withGrid(G, fn) {
   try { fn(); } finally { ctx.restore(); Object.assign(PIX, keep); }
 }
 const pixToScreen = (x, y) => [(PIX.z * x + PIX.tx) * PIX.s, (PIX.z * y + PIX.ty) * PIX.s];
-const pixFromWorld = (x, y, res) => { const [w] = resOf(res), s = W / w; return [Math.floor(x / s), Math.floor(y / s)]; };
-const pixToWorld = (x, y, res) => { const [w] = resOf(res), s = W / w; return [(x + 0.5) * s, (y + 0.5) * s]; };   // a pixel's centre
+const pixFromWorld = (x, y, res) => { const s = pxOf(res); return [Math.floor(x / s), Math.floor(y / s)]; };
+const pixToWorld = (x, y, res) => { const s = pxOf(res); return [(x + 0.5) * s, (y + 0.5) * s]; };   // a pixel's centre
 
 // ---------------------------------------------------------------------
 //  primitives (pixel coords; everything rounds to whole pixels; colours are '#hex')
@@ -384,13 +390,13 @@ function pixBox(x, y, w, h, o = {}) {
 //  o: res ([w, h], default the current lowres), fg, bg, edge, shadow, scale, x / cx (screen), y (screen), at, dur
 // ---------------------------------------------------------------------
 const pixDefer = (f) => { if (DEFER) DEFER.push(f); else f(); };
-const curRes = (o) => o.res ?? (PIX.depth > 0 ? [PIX.w, PIX.h] : resOf(8));
+const curRes = (o) => o.res ?? (PIX.depth > 0 ? PIX.s : 8);
 function pixCaption(str, o = {}) {
   const res = curRes(o);
   pixDefer(() => {
     if (TT < E0 + (o.at ?? 0.45)) return;
-    lowres(res, (w) => {
-      const s = W / w, sc = o.scale ?? 1, tw = pixTextW(str, sc), bw = tw + 6 * sc, bh = 7 * sc + 6 * sc;
+    lowres(res, () => {
+      const s = PIX.s, sc = o.scale ?? 1, tw = pixTextW(str, sc), bw = tw + 6 * sc, bh = 7 * sc + 6 * sc;
       const x0 = Math.round((o.cx ?? CX) / s - bw / 2), y0 = Math.round((o.y ?? 1440) / s - bh / 2);
       pixBox(x0, y0, bw, bh, { bg: o.bg ?? PAL16.ink, edge: o.edge ?? PAL16.white, shadow: o.shadow });
       const n = Math.floor(ev(E0 + (o.at ?? 0.45), o.dur ?? 0.6) * str.length + 1e-6);
@@ -402,8 +408,8 @@ function pixTag(str, o = {}) {
   const res = curRes(o);
   pixDefer(() => {
     const t0 = E0 + (o.at ?? 0.2); if (TT < t0) return;
-    lowres(res, (w) => {
-      const s = W / w, sc = (o.scale ?? 1) * (TT < t0 + 0.08 ? 2 : 1), bw = pixTextW(str, sc) + 6 * sc, bh = 13 * sc;
+    lowres(res, () => {
+      const s = PIX.s, sc = (o.scale ?? 1) * (TT < t0 + 0.08 ? 2 : 1), bw = pixTextW(str, sc) + 6 * sc, bh = 13 * sc;
       const x0 = Math.round((o.x ?? 70) / s), y0 = Math.round((o.y ?? 290) / s);
       pixBox(x0, y0, bw, bh, { bg: o.bg ?? PAL16.ink, edge: o.edge ?? PAL16.yellow, shadow: o.shadow });
       pixText(str, x0 + 3 * sc, y0 + 3 * sc, o.fg ?? PAL16.yellow, { scale: sc });
@@ -416,7 +422,7 @@ function pixOverlay(draw, o = {}) { const res = curRes(o); pixDefer(() => lowres
 //  the grid the hooks use: the current era's pixel size (from ERA_RES), stepped finer/coarser through a morph
 // ---------------------------------------------------------------------
 const PIX_GRIDS = [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 40];
-function gridOfEra(e) { return typeof ERA_RES !== 'undefined' && ERA_RES[e] ? W / resOf(ERA_RES[e])[0] : 8; }
+function gridOfEra(e) { return typeof ERA_RES !== 'undefined' && ERA_RES[e] ? pxOf(ERA_RES[e]) : 8; }
 const eraLook = (e) => (typeof ERA_POST !== 'undefined' && ERA_POST[Math.max(0, e)]) || null;
 // an era's palette (ERA_POST[e].pal; default every kit colour): what the backdrop and the blob may dither with.
 // The paper itself is snapped to it too, so a handheld era fades to its own darkest green, not to the ink.

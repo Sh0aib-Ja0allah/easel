@@ -37,6 +37,15 @@ magnifying the light. Everything eases on a sine; nothing is fast. Motion on 1s.
 `agWave(x, y, w, h, { bars, level })`, `agToggle(x, y, scale, on)`, `agLens(x, y, r, zoom)`, `agHero`, `agCaption`, `agSine`; palette `AG`.
 STYLE hooks: `backdrop` (the aurora), `window` (a soft glowing rim), `blob` (glass), `hero` (a small glass orb), `ones: true`.
 
+## Review: colour cast
+
+Aurora glass is blue-purple by design (violet and blue aurora over a deep indigo ground), so
+easel-core's `qa` colour_cast check (it refuses a video or still where more than 30% of frames are
+dominated by blue-purple) fails every frame of it. The user chose this palette, so run `qa` on this
+style's videos and stills with `"castMaxRatio": 1` and say so in the review. Every other check keeps
+its default, and so does every other style (only synthwave, liquid and aurora-glass are blue-purple
+by design).
+
 ## Do / don't
 
 - **Do** keep cards few and large; let the aurora show around them.

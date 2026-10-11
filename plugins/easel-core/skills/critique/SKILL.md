@@ -8,8 +8,12 @@ description: >-
   "give feedback", including for HTML, CSS or SVG pasted into the chat, and after any Easel render
   before calling it finished. Use it instead of judging from the code alone: it renders the work
   and measures it first. To check that Easel itself works, use easel-core:setup instead.
-when_to_use: After producing visual output, or when the user shares a design, image, page or video and asks for an opinion.
-allowed-tools: Read Glob Write Agent mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft
+when_to_use: >-
+  After producing visual output, or when the user shares a design, image, page or video and asks for
+  an opinion. A review of the motion in a site's or app's UI code (transitions, hovers, GSAP) goes
+  to easel-motion:ui-motion when it is installed (it ends in this critique); a finished animation
+  or video is reviewed here.
+allowed-tools: Read Glob Write Edit Agent mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft
 ---
 
 # Critique
@@ -24,7 +28,8 @@ The loop every Easel skill ends with: **render, look, measure, critique, fix, re
   `mcp__plugin_easel-core_easel__contact_sheet`, `"sizes": [16, 32, 64, 128, 512]`,
   `"themes": ["light", "dark"]`).
 - An animation or video page: `mcp__plugin_easel-core_easel__filmstrip` with one frame every
-  0.5 s.
+  0.5 s (`times`: 0.25, 0.75, ...). A call takes at most 48 frames, so a piece longer than 24 s
+  gets one filmstrip per 24 s stretch.
 - An image the user gave you: open it with Read; put several on a `contact_sheet`.
 
 Open every view with Read before judging. If a render or a measurement fails, or its files are

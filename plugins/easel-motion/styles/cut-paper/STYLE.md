@@ -1,7 +1,8 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/styles/cut-paper/STYLE.md).
      MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
-     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/). -->
+     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/); upstream's example
+     piece is named as not shipped with Easel. -->
 # Cut paper
 
 ![sample](sample.png)
@@ -46,4 +47,4 @@ Torn-edge paper shapes with soft drop shadows, paper grain and crayon in the fil
 
 ## Proven on
 
-`examples/history-of-ai` (60s, 15 worlds, 13 shape morphs, one hard cut on the payoff) and `demo/` (8s, the moon becomes the sun).
+a 60s history of AI upstream (15 worlds, 13 shape morphs, one hard cut on the payoff; upstream's `examples/history-of-ai`, not shipped with Easel) and `demo/` (8s, the moon becomes the sun).

@@ -18,7 +18,7 @@ Each rule was learned the hard way on a real piece. Follow them unless the user 
 
 ## Frame (see `<easel-motion>/grammars/frame.md` and the style's own checklist in its STYLE.md)
 - **Banned defaults** (they read as generic AI video): a centred title on a gradient; everything fading in; labels or frame borders in the corners; glows on UI chrome; generic particle bursts; a logo sting as the only ending. Every frame should look like *this* style and *this* subject.
-- **Something new every 2–4 seconds:** a move, a reveal, a cut, a reaction. easel-core `qa` → `stillness` flags still stretches over 2 s (a silence act may need `stillSeconds` raised, say why). Look at a `filmstrip` of one frame a second at phone size before calling a piece done.
+- **Something new every 2–4 seconds:** a move, a reveal, a cut, a reaction. easel-core `qa` → `stillness` flags still stretches over 2 s (a silence act may need `stillSeconds` raised, say why). Look at a `filmstrip` with a frame every 0.5 s at phone size before calling a piece done.
 - **One constant the eye can hold** in every frame: a hero with a face in character styles, the object or the axes in diagram styles.
 - **The medium shows** at phone size: torn edges in cut paper, hatching in ink, dots in riso, graphite in sketchbook, crisp pixels in pixel art.
 - **Small life even in held frames** (steam, a blink, a blinking LED, a cursor); character styles want 3+ details of background life per frame.

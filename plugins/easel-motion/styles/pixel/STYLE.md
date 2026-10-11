@@ -1,26 +1,29 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/styles/pixel/STYLE.md).
      MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
-     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/). -->
+     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/); resolutions per format
+     (pixels stay square in 16:9, 1:1 and 4:5 too). -->
 # Pixel
 
 ![sample](sample.png)
 
-Pixel art. Every picture is drawn at a low internal resolution — 90x160, 135x240, 180x320 for a 9:16 frame — with whole-pixel primitives in a limited palette, then scaled up nearest-neighbour to 1080x1920. Hard square pixels, ordered (Bayer) dithering instead of gradients, a built-in 5x7 bitmap font, sprites from string arrays, and screen effects that belong to a device: an LCD grid for a handheld, scanlines and a curved-tube vignette for an arcade. **Resolution can tell time:** an early era is chunkier than a later one, so a chronology gets sharper as it goes.
+Pixel art. Every picture is drawn at a low internal resolution — 90x160, 135x240, 180x320 for a 9:16 frame; 160x90, 240x135, 320x180 for 16:9 — with whole-pixel primitives in a limited palette, then scaled up nearest-neighbour to the frame. Hard square pixels, ordered (Bayer) dithering instead of gradients, a built-in 5x7 bitmap font, sprites from string arrays, and screen effects that belong to a device: an LCD grid for a handheld, scanlines and a curved-tube vignette for an arcade. **Resolution can tell time:** an early era is chunkier than a later one, so a chronology gets sharper as it goes.
 
 ## Resolutions per era
 
-Each era picks an internal resolution that divides 1080x1920 exactly, so every pixel is a whole square on screen. Declare it in `src/bridges.js` as `ERA_RES = [[w, h], ...]`; scenes draw with `lowres(ERA_RES[e], ...)`, and the STYLE hooks read it to size morph windows, the morphing blob and the post effects.
+Each era picks a pixel size that divides the frame exactly, so every pixel is a whole square on screen. Declare it in `src/bridges.js` as `ERA_RES = [[w, h], ...]` or as pixel sizes (`ERA_RES = [12, 6]`); scenes draw with `lowres(ERA_RES[e], ...)`, and the STYLE hooks read it to size morph windows, the morphing blob and the post effects.
 
-| res | pixel size | feels like | glyphs across (5x7 font) |
-|---|---|---|---|
-| 54x96 / 72x128 | 20 / 15 px | the earliest, blockiest eras | 9 / 12 |
-| 90x160 | 12 px | a 4-colour handheld | 15 |
-| 135x240 | 8 px | an early home console | 22 |
-| 180x320 | 6 px | a 16-colour arcade | 30 |
-| 270x480 | 4 px | a late, detailed era | 45 |
+**Pixels stay square in every format.** The kit reads a `[w, h]` pair by its short side, so `[90, 160]` means 12 px pixels: 90x160 on 9:16, 160x90 on 16:9, 90x90 on 1:1. It never stretches a picture to a frame of another shape. A scene drawn for 90x160 has to be laid out again for 16:9: place things with the `w, h` that `lowres` passes to `draw(w, h)` (or `PORTRAIT` / `WIDE`), as other styles use `LX` / `LY`.
 
-Divisors of both 1080 and 1920: 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 40, 60, 120. Keep at least a 2x step between neighbouring eras so the change reads on a phone. The demo goes 90x160 (12 px) → 180x320 (6 px): the moon is 17 pixels across, the coin it becomes is 37.
+| pixel size | 9:16 (1080x1920) | 16:9 (1920x1080) | 1:1 (1080x1080) | feels like | glyphs across 9:16 / 16:9 (5x7 font) |
+|---|---|---|---|---|---|
+| 20 / 15 px | 54x96 / 72x128 | 96x54 / 128x72 | 54x54 / 72x72 | the earliest, blockiest eras | 9 / 12, 16 / 21 |
+| 12 px | 90x160 | 160x90 | 90x90 | a 4-colour handheld | 15 / 26 |
+| 8 px | 135x240 | 240x135 | 135x135 | an early home console | 22 / 40 |
+| 6 px | 180x320 | 320x180 | 180x180 | a 16-colour arcade | 30 / 53 |
+| 4 px | 270x480 | 480x270 | 270x270 | a late, detailed era | 45 / 80 |
+
+Divisors of both 1080 and 1920 (9:16, 16:9 and 1:1): 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 40, 60, 120. **4:5** (1080x1350) needs a size that also divides 1350: 6 (180x225), 10 (108x135), 15 (72x90), 18 (60x75) or 30 (36x45); any other size is cropped by a few pixels at the bottom. Keep at least a 2x step between neighbouring eras so the change reads on a phone. The demo goes 90x160 (12 px) → 180x320 (6 px): the moon is 17 pixels across, the coin it becomes is 37.
 
 ## Palettes
 
@@ -71,7 +74,7 @@ Two places, both deterministic (keyed on `B`):
 
 `styles/pixel/kit.js` (needs `W`, `H`, `CX`, `BEAT` from the piece head; optional `ERA_RES`, `ERA_POST`):
 
-- **The low-res pass:** `lowres(res, draw, { fx, al })` (res = `[w, h]` or a pixel size), `withGrid(G, fn)` (pixel primitives straight onto the screen at G px per pixel), `pixToScreen(x, y)`, `pixToWorld(x, y, res)` (a pixel's centre in 1080x1920 — use it to place bridge shapes), `pixFromWorld(x, y, res)`, `PIX` (the current mapping).
+- **The low-res pass:** `lowres(res, draw, { fx, al })` (res = `[w, h]` or a pixel size), `withGrid(G, fn)` (pixel primitives straight onto the screen at G px per pixel), `pixToScreen(x, y)`, `pixToWorld(x, y, res)` (a pixel's centre in frame coordinates — use it to place bridge shapes), `pixFromWorld(x, y, res)`, `PIX` (the current mapping).
 - **Primitives (pixel coords):** `pset`, `prect`, `pfill`, `pline` (Bresenham), `pellipse(cx, cy, rx, ry, c, { ring })`, `pcircle`, `ppoly(points, c)`, `polySpans`, `pdither`, `pgrad`, `pglow`, `cellR`.
 - **Colour:** `PAL16`, `HANDHELD` (`PAL4`), `PIX_ALL`, `bayer`, `BAYER4`, `ditherPair(c, pal)`, `nearestC`, `posterize`, `shadeC`, `rgbOf`, `hexOf`, `pixFX`.
 - **Text and sprites:** `FONT5`, `pixText`, `pixTextW`, `sprite(rows, map, x, y, { flip, scale, anchor })`, `SPR` (spark, twinkle, heart, note).
@@ -82,7 +85,7 @@ Two places, both deterministic (keyed on `B`):
 
 ## Do / don't
 
-- **Do** pick resolutions that divide 1080x1920, and place bridge objects with `pixToWorld` so the morph lands on the drawn object.
+- **Do** pick pixel sizes that divide the frame in every format the piece lists (the table above), and place bridge objects with `pixToWorld` so the morph lands on the drawn object.
 - **Do** design sprites at their true size (a 6x4 beetle, an 8x6 slime) and procedural shapes (`pixHero`, `pcircle`) at the era's resolution, so a later era's hero has more pixels, not bigger ones.
 - **Do** keep UI panels pixel-native: one-pixel borders with clipped corners, a palette fill, the bitmap font.
 - **Do** give dark shapes a one-pixel rim light, and a sparkle or glow to the thing the eye should land on.

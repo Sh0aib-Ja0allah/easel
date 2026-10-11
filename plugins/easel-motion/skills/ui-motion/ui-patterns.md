@@ -1,7 +1,8 @@
 <!-- Easel: adapted from ArnavPuri/designskills @ c7873015add8571ca95043febad0d9e6c97ee5c6
      (github.com/ArnavPuri/designskills, skills/motion-design/SKILL.md), MIT License, Copyright (c) 2026 Arnav Puri;
      see NOTICE.md. Modified by Easel (2026-10-11): a reference read by easel-motion:ui-motion (the
-     skill frontmatter is removed); context and token sources point at Easel's brand file. -->
+     skill frontmatter is removed); context and token sources point at Easel's brand file; the
+     button's hover shadow fades in on a pseudo-element instead of transitioning box-shadow. -->
 
 # Motion Design
 
@@ -60,9 +61,16 @@ Use ease-out for entrances, ease-in for exits, ease-in-out for moves, spring for
 
 ```css
 .btn {
-  transition: transform 0.1s var(--ease-out), background-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+  position: relative;
+  transition: transform 0.1s var(--ease-out), background-color 0.15s var(--ease-out);
 }
-.btn:hover { box-shadow: 0 4px 12px oklch(from var(--interactive-primary) l c h / 0.3); }
+/* the hover shadow is painted once and faded in: transitioning box-shadow repaints every frame */
+.btn::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 4px 12px oklch(from var(--interactive-primary) l c h / 0.3);
+  opacity: 0; transition: opacity 0.15s var(--ease-out);
+}
+.btn:hover::after { opacity: 1; }
 .btn:active { transform: scale(0.97); }
 ```
 

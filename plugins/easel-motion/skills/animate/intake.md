@@ -1,7 +1,8 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/intake.md).
      MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
-     Modified by Easel (2026-10-11): gallery, voice, music and asset steps point at Easel tools and skills. -->
+     Modified by Easel (2026-10-11): gallery, voice, music and asset steps point at Easel tools and skills;
+     the default formats are SKILL.md's (16:9 and 9:16 from one piece). -->
 # Intake
 
 Ask only what you can't infer from the request. AskUserQuestion takes up to 4 questions per call: ask 1–4 first, then 5–8 in a second call (skip the ones the request already answers). Recommended option first. If the user said "just make it", use every default and say which you picked.
@@ -46,7 +47,7 @@ Ask only what you can't infer from the request. AskUserQuestion takes up to 4 qu
 8. **Brand rules?** *(ask only with 7 = yes)* Colours, fonts, the one accent colour, words to avoid. Defaults: sample them from the screenshots.
 
 ## Defaults when unanswered
-9:16, 1080×1920, 24fps, 120 BPM (an 8th = 6 frames exactly), 30–60s, music only (composed in code), no assets, the style that fits the subject (cut paper if unsure), the style's own hero, format chosen from FORMATS.md by the plot engine.
+16:9 and 9:16 from one piece (1920×1080 and 1080×1920, the main one first), 24fps, 120 BPM (an 8th = 6 frames exactly), 30–60s, music only (composed in code), no assets, the style that fits the subject (cut paper if unsure), the style's own hero, format chosen from FORMATS.md by the plot engine.
 
 ## Pick the format yourself
 Don't ask the user to choose a story format — it's grammar, not taste. A history or a process over time → chronology joined by shape morphs (F2). Someone wants something and a helper solves it → mission, cut on the beat (F4). One carried thing through many places → fixed-hero journey (F5). A question answered by a list → catalogue (F3). State the choice at the story check so they can veto it. When two formats fit (a process can be a chronology or a machine), prefer the **proven** one (see FORMATS.md status lines) and say so.

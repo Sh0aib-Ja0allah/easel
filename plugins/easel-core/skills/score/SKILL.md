@@ -12,7 +12,7 @@ when_to_use: >-
   a score built from a cue sheet. Also when the user wants their own music file put on a video
   ("put my track on this render"): the track is muxed as is and its loudness checked.
 argument-hint: "[video or piece] [mood: warm | bright | retro]"
-allowed-tools: mcp__plugin_easel-core_easel__audio_score mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__mux_audio mcp__plugin_easel-core_easel__qa Read Write Edit Glob
+allowed-tools: mcp__plugin_easel-core_easel__audio_score mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__mux_audio mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__filmstrip Read Write Edit Glob
 ---
 
 # Score: music and effects from a cue sheet
@@ -27,9 +27,10 @@ say so. Work in the job folder `./easel-out/<slug>/`.
   `render_video` `audio: "page"` (mastered to -14 LUFS for you). Use this skill only if the user
   wants a different score.
 - **The user's own track** (a file they own or licensed): on a video that already exists, mux it
-  with `mcp__plugin_easel-core_easel__mux_audio` (`video`, `audio` = the track, `master: true` if
-  it is not already mastered); on a page you are still rendering, use `render_video` `audio:
-  "<path>"`. Never fetch music from a site the user didn't point to.
+  with `mcp__plugin_easel-core_easel__mux_audio` (`video`, `audio` = the track, `slug` = the job
+  folder's name, `master: true` if it is not already mastered); on a page you are still
+  rendering, use `render_video` `audio: "<path>"`. Never fetch music from a site the user didn't
+  point to.
 - **Anything else** (a video without sound, a slideshow, a GSAP piece): build a cue sheet and
   synthesize a score, below.
 
@@ -49,24 +50,26 @@ Write `./easel-out/<slug>/cues.json` (get the schema with `mcp__plugin_easel-cor
 | `music-start`, `music-stop` | where the music plays (default: all of it) |
 
 Take the times from the piece itself (a storyboard's beats, `beats.json`, an animate piece's
-`TIMELINE.cuts`, `morphs` and `cues`, or a filmstrip of the video). Put the one `hit` where the
+`TIMELINE.cuts`, `morphs` and `cues`, or a `filmstrip` of the video: `file` = the video, `count`
+or `times`). Put the one `hit` where the
 story turns or pays off, with the busiest stretch just before it. Validate the file with
 `validate` `{"kind": "cues", "file": ...}` and fix what it reports.
 
 ## 3. Synthesize and check
 
 `mcp__plugin_easel-core_easel__audio_score` with `file` = the cue sheet, `palette` = `warm`
-(soft; the default), `bright` or `retro` (square waves, for pixel and game pieces), `name` = the
-slug. It writes `<name>.wav` mastered to -14 LUFS and reports `lufs` and `pass`. If it warns about
-an unknown effect name, use one of the listed names. Then `qa` with `audio` = the WAV (loudness
--16 to -12 LUFS is a hard gate).
+(soft; the default), `bright` or `retro` (square waves, for pixel and game pieces), `name` and
+`slug` = the slug (without `slug` the file lands in `./easel-out/render/`, not the job
+folder). It writes `./easel-out/<slug>/<name>.wav` mastered to -14 LUFS and reports `lufs` and
+`pass`. If it warns about an unknown effect name, use one of the listed names. Then `qa` with
+`audio` = the WAV (loudness -16 to -12 LUFS is a hard gate).
 
 ## 4. Put it on the video
 
 - **A video that already exists** (an MP4 the user gave you, or one rendered earlier):
-  `mcp__plugin_easel-core_easel__mux_audio` with `video` and `audio` = the WAV. The video stream is
-  copied unchanged and the result is cut to the shorter of the two; it writes a new file and never
-  overwrites the input.
+  `mcp__plugin_easel-core_easel__mux_audio` with `video`, `audio` = the WAV and `slug`. The video
+  stream is copied unchanged and the result is cut to the shorter of the two; it writes a new file
+  in `./easel-out/<slug>/` and never overwrites the input.
 - **A page you are rendering now:** `render_video` with `audio` = the WAV (trimmed to the video
   length).
 

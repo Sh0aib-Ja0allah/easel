@@ -10,6 +10,7 @@
 // EASEL_MOTION_FULL=1 renders every demo at full length (CI); otherwise a 1 s clip per style.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -207,5 +208,85 @@ test('templates: piece, beat-cut and blank pass canvas_text and beat_grid in eac
       const q = await m.qa({ file, aspect, checks: ['canvas_text', 'beat_grid'], every: 3, textIgnore: (meta.review && meta.review.textIgnore) || [], outDir: join(d, 'qa') });
       assert.equal(q.pass, true, `${tpl} ${aspect}: ${JSON.stringify(q.checks.map((c) => [c.name, c.pass, c.findings]))}`);
     }
+  }
+});
+
+// Q-06 (contract C4): synthwave, liquid and aurora-glass are blue-purple by design, so plain qa refuses
+// every frame on colour_cast; each STYLE.md gives the argument that passes (the user chose the palette).
+// Through the engine CLI, as a user's terminal would run it. Every other style passes plain qa.
+test('colour_cast: the blue-purple styles fail plain qa and pass with their STYLE.md argument; the others pass plain qa', { skip }, () => {
+  const CLI = join(PLUGIN, '..', 'easel-core', 'engine', 'cli.mjs'), dir = join(out, 'cast');
+  mkdirSync(dir, { recursive: true });
+  const qa = (name, args) => {
+    const f = join(dir, `${name}.json`);
+    writeFileSync(f, JSON.stringify(args));
+    const r = spawnSync(process.execPath, [CLI, 'qa', '--json', `@${f}`], { encoding: 'utf8', cwd: dir, windowsHide: true, timeout: 120000 });
+    assert.equal(r.status, 0, r.stderr);
+    return JSON.parse(r.stdout);
+  };
+  for (const s of STYLES) {
+    const plain = qa(s, { image: sample(s), checks: ['colour_cast'] });
+    const documented = /"castMaxRatio": ([\d.]+)/.exec(readFileSync(join(PLUGIN, 'styles', s, 'STYLE.md'), 'utf8'));
+    if (!['synthwave', 'liquid', 'aurora-glass'].includes(s)) { assert.equal(plain.pass, true, `${s}: ${JSON.stringify(plain.checks)}`); continue; }
+    assert.deepEqual(plain.hardFailures, ['colour_cast'], `${s}: plain qa refuses the sample on colour_cast`);
+    assert.ok(documented, `${s}/STYLE.md documents the qa argument ("castMaxRatio": n)`);
+    const with_ = qa(`${s}-cast`, { image: sample(s), checks: ['colour_cast'], castMaxRatio: Number(documented[1]) });
+    assert.equal(with_.pass, true, `${s} with castMaxRatio ${documented[1]}: ${JSON.stringify(with_.checks)}`);
+  }
+});
+
+// CM-03: pixel art keeps square pixels in every format. A 9:16 era resolution (90x160) stretched over a
+// 16:9 frame made pixels 21.3 x 6.75 px. Runs of one colour along rows and along columns then differ:
+// the run lengths that are common (1% of runs or more) must be the same across and down.
+test('pixel: a new piece in 16:9 keeps square pixels (equal pixel runs on x and y)', { skip }, async () => {
+  const { newPiece } = await import('../tools/new-piece.mjs');
+  const d = join(out, 'pixel-169');
+  newPiece(d, { style: 'pixel', formats: ['16:9', '9:16'] });
+  const r = await m.renderStill({ file: build(d).file, outDir: join(d, 'shots'), name: 'wide', aspect: '16:9', t: 1.5 }, { browser });
+  assert.equal(r.warnings, undefined, JSON.stringify(r.warnings));
+  const runs = await m.withPixels(browser, [r.files[0].file], (imgs) => {
+    const { data, width: w, height: h } = imgs[0], px = (x, y) => { const i = (y * w + x) * 4; return (data[i] << 16) | (data[i + 1] << 8) | data[i + 2]; };
+    // every third line along one axis: the lengths of runs of one colour (runs touching the edge left out)
+    const common = (along, n, lines) => {
+      const hist = {};
+      let total = 0;
+      for (let a = 0; a < lines; a += 3) {
+        let start = 0;
+        for (let b = 1; b <= n; b++) if (b === n || along(a, b) !== along(a, b - 1)) { if (start > 0 && b < n) { hist[b - start] = (hist[b - start] || 0) + 1; total++; } start = b; }
+      }
+      return Object.keys(hist).filter((k) => hist[k] >= total / 100).map(Number).sort((p, q) => p - q);
+    };
+    return { x: common((y, x) => px(x, y), w, h), y: common((x, y) => px(x, y), h, w), size: [w, h] };
+  });
+  assert.deepEqual(runs.size, [1920, 1080]);
+  assert.deepEqual(runs.x, runs.y, `common pixel runs: ${runs.x} px across, ${runs.y} px down`);
+});
+
+// CM-13: the aurora-glass hero is a lens whose inner rim had radius r - 3; morphs ramp the hero from r = 0
+test('aurora-glass: the hero draws at every small radius (morphs grow it from 0)', { skip }, async () => {
+  const { newPage } = await eng('browser.mjs');
+  const { page, context } = await newPage(browser, { width: 1080, height: 1920 });
+  try {
+    await page.goto(pathToFileURL(demos['aurora-glass']).href, { waitUntil: 'load' });
+    const errors = await page.evaluate(() => {
+      const bad = [];
+      window.renderFrame(4.5);
+      for (let r = 0; r <= 12; r += 0.5) { try { STYLE.hero(540, 900, r, { key: 'small' }); } catch (e) { bad.push(`r ${r}: ${e.message}`); } }
+      return bad;
+    });
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+// CM-14: new-piece made demos with CX = 500 (math, sketchbook, isometric) format-aware with CX = (W - SAFE.right) / 2,
+// which is 470 on 9:16: the 9:16 copy no longer matched the style's sample
+test('new-piece: a format-aware copy of a demo still matches the style\'s sample in 9:16', { skip }, async () => {
+  const { newPiece } = await import('../tools/new-piece.mjs');
+  for (const s of ['math', 'sketchbook', 'isometric']) {
+    const d = join(out, `np-${s}`);
+    newPiece(d, { style: s, formats: ['16:9', '9:16'] });
+    const r = await m.renderStill({ file: build(d).file, outDir: join(d, 'shots'), name: s, aspect: '9:16', scale: 0.5, t: goldenT(s) }, { browser });
+    const cmp = await m.compareImages(browser, r.files[0].file, golden(s).file);
+    assert.ok(cmp.psnr >= SHARED_PSNR, `${s}: PSNR ${cmp.psnr.toFixed(2)} dB against its sample`);
   }
 });

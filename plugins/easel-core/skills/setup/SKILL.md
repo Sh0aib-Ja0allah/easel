@@ -9,7 +9,7 @@ description: >-
   Playwright is set up, or an Easel render fails with a missing dependency ("playwright-core is
   not installed", "ffmpeg not found"). For brand colours and fonts use easel-core:brand instead.
 when_to_use: First run of Easel; any question about whether Easel, ffmpeg, Chromium or Playwright is installed or working; render errors that mention Playwright, Chromium, ffmpeg or a missing package.
-allowed-tools: mcp__plugin_easel-core_easel__doctor mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__ping
+allowed-tools: mcp__plugin_easel-core_easel__doctor mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__ping Read
 ---
 
 # Set up Easel
@@ -20,8 +20,9 @@ full names when you need them.
 ## 1. Check
 
 Call `mcp__plugin_easel-core_easel__doctor` with no arguments. Read every check. Required checks:
-`node`, `data dir`, `playwright-core`, `chromium`, `ffmpeg`, `ffprobe`. Optional: `gsap`,
-`python (optional)`, `aseprite (optional)`, `provider keys (optional)`.
+`node`, `data dir`, `playwright-core`, `chromium`, `ffmpeg`, `ffprobe`. Optional: `gsap` (UI
+motion previews), `p5` (easel-illustrate's generative art), `python (optional)`,
+`aseprite (optional)`, `provider keys (optional)`.
 
 Report to the user in a short table: what is ready, what is missing, and for each missing item
 the `fix` text from the report. Never print API key values; the report only names which keys are
@@ -29,7 +30,8 @@ set, and you do the same.
 
 ## 2. Install what Easel can install itself
 
-If `playwright-core`, `gsap` or `chromium` are missing:
+If `playwright-core`, `gsap`, `p5` or `chromium` are missing, or a package's version differs
+from its pin (an Easel update moved it):
 
 1. Tell the user what will happen: the pinned npm packages (a few MB) and the Chromium headless
    shell (about 110 MB) will be downloaded into the plugin's data folder (shown as `dataDir` in
