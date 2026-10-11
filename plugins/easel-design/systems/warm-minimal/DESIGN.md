@@ -22,9 +22,9 @@ Quiet and warm: off-white paper, deep ink blue, a single terracotta accent, lots
 - Contrast: body text on background and on surface meets WCAG AA (4.5:1)
 
 ## 3. Typography
-- Display: Space Grotesk 600, 40-64px
+- Display: Space Grotesk 700, 40-64px
 - Body: Newsreader 400, 18px / 1.55
-- UI: Inter 500, 14px
+- UI: Inter 400, 14px
 - Scale: 1.25
 
 ## 4. Spacing & Grid

@@ -23,7 +23,7 @@ A developer tool on a dark ground: near-black surfaces, one electric accent, mon
 - Contrast: body text on background and on surface meets WCAG AA (4.5:1)
 
 ## 3. Typography
-- Display: Inter 600, 32-56px, tight tracking
+- Display: Inter 700, 32-56px, tight tracking
 - Body: Inter 400, 15px / 1.6
 - Code and numbers: JetBrains Mono 400
 - Scale: 1.2

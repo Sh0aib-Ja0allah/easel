@@ -179,7 +179,7 @@ Use `display: flex` with a `::before` horizontal line. Each item has a dot and c
 ## Step 8: SVG-Based Charts
 
 ### Bar Chart
-Use `<rect>` elements positioned on a y-axis baseline. Add `<animate>` for entrance animation on height/y attributes. Include `<text>` for axis labels and `<line>` for gridlines.
+Use `<rect>` elements positioned on a y-axis baseline. Add `<animate>` for entrance animation on height/y attributes (with `fill="freeze"` so the bars stay at their values); the engine seeks SMIL like CSS animation, so render the still and run qa at a time after it ends (`t`, `times`) and check the growth with `mcp__plugin_easel-core_easel__filmstrip`. Include `<text>` for axis labels and `<line>` for gridlines.
 
 ### Donut Chart
 Use `<circle>` elements with `stroke-dasharray` and `stroke-dashoffset` to create segments. Transform with `rotate(-90)` to start from top. Add center `<text>` for the key metric.
@@ -239,7 +239,7 @@ Width: 800px (web) or 1000px (print). Structure: Header > Section 1 > Divider > 
 
 1. Render with `mcp__plugin_easel-core_easel__render_still` (`file`, `width`, `height`, `scale: 2`); use `sizes: [{width, height, name}]` for several formats from one page. For print, use `mcp__plugin_easel-core_easel__render_pdf` (`format: "A4"` or `"Letter"`, or `width`/`height` with units).
 2. A still render captures one moment: make the final state of any entrance animation (bar fills, `<animate>`) the default, or drop the animation for stills.
-3. Run `mcp__plugin_easel-core_easel__qa` with `checks: ["contrast", "text_clipping"]`, then view the PNG.
+3. Run `mcp__plugin_easel-core_easel__qa` with `width` and `height` of the delivery size, `fixedFrame: true` and `checks: ["contrast", "text_clipping"]`, then view the PNG.
 
 ---
 

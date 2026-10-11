@@ -4,8 +4,10 @@
 //   node palette.mjs --from "#2563eb"                  hue and chroma from a brand colour
 //   node palette.mjs --from "#2563eb" --name brand --css    CSS custom properties
 //   node palette.mjs 250 0.02 --name gray --json            JSON for tokens
+//   node palette.mjs --contrast "#9aa4b2" "#ffffff"         WCAG contrast of one pair (an icon or a button on its ground)
 // Steps keep the hue and taper chroma at the light and dark ends; an out-of-gamut colour loses chroma
-// (never lightness or hue) until it fits sRGB. Uses only Node built-ins.
+// (never lightness or hue) until it fits sRGB. With --from, the brand colour itself is the step closest
+// to its lightness, so the scale never moves it. Uses only Node built-ins.
 // Easel: ported to Node from ArnavPuri/designskills @ c7873015add8571ca95043febad0d9e6c97ee5c6
 // (github.com/ArnavPuri/designskills, skills/color-palette/scripts/palette.py), MIT License,
 // Copyright (c) 2026 Arnav Puri; see NOTICE.md. Modified by Easel (2026-10-11): Node instead of Python.
@@ -27,10 +29,15 @@ export function oklchToHex(L, C, H) {
   return '#' + linearRgb(L, Math.max(C, 0), H).map((x) => Math.round(Math.min(1, Math.max(0, enc(x))) * 255).toString(16).padStart(2, '0')).join('');
 }
 
-export function hexToOklch(hex) {
+// "#2563EB", "2563eb" or "#26e" -> "#2563eb"
+export function normHex(hex) {
   const m = /^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.exec(String(hex).trim());
   if (!m) throw new Error(`expected a hex colour like #2563eb, got ${JSON.stringify(hex)}`);
-  let h = m[1]; if (h.length === 3) h = [...h].map((c) => c + c).join('');
+  return `#${(m[1].length === 3 ? [...m[1]].map((c) => c + c).join('') : m[1]).toLowerCase()}`;
+}
+
+export function hexToOklch(hex) {
+  const h = normHex(hex).slice(1);
   const lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
   const [r, g, b] = [0, 2, 4].map((i) => lin(parseInt(h.slice(i, i + 2), 16) / 255));
   const cbrt = (x) => Math.sign(x) * Math.abs(x) ** (1 / 3);
@@ -43,7 +50,7 @@ export function luminance(hex) {
   const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4));
   return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 }
-export function contrast(a, b) { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); }
+export function contrast(a, b) { const [hi, lo] = [luminance(normHex(a)), luminance(normHex(b))].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); }
 const r2 = (x) => Math.round(x * 100) / 100;
 
 export function buildScale(hue, chroma) {
@@ -59,18 +66,25 @@ export function main(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--from' || a === '--name') { if (argv[i + 1] === undefined) throw new Error(`${a} needs a value`); opt[a.slice(2)] = argv[++i]; }
-    else if (a === '--css' || a === '--json') opt[a.slice(2)] = true;
-    else if (a.startsWith('--')) throw new Error(`unknown option ${a} (use --from, --name, --css, --json)`);
+    else if (a === '--css' || a === '--json' || a === '--contrast') opt[a.slice(2)] = true;
+    else if (a.startsWith('--')) throw new Error(`unknown option ${a} (use --from, --name, --css, --json, --contrast)`);
     else pos.push(a);
   }
-  let hue, chroma, note = '';
+  if (opt.contrast) {
+    if (pos.length !== 2) throw new Error('--contrast takes two colours: FOREGROUND BACKGROUND (e.g. "#9aa4b2" "#ffffff")');
+    const [fg, bg] = pos.map(normHex), r = r2(contrast(fg, bg));
+    return { out: opt.json ? JSON.stringify({ fg, bg, contrast: r, grade: grade(r) }) : `${r.toFixed(2)}:1 ${grade(r)} (text needs 4.5, large text and non-text shapes 3)`, note: '' };
+  }
+  let hue, chroma, note = '', brand = null;
   if (opt.from) {
     const [L, C, H] = hexToOklch(opt.from); hue = H; chroma = C;
     const closest = Object.keys(STOPS).reduce((best, s) => (Math.abs(STOPS[s][0] - L) < Math.abs(STOPS[best][0] - L) ? s : best));
-    note = `# ${opt.from} = oklch(${L.toFixed(2)} ${C.toFixed(3)} ${H.toFixed(1)}); closest step is ${closest}`;
+    brand = { step: Number(closest), hex: normHex(opt.from), oklch: `oklch(${L.toFixed(2)} ${C.toFixed(3)} ${H.toFixed(1)})` };
+    note = `# ${opt.from} = ${brand.oklch}; kept exactly as step ${closest}`;
   } else if (pos.length === 2 && pos.every((x) => Number.isFinite(Number(x)))) { hue = Number(pos[0]); chroma = Number(pos[1]); }
-  else throw new Error('give HUE CHROMA (e.g. 250 0.15) or --from HEX');
-  const scale = buildScale(hue, chroma);
+  else throw new Error('give HUE CHROMA (e.g. 250 0.15), --from HEX, or --contrast FG BG');
+  // the brand colour replaces the step nearest its lightness, so tokens built on the scale keep the exact brand hex
+  const scale = buildScale(hue, chroma).map((s) => (brand && s.step === brand.step ? { ...brand, on_white: r2(contrast(brand.hex, '#ffffff')), on_black: r2(contrast(brand.hex, '#000000')) } : s));
   if (opt.json) return { out: JSON.stringify({ [opt.name]: scale }, null, 2), note };
   if (opt.css) return { out: [':root {', ...scale.map((s) => `  --${opt.name}-${s.step}: ${s.hex};  /* ${s.oklch} */`), '}'].join('\n'), note };
   const rows = scale.map((s) => `${String(s.step).padStart(4)}  ${s.hex.padEnd(8)} ${s.on_white.toFixed(2).padStart(6)} ${grade(s.on_white).padStart(7)} ${s.on_black.toFixed(2).padStart(6)} ${grade(s.on_black).padStart(7)}`);

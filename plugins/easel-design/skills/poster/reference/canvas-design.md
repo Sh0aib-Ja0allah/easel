@@ -116,7 +116,7 @@ To push boundaries, follow design instinct/intuition while using the philosophy 
 
 **CRITICAL**: To achieve human-crafted quality (not AI-generated), create work that looks like it took countless hours. Make it appear as though someone at the absolute top of their field labored over every detail with painstaking care. Ensure the composition, spacing, color choices, typography - everything screams expert-level craftsmanship. Double-check that nothing overlaps, formatting is flawless, every detail perfect. Create something that could be shown to people to prove expertise and rank as undeniably impressive.
 
-Output the final result as a .png (and a .pdf for print), alongside the design philosophy as a .md file. Before calling it done, run `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping"]`): nothing may fall off the page or overlap.
+Output the final result as a .png (and a .pdf for print), alongside the design philosophy as a .md file. Before calling it done, run `mcp__plugin_easel-core_easel__qa` (the canvas's `width` and `height`, `fixedFrame: true`, `checks: ["text_clipping"]`): nothing may fall off the page or overlap; art that bleeds off on purpose carries `data-easel-bleed`.
 
 ---
 

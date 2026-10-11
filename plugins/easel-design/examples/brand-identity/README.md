@@ -1,1 +1,1 @@
-Brand-identity applications for the fictional Pellwater (the logo example's kept mark) on the generic **calm-care** system: a business card (`card.html`, PDF at 3.5 x 2 in, front and back) and a social avatar (`avatar.html`, 400 x 400).
+Brand-identity applications for the fictional Pellwater (the logo example's kept mark) on the generic **calm-care** system: a business card (`card.html`, front and back: 3.5 x 2 in trim with 1/8 in bleed, so a 3.75 x 2.25 in PDF page, and every word at least 1/8 in inside the trim) and a social avatar (`avatar.html`, 400 x 400).

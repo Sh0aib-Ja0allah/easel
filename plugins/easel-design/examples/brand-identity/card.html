@@ -1,20 +1,22 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Pellwater business card</title>
 <style>
-  /* Easel example (MIT): the Pellwater business card, front and back, 3.5 x 2 in (US) on the calm-care system. */
-  @page { size: 3.5in 2in; margin: 0 }
+  /* Easel example (MIT): the Pellwater business card, front and back, 3.5 x 2 in (US) on the calm-care system.
+     Print file: 1/8 in (12 px) bleed on every side, so each page is 3.75 x 2.25 in (360 x 216 px) with the
+     background to its edge; every word sits at least 1/8 in inside the trim (24 px or more from the page edge). */
+  @page { size: 3.75in 2.25in; margin: 0 }
   html, body { margin: 0; background: #F7FAF9 }
-  .card { width: 336px; height: 192px; box-sizing: border-box; position: relative; overflow: hidden; break-after: page; font-family: "Inter"; color: #16302E }
-  .front { background: #F7FAF9; padding: 22px 24px }
-  .front svg { width: 34px; height: 34px; fill: #20706B; position: absolute; left: 24px; top: 22px }
-  .name { position: absolute; left: 24px; top: 86px; font: 600 15px/1.2 "Space Grotesk" }
-  .role { position: absolute; left: 24px; top: 106px; font: 400 9.5px/1.3 "Inter"; color: #4C6260 }
-  .lines { position: absolute; left: 24px; bottom: 20px; font: 400 8.5px/1.55 "Inter" }
-  .lines b { font-weight: 600; color: #20706B }
-  .rule { position: absolute; right: 24px; top: 22px; bottom: 22px; width: 3px; background: #20706B; border-radius: 2px }
+  .card { width: 360px; height: 216px; box-sizing: border-box; position: relative; overflow: hidden; break-after: page; font-family: "Inter"; color: #16302E }
+  .front { background: #F7FAF9; padding: 34px 36px }
+  .front svg { width: 34px; height: 34px; fill: #20706B; position: absolute; left: 36px; top: 34px }
+  .name { position: absolute; left: 36px; top: 98px; font: 700 15px/1.2 "Space Grotesk" }
+  .role { position: absolute; left: 36px; top: 118px; font: 400 9.5px/1.3 "Inter"; color: #4C6260 }
+  .lines { position: absolute; left: 36px; bottom: 32px; font: 400 8.5px/1.55 "Inter" }
+  .lines b { font-weight: 700; color: #20706B }
+  .rule { position: absolute; right: 36px; top: 34px; bottom: 34px; width: 3px; background: #20706B; border-radius: 2px }
   .back { background: #20706B; color: #F7FAF9; display: flex; align-items: center; justify-content: center; gap: 12px }
   .back svg { width: 46px; height: 46px; fill: #F7FAF9 }
-  .back span { font: 600 26px/1 "Space Grotesk"; letter-spacing: -0.02em }
+  .back span { font: 700 26px/1 "Space Grotesk"; letter-spacing: -0.02em }
 </style></head>
 <body>
   <section class="card front">

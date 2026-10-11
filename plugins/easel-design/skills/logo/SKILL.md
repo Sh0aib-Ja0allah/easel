@@ -9,7 +9,9 @@ description: >-
 when_to_use: >-
   The user asks for a logo, logomark, wordmark, monogram, favicon, app icon or brand mark, to fix
   one that falls apart at small sizes, or for a logo "like" or "exactly like" another company's
-  mark (this skill turns that into an original mark with the qualities they admire). For a whole identity (colours, type, guidelines) use
+  mark (this skill turns that into an original mark with the qualities they admire). A favicon or
+  app icon is this skill, not easel-illustrate:svg or svg-illustration (they draw one-off SVG
+  graphics and illustrations, not a mark with its size ladder and export set). For a whole identity (colours, type, guidelines) use
   easel-design:brand-identity; for a set of UI icons use easel-design:icons.
 argument-hint: "[name] [what it stands for] [smallest use size]"
 allowed-tools: mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__embed_fonts mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
@@ -56,7 +58,8 @@ that is one concept. For each:
 - text only if it stays legible at the smallest size; below that it is an icon, not a wordmark.
 
 **Wordmarks start from a real typeface** (font-first): set the name as `<text>` in a bundled OFL
-face (Inter, Space Grotesk, Newsreader, JetBrains Mono, Caveat or STIX Two Text), then adjust
+face (Inter, Space Grotesk, Newsreader, JetBrains Mono, Caveat or STIX Two Text) at a bundled
+weight (400 or 700; Inter also 900), then adjust
 spacing, cut or join letters deliberately. Don't hand-draw letters from scratch. Only bundled faces,
 because only they can be embedded in the delivered file (section 5). If the brand has its own
 font, design in the closest bundled face and tell the user the final lettering needs that font
@@ -74,7 +77,14 @@ SVG correctly, so small sizes are real renders. Read the sheet itself, at each s
 - Is any text spelled and spaced correctly?
 - Does it look like an existing well-known mark? If so, drop or change it.
 
-Show the user the sheet and let them keep or kill concepts; nothing is blended.
+The full sheet is wide (six sizes side by side), so a viewer shows it shrunk and its 16 px cells
+read smaller than 16 px. Judge the small sizes on an enlarged sheet: write `small.html` in the job
+folder that shows each concept's 16 and 32 px cells (the files in the result's `cells`) as `<img>`
+at four times their size with `image-rendering: pixelated`, on light and dark, render it with
+`mcp__plugin_easel-core_easel__render_still` and Read that PNG. Every square you see there is one
+real pixel of the small render.
+
+Show the user the sheets and let them keep or kill concepts; nothing is blended.
 
 ## 4. Refine: one worst failure per pass
 
@@ -91,11 +101,16 @@ In `export/`:
 - **every SVG with `<text>` gets its font inside it:** run
   `mcp__plugin_easel-core_easel__embed_fonts` `{"file": ".../logo.svg"}` on each and deliver the
   `-embedded.svg` it writes (the bundled faces inlined as base64 WOFF2), never the bare file. Easel's
-  renders have the bundled fonts; the user's site, app or design tool does not, so a bare `<text>`
-  falls back to a default font there and the wordmark changes shape. It refuses a face that is not
-  bundled: change the face, or deliver PNGs only;
+  renders have the bundled fonts; the user's site does not, so a bare `<text>` falls back to a
+  default font there and the wordmark changes shape. The `-embedded.svg` keeps its face in browsers
+  and web pages (an `<img>`, inline SVG, a CSS background). Design tools and slide apps usually
+  ignore fonts inside an SVG: there the user needs the font installed or the text outlined in a
+  vector editor, or uses the PNGs; tell them. It refuses a face that is not bundled: change the
+  face, or deliver PNGs only;
 - PNGs from one HTML page per variant with `mcp__plugin_easel-core_easel__render_still`
-  (`sizes` for 16, 32, 48, 64, 128, 256, 512, 1024; `transparent: true`);
+  (`sizes: [{width: 16, height: 16, name: "logo-16"}, ...]` for 16, 32, 48, 64, 128, 256, 512, 1024;
+  `transparent: true`). For a mark that is not square (a lock-up), the number is the height and the
+  width keeps the mark's ratio (`{width: 96, height: 32, name: "lockup-32"}` for 3:1);
 - favicon set (16, 32, 48 PNG, plus `favicon.svg`), iOS home-screen icon 180 x 180, Android 192
   and 512 (with padding inside the safe circle), when the brief needs them;
 - clear space: the minimum margin around the mark, stated in units of the mark.

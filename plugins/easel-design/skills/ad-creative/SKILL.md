@@ -10,7 +10,7 @@ when_to_use: >-
   animated ad. For organic social posts use easel-design:social-graphic; for a website hero use
   easel-design:landing-page.
 argument-hint: "[product or offer] [ad sizes or platform]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__embed_fonts mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep Bash(node:*)
 ---
 
 # Ad creative
@@ -30,15 +30,24 @@ Product shots: [../design/reference/product-mockup.md](../design/reference/produ
    images and logo files the user owns, the platform's file-size limits.
 3. **Build** one master page per layout family (wide, square, tall); each size is a page or a
    CSS variant. Use the brand faces if the project has their font files, otherwise a bundled face (Inter, Space
-   Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). No CDNs: renders
+   Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). Bundled weights are
+   400 and 700 (Inter also 900); 500 renders as 400 and 600 as 700. No CDNs: renders
    are offline. The CTA is a real button shape with enough contrast.
 4. **Render** every size with `mcp__plugin_easel-core_easel__render_still` (`sizes`), and lay them out with
    `mcp__plugin_easel-core_easel__contact_sheet` to compare. For HTML5 ads, `mcp__plugin_easel-core_easel__filmstrip` across the animation (it must end
    on a complete frame with the CTA) and a static backup frame.
-5. **Check** with `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping", "contrast"]`) per size; fix every hard
-   failure. Check the small sizes (320 x 50, 300 x 250) by eye: is the offer still readable?
+5. **Check** each size with `mcp__plugin_easel-core_easel__qa` (`width` and `height` of that size, `fixedFrame: true`,
+   `checks: ["text_clipping", "contrast"]`); fix every hard failure and every contrast finding (graphic mode reports
+   contrast without refusing, but a finding is still text below AA). qa measures text only: check the CTA button's
+   own 3:1 against its surroundings by hand, `node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --contrast "<button>" "<ground>"`.
+   Check the small sizes (320 x 50, 300 x 250) by eye: is the offer still readable?
 6. **Variations:** when asked for A/B tests, change one thing per variant (headline, image, CTA
    colour) and name the files by what changed.
 7. **Critique:** `easel-core:critique` with the **social** rubric (or **design** for display).
    Fix what scores below 7; re-render, re-check.
-8. **Deliver** the files per size and variant, the HTML, and the qa numbers.
+8. **Deliver** the files per size and variant, the HTML, and the qa numbers. An HTML5 ad goes out
+   with its fonts inside: run `mcp__plugin_easel-core_easel__embed_fonts` (`{"file": ".../ad-300x250.html"}`) on each
+   approved page and deliver the `-embedded.html` it writes (a browser or ad server has no Easel
+   fonts, so the bare page falls back to a default face). Each embedded face adds about 17-33 KB
+   (Caveat about 66 KB; the result's `bytes` is the page's size): check it against the network's
+   cap (often 150 KB for the first load) and keep to one family in one or two weights.

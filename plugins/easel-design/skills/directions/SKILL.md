@@ -51,7 +51,10 @@ For each: a one-line name (descriptive, never a brand, studio or living artist: 
 broadsheet", not a magazine's name), the convention it breaks (in one sentence: "no hero image;
 the headline is the image"), and a page built at the real size with real copy. Use
 `.easel/brand.md` colours and faces where they are fixed; vary only what the brand leaves open.
-Render each with `mcp__plugin_easel-core_easel__render_still`.
+Art that bleeds off the edge on purpose (a full-bleed photo, a shape cut by the frame) carries the
+attribute `data-easel-bleed`, so qa lists it as exempt instead of failing the frame. Never put it
+on text: type used as the image still fits inside the frame, because qa fails text that is cut
+off. Render each with `mcp__plugin_easel-core_easel__render_still`.
 
 ## 4. Compare, with the blur test
 
@@ -60,8 +63,9 @@ Render each with `mcp__plugin_easel-core_easel__render_still`.
 - **Blur test:** make a copy of each page with `html { filter: blur(8px) }` and put the blurred
   renders on a second sheet. What still reads is the hierarchy: one clear focal point per
   direction, or the direction has no structure yet.
-- Run `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping", "contrast"]`) on each; fix hard
-  failures before showing.
+- Run `mcp__plugin_easel-core_easel__qa` on each (`width` and `height` of its page, `fixedFrame: true`,
+  `checks: ["text_clipping", "contrast"]`); fix every hard failure and every contrast finding before
+  showing (graphic mode reports contrast without refusing, but a finding is still text below AA).
 
 Before showing them, run `easel-core:critique` with the **design** rubric on the sheet: a
 direction with a blocking finding (unreadable text, broken layout) is fixed or dropped first; a

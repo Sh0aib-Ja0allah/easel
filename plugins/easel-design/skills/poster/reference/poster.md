@@ -434,7 +434,7 @@ Emoji glyphs depend on the fonts available to the renderer; for print, inline SV
 
 1. Render (Step 2) and Read the PNG; for a PDF, also render the same HTML with `render_still` as a preview and Read that
 2. Check event name, date, time, venue, price, and URL character by character -- a wrong date ruins a poster
-3. Run `mcp__plugin_easel-core_easel__qa` with `checks: ["contrast", "text_clipping"]`
+3. Run `mcp__plugin_easel-core_easel__qa` with the page's `width` and `height` in CSS px (bleed included), `fixedFrame: true` and `checks: ["contrast", "text_clipping"]`; fix every contrast finding, not only the hard failures
 4. For a fuller review, use `easel-core:critique`
 
 ---

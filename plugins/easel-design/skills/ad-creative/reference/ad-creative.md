@@ -296,4 +296,5 @@ Only when the user wants a photographic or painted raster and easel-ai-media is 
 - [ ] Animation (if any) ends on a static frame with visible CTA
 - [ ] At least 2 variations provided for A/B testing
 - [ ] No text below 10px font size
-- [ ] Contrast: 4.5:1 for normal text, 3:1 for large text (>=24px or >=18.66px bold) and for the CTA button against its surroundings -- check with `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast", "text_clipping"]`)
+- [ ] Contrast: 4.5:1 for normal text, 3:1 for large text (>=24px or >=18.66px bold) -- check each size with `mcp__plugin_easel-core_easel__qa` (its `width` and `height`, `fixedFrame: true`, `checks: ["contrast", "text_clipping"]`), which measures text only
+- [ ] The CTA button reaches 3:1 against its surroundings -- checked by hand: the button's fill and the ground behind it as hex, through the palette tool's `--contrast` (the ad-creative skill gives the command)

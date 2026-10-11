@@ -205,9 +205,10 @@ command with the plugin's full path); its arguments:
 palette.mjs --from "#2563eb"              # scale around a brand color
 palette.mjs 250 0.15 --name brand --css   # hue + chroma -> CSS vars
 palette.mjs 250 0.02 --name gray --json   # neutrals as JSON
+palette.mjs --contrast "#9aa4b2" "#fff"   # one pair: an icon, border or button shape on its ground
 ```
 
-It prints each step's hex and its contrast on white and black. Out-of-gamut steps lose chroma, never lightness or hue.
+It prints each step's hex and its contrast on white and black. Out-of-gamut steps lose chroma, never lightness or hue. With `--from`, the brand color itself is the step nearest its lightness, so the scale keeps the exact brand hex.
 
 Then check every real text/background pairing you ship (text on `--bg-*`, button label on `--interactive-*`, dark-mode pairs), not just against pure white/black: put the pairings on a page and run `mcp__plugin_easel-core_easel__qa` with `checks: ["contrast", "text_clipping"]` (`mode: "ui"` for UI). Fix every failing pair by moving to the nearest passing shade.
 

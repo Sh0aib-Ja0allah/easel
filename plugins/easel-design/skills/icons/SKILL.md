@@ -6,10 +6,12 @@ description: >-
   sprite and a review sheet at every size on light and dark backgrounds, rendered by the Easel
   engine.
 when_to_use: >-
-  The user asks for icons, an icon set, a UI icon family or consistent iconography. For one logo or
-  app icon use easel-design:logo; for illustrations use easel-illustrate:illustrate.
+  The user asks for icons, an icon set, a UI icon family or consistent iconography. An icon or two
+  for a page, as SVG files or code, is easel-illustrate:svg; icons that must read as one family (a
+  tab bar, a toolbar, an app's set) are this skill. For one logo or app icon use easel-design:logo;
+  for illustrations use easel-illustrate:illustrate.
 argument-hint: "[icons needed] [style: outline | filled | duotone]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep Bash(node:*)
 ---
 
 # Icons
@@ -33,7 +35,10 @@ animated icons, accessibility, common UI icons).
    `themes: ["light", "dark"]`. Look at 16 px first: does every icon still read?
 5. **Fix** the worst failure (a muddy detail at 16 px, an optical size mismatch), re-render; at
    most three passes.
-6. **Check** an icon-and-label row with `mcp__plugin_easel-core_easel__qa` (`mode: "ui"`, `checks: ["contrast"]`).
+6. **Check** an icon-and-label row with `mcp__plugin_easel-core_easel__qa` (`mode: "ui"`, `width` and `height` of the row
+   page, `checks: ["contrast"]`) and fix every contrast finding; qa measures the labels' text only. Check
+   each icon colour's own 3:1 against its light and dark grounds by hand:
+   `node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --contrast "<icon hex>" "<ground hex>"`.
 7. **Critique:** `easel-core:critique` with the **design** rubric on the review sheet. Fix
    blocking findings and anything below 7, re-render.
 8. **Deliver** the SVGs, the sprite, the review sheet, and usage notes (labels, `aria-hidden`).

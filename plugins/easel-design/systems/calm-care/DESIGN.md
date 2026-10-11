@@ -24,7 +24,7 @@ Reassuring and accessible: soft green-blue tones, large readable type, high cont
 - Contrast: body text on background and on surface meets WCAG AA (4.5:1)
 
 ## 3. Typography
-- Display: Space Grotesk 600, 32-48px
+- Display: Space Grotesk 700, 32-48px
 - Body: Inter 400, 18px / 1.65 (never below 16px)
 - Scale: 1.2
 

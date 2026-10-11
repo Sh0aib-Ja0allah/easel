@@ -33,7 +33,7 @@ painting) is only used when the user asks for one and `easel-ai-media` is instal
 |---|---|
 | `skills/<name>/` | Each skill's procedure (`SKILL.md`) and its reference files |
 | `systems/` | Ten generic design systems in DESIGN.md format (no real brands) |
-| `tools/palette.mjs` | OKLCH shade scales (50-950) with contrast per step: `node tools/palette.mjs --from "#2563eb" --css` |
+| `tools/palette.mjs` | OKLCH shade scales (50-950) with contrast per step, the brand colour kept as one of them: `node tools/palette.mjs --from "#2563eb" --css`; one pair's contrast: `--contrast "#9aa4b2" "#ffffff"` |
 | `examples/` | A finished example per skill, rendered and checked by the tests (`examples/manifest.json`) |
 | `evals/` | Routing evals (see its README) |
 

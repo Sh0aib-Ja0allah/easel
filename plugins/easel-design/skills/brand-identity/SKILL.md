@@ -33,13 +33,21 @@ icons, avatars, applications, the checklist).
 4. **System:** colour scales and type from `easel-design:design-system` (the palette tool:
    `node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --from "<hex>"`, the
    type scale); patterns and textures from the reference.
-5. **Applications:** a business card (`mcp__plugin_easel-core_easel__render_pdf`, 3.5 x 2 in), social avatars and a cover,
+5. **Applications:** a business card (`mcp__plugin_easel-core_easel__render_pdf`, 3.5 x 2 in trim plus 1/8 in
+   bleed on every side: a 3.75 x 2.25 in page, every word at least 1/8 in inside the trim; ask the printer for
+   their spec), social avatars and a cover,
    favicons and app icons (`mcp__plugin_easel-core_easel__render_still` `sizes`), one hero or poster in the brand. Lay them
-   out with `mcp__plugin_easel-core_easel__contact_sheet` and check them with `mcp__plugin_easel-core_easel__qa`.
+   out with `mcp__plugin_easel-core_easel__contact_sheet` and check each with `mcp__plugin_easel-core_easel__qa`
+   (`width` and `height` of the piece, `fixedFrame: true`, `checks: ["text_clipping", "contrast"]`); fix every hard
+   failure and every contrast finding.
 6. **Kit:** `brand-kit/` with the logo files, colour and type tokens, the application renders and
    a guidelines page (HTML and PDF). Every SVG in the kit with `<text>` (a wordmark, a lock-up) goes
    in as the `-embedded.svg` that `mcp__plugin_easel-core_easel__embed_fonts` writes, so it keeps
-   its bundled face on the user's site and in their tools. Then write `.easel/brand.md` with `easel-core:brand` and
+   its bundled face in browsers and web pages (an `<img>`, inline SVG, a CSS background). Design tools
+   and slide apps usually ignore fonts inside an SVG: there the user needs the font installed or the
+   text outlined in a vector editor, or uses the PNGs; say so. The guidelines page goes in the same
+   way: run `mcp__plugin_easel-core_easel__embed_fonts` (`{"file": ".../guidelines.html"}`) and put the
+   `guidelines-embedded.html` it writes in the kit. Then write `.easel/brand.md` with `easel-core:brand` and
    validate it (`mcp__plugin_easel-core_easel__validate` `{"kind": "brand", ...}`).
 7. **Critique** the kit with `easel-core:critique` (**design** rubric) before calling it done.
 

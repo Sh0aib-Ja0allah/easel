@@ -419,7 +419,7 @@ Generate as self-contained HTML with fixed dimensions:
 
 1. Render with `mcp__plugin_easel-core_easel__render_still` (`file`, `width: 1280`, `height: 720`) and Read the PNG at full size
 2. **Shrink test:** make a tiny page that shows the render at sidebar size -- `<body style="margin:0"><img src="thumb.png" style="display:block;width:168px;height:94px"></body>` -- render it with `width: 168`, `height: 94`, and Read it. Text must still be readable and the face expression visible
-3. Run `mcp__plugin_easel-core_easel__qa` with `checks: ["contrast", "text_clipping"]`
+3. Run `mcp__plugin_easel-core_easel__qa` with `width: 1280`, `height: 720`, `fixedFrame: true` and `checks: ["contrast", "text_clipping"]`
 4. Fix one issue at a time and re-render
 
 ---

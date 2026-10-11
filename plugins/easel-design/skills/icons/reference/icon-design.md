@@ -245,7 +245,7 @@ Status dots rely on color alone -- pair them with a text label or `aria-label` (
 
 ## Verify the Set
 
-Render every icon on one scratchpad HTML page at 16, 20, 24, and 32px, on light and dark backgrounds, next to a text label, with `mcp__plugin_easel-core_easel__render_still` (`file`, `width`, `height`, `scale: 2`). View the image with Read; for the 16px row also add a 4x-enlarged copy of the row to the page (draw the icons at 64px with the 16px variant's paths) so detail is visible. Check: equal visual weight across icons, identical stroke widths, nothing clipped at the viewBox edge, shapes aligned to the keylines, recognizable at 16px. Run `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast"]`, `mode: "ui"`) for the 3:1 non-text contrast; for a full review use `easel-core:critique`.
+Render every icon on one scratchpad HTML page at 16, 20, 24, and 32px, on light and dark backgrounds, next to a text label, with `mcp__plugin_easel-core_easel__render_still` (`file`, `width`, `height`, `scale: 2`). View the image with Read; for the 16px row also add a 4x-enlarged copy of the row to the page (draw the icons at 64px with the 16px variant's paths) so detail is visible. Check: equal visual weight across icons, identical stroke widths, nothing clipped at the viewBox edge, shapes aligned to the keylines, recognizable at 16px. Run `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast"]`, `mode: "ui"`) for the labels next to the icons; qa measures text only, so check the 3:1 non-text contrast of each icon colour on its light and dark grounds by hand, with the palette tool's `--contrast` (the icons skill gives the command); for a full review use `easel-core:critique`.
 
 ---
 

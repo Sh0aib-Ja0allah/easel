@@ -1,8 +1,11 @@
 # easel-design evals
 
-Fourteen routing cases: one per skill (two for `logo`, including one that must refuse to copy a
-famous mark). Each has a "skill fired" grader and an LLM grader on the plan the skill produces
-(sizes, states, checks, no invented data or proof). Renders are covered by the plugin's tests
+Seventeen routing cases: one per skill (two for `logo`, including one that must refuse to copy a
+famous mark), plus three tie-break cases that use a word another plugin's skill also claims,
+without the word that decides it: "a favicon" (no "logo") goes to `logo`, "a chart" for a printed
+report (no "infographic") to `infographic`, the icons of one tab bar (no "set") to `icons`. Each
+has a "skill fired" grader and an LLM grader on the plan the skill produces (sizes, states,
+checks, no invented data or proof). Renders are covered by the plugin's tests
 (`npm --prefix plugins/easel-design test`).
 
 ## Run (real model calls on your account; once per release)

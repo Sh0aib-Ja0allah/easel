@@ -21,9 +21,9 @@ A long-read publication: serif headlines with real contrast in scale, narrow col
 - Contrast: body text on background and on surface meets WCAG AA (4.5:1)
 
 ## 3. Typography
-- Display: Newsreader 600, large (56-96px), tight leading (1.05)
+- Display: Newsreader 700, large (56-96px), tight leading (1.05)
 - Body: Newsreader 400, 19px / 1.6, 60-72 characters per line
-- Labels and kickers: Inter 600, 12px, uppercase, 0.08em tracking
+- Labels and kickers: Inter 700, 12px, uppercase, 0.08em tracking
 - Scale: 1.333 with a jump for the headline
 
 ## 4. Spacing & Grid

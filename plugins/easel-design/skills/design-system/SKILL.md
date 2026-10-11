@@ -49,8 +49,9 @@ References:
 4. **Specimen:** build one page that shows the scales, type ramp, spacing, a few components and
    both themes. Render it with `mcp__plugin_easel-core_easel__render_still` (`fullPage: true`, `theme: "both"` when there is
    a dark theme).
-5. **Check** with `mcp__plugin_easel-core_easel__qa` (`mode: "ui"`, `checks: ["contrast", "text_clipping"]`): every text
-   and background pair the system allows must pass.
+5. **Check** with `mcp__plugin_easel-core_easel__qa` (`mode: "ui"`, `width` and `height` of the specimen render,
+   `checks: ["contrast", "text_clipping"]`), and again with `theme: "dark"` when there is a dark theme: every text
+   and background pair the system allows must pass. Fix every hard failure and every contrast finding.
 6. **Save:** offer to write the result into `.easel/brand.md` with `easel-core:brand`, so every
    Easel skill uses it.
 7. **Critique:** `easel-core:critique` with the **design** rubric on the specimen render. Fix

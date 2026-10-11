@@ -207,7 +207,7 @@ Only when the user wants a photographic or painted raster and easel-ai-media is 
 - [ ] Clear visual hierarchy: Headline > Description > CTA
 - [ ] CTA is prominent and action-oriented
 - [ ] Brand colors and fonts from `.easel/brand.md` applied
-- [ ] Text contrast: 4.5:1 normal, 3:1 large (>=24px or >=18.66px bold), measured over the busiest part of the image (add a scrim if needed) -- check with `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast", "text_clipping"]`)
+- [ ] Text contrast: 4.5:1 normal, 3:1 large (>=24px or >=18.66px bold), measured over the busiest part of the image (add a scrim if needed) -- check with `mcp__plugin_easel-core_easel__qa` (the banner's `width` and `height`, `fixedFrame: true`, `checks: ["contrast", "text_clipping"]`)
 - [ ] Responsive: scales well from mobile to desktop
 - [ ] Animations are smooth and not distracting
 - [ ] Load performance: CSS gradients preferred over heavy images

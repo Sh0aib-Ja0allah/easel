@@ -116,6 +116,54 @@
       "notes": "For dark grounds, #7FC9C1."
     },
     {
+      "file": "export/lockup.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        },
+        {
+          "kind": "font",
+          "name": "Space Grotesk 700 (bundled with Easel)",
+          "license": "OFL-1.1"
+        }
+      ],
+      "notes": "Mark and wordmark lock-up, 748x240 viewBox; the wordmark is live <text> in Space Grotesk 700, tracking -3%. Not delivered bare: see lockup-embedded.svg."
+    },
+    {
+      "file": "export/lockup-embedded.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        },
+        {
+          "kind": "font",
+          "name": "Space Grotesk 700 (bundled with Easel)",
+          "license": "OFL-1.1"
+        }
+      ],
+      "notes": "lockup.svg with its face embedded by the engine's embed_fonts (Space Grotesk 700 as base64 WOFF2, OFL-1.1): the file to deliver, it keeps its face in browsers and web pages."
+    },
+    {
       "file": "lockup.html",
       "created": "2026-10-11T12:00:00Z",
       "tool": "easel-design:logo",
@@ -133,7 +181,7 @@
         },
         {
           "kind": "font",
-          "name": "Space Grotesk 600 (bundled with Easel)",
+          "name": "Space Grotesk 700 (bundled with Easel)",
           "license": "OFL-1.1"
         },
         {

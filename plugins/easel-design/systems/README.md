@@ -6,8 +6,9 @@ it to the user's brand with `easel-design:design-system` and save it with `easel
 Every system is checked by the plugin's tests: the nine sections are present; body text, muted text
 and every other "... text" colour pass WCAG AA (4.5:1) on the background and surface; any other
 colour below that says "not for text" in its note (where text needs that hue, a "<role> text" line
-gives a darker step that passes); every face in Typography is bundled; and no brand or creator
-names appear.
+gives a darker step that passes); every face in Typography is bundled, in a weight that is
+bundled too (400 and 700, Inter also 900; a 500 or 600 would render as 400 or 700); and no brand
+or creator names appear.
 
 | System | Feel |
 |---|---|

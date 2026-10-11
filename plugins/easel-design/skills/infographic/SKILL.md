@@ -7,10 +7,12 @@ description: >-
   and critiqued.
 when_to_use: >-
   The user asks for an infographic, wants data, a process, a timeline or a comparison "explained
-  visually", or a chart as a standalone graphic. For a dashboard UI use easel-design:ui-design; for
-  an animated data explainer use easel-motion:animate.
+  visually", or a chart as a standalone graphic. A chart as a designed image or print (title,
+  numbers, source line) is this skill; a chart as an SVG file or component for a web page or app is
+  easel-illustrate:svg. For a dashboard UI use easel-design:ui-design; for an animated data
+  explainer use easel-motion:animate.
 argument-hint: "[data or topic] [where it will be shown]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
 ---
 
 # Infographic
@@ -32,11 +34,16 @@ checklist).
    time, parts of a whole, ranking, process, comparison). One main point; say it as the title.
 4. **Build** in HTML with inline SVG charts drawn from the data (compute positions in a small
    script inside the page so the numbers and the shapes agree). Use the brand faces if the project has their font files, otherwise a bundled face (Inter, Space
-   Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). No CDNs: renders
-   are offline. Charts start in their
-   final state (a still shows one moment).
+   Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). Bundled weights are
+   400 and 700 (Inter also 900); 500 renders as 400 and 600 as 700. No CDNs: renders
+   are offline. A still shows one moment, so the PNG and PDF must show every chart complete: with
+   no animation, draw it in its final state; with an entrance animation for the web (CSS, or SMIL
+   `<animate>` with `fill="freeze"`), render and check at a time after it ends (`t`, `times`) and
+   look at the motion itself with `mcp__plugin_easel-core_easel__filmstrip`.
 5. **Render** with `mcp__plugin_easel-core_easel__render_still` at the delivery size (`scale: 2`); `mcp__plugin_easel-core_easel__render_pdf` for print.
-6. **Check** with `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping", "contrast"]`); check every number on the
+6. **Check** with `mcp__plugin_easel-core_easel__qa` (`width` and `height` of the delivery size, `fixedFrame: true`,
+   `checks: ["text_clipping", "contrast"]`); fix every hard failure and every contrast finding (graphic mode
+   reports contrast without refusing, but a finding is still text below AA). Check every number on the
    render against the data.
 7. **Critique:** `easel-core:critique` with the **design** rubric; fix what scores below 7.
 8. **Deliver** the PNG/PDF, the HTML, the data source line, the qa numbers.

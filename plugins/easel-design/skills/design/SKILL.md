@@ -8,7 +8,9 @@ description: >-
   rendered offline by the Easel engine and critiqued before delivery.
 when_to_use: >-
   The user asks to "design" something without a clear type ("design something for our launch",
-  "make me a graphic", "a visual for this"), or for a product mockup or one-off graphic. For
+  "make me a graphic", "a visual for this"), or for a product mockup or one-off graphic. A product
+  shot laid out around the user's own photo or screenshot (a device frame, a packaging view) is
+  this skill; a generated or retouched photo of the product is easel-ai-media:image. For
   illustrations and drawings use easel-illustrate:illustrate; for animation or video use
   easel-motion:animate.
 argument-hint: "[what to design] [where it will be used]"
@@ -56,12 +58,16 @@ job (a campaign, several deliverables) starts with `easel-core:brief`.
    (composition, colour schemes, type, code patterns, style frameworks).
 4. **Build** one HTML page at the exact size (`html, body { margin: 0 }`, a fixed-size root).
    Use the brand faces if the project has their font files, otherwise a bundled face (Inter,
-   Space Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). No CDNs:
+   Space Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). Bundled
+   weights are 400 and 700 (Inter also 900); 500 renders as 400 and 600 as 700. No CDNs:
    renders are offline, so reference images by relative path.
 5. **Render** with `mcp__plugin_easel-core_easel__render_still` (`file`, `width`, `height`, `scale: 2`
    for retina; `sizes` for several formats from one page) and look at the PNG.
-6. **Check** with `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping", "contrast"]`). Fix
-   every hard failure and re-render.
+6. **Check** with `mcp__plugin_easel-core_easel__qa` (`width` and `height` of the piece, `fixedFrame: true`,
+   `checks: ["text_clipping", "contrast"]`; each size when there are several). Fix every hard failure and every
+   contrast finding (graphic mode reports contrast without refusing, but a finding is still text below AA),
+   and re-render. qa measures text only: a button or icon shape needs 3:1 against its ground, checked by hand
+   with `node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --contrast "<shape hex>" "<ground hex>"`.
 7. **Critique:** run `easel-core:critique` with the **design** rubric (social work: **social**).
    Fix what scores below 7 when the fix is in reach, re-render, re-check.
 8. **Deliver** the PNGs (and the HTML source), with the qa numbers and anything not verified.

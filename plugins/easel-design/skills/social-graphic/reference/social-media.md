@@ -198,7 +198,7 @@ Tip: while building, draw the safe zone as a dashed outline in a `.safe-guide` e
     </p>
     <div style="margin-top:40px;display:flex;align-items:center;justify-content:center;gap:12px;">
       <div style="width:40px;height:2px;background:rgba(255,255,255,0.5);"></div>
-      <span style="font-family:var(--font-body);font-size:18px;color:rgba(255,255,255,0.8);
+      <span style="font-family:var(--font-body);font-size:24px;color:rgba(255,255,255,0.8);
         text-transform:uppercase;letter-spacing:0.1em;">Author Name</span>
       <div style="width:40px;height:2px;background:rgba(255,255,255,0.5);"></div>
     </div>
@@ -253,8 +253,8 @@ Layout:
 Layout:
 - Large number: 72-96px, bold, gradient or accent color
 - Context line: 24px below the number
-- Supporting text: 18px, 2 lines max
-- Source attribution: 14px, bottom-right
+- Supporting text: 22px, 2 lines max
+- Source attribution: 20px (the X/LinkedIn minimum in Step 7), bottom-right
 - Background: clean gradient or subtle pattern
 - Brand mark: small, bottom-left
 ```
@@ -312,7 +312,7 @@ For multi-slide carousels, maintain consistency:
   right: 40px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 14px;
+  font-size: 24px; /* the Instagram minimum (Step 7) */
   letter-spacing: 0.1em;
   text-transform: uppercase;
   writing-mode: vertical-rl;
@@ -364,7 +364,7 @@ Generate a self-contained HTML file. Include:
 - One format: `mcp__plugin_easel-core_easel__render_still` with `file`, `width`, `height` (e.g. 1080 x 1080)
 - Several platform sizes from one design: `sizes: [{width, height, name}]` -- build the layout with relative units and container queries so it reflows, and keep the message in the area that survives every crop
 - Then Read each PNG: every word spelled correctly, legible at phone-feed size, safe zones respected
-- Run `mcp__plugin_easel-core_easel__qa` with `checks: ["contrast", "text_clipping"]`; for a fuller review use `easel-core:critique`
+- Run `mcp__plugin_easel-core_easel__qa` on each size with its `width` and `height`, `fixedFrame: true` and `checks: ["contrast", "text_clipping"]`, and fix every contrast finding; for a fuller review use `easel-core:critique`
 
 ---
 

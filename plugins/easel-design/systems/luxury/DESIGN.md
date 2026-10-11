@@ -23,7 +23,7 @@ Quiet and expensive: high-contrast serif display, lots of space, a deep ground, 
 ## 3. Typography
 - Display: Newsreader 400, large (56-120px), tracking -0.01em
 - Body: Inter 400, 15px / 1.7
-- Labels: Inter 500, 11px, uppercase, 0.16em tracking
+- Labels: Inter 400, 11px, uppercase, 0.16em tracking
 - Scale: 1.414
 
 ## 4. Spacing & Grid

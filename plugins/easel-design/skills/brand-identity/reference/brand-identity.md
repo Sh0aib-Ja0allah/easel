@@ -93,7 +93,7 @@ A brand color system is more than a palette. Structure it as:
 }
 ```
 
-Convert every final color to hex for the guidelines page and `.easel/brand.md` (the palette tool, `palette.mjs --from "#2563eb"`, prints hex scales; the command with its full path is in the brand-identity skill), and verify each text/background pair with `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast", "text_clipping"]`).
+Convert every final color to hex for the guidelines page and `.easel/brand.md` (the palette tool, `palette.mjs --from "#2563eb"`, prints hex scales; the command with its full path is in the brand-identity skill), and verify each text/background pair on one swatch page with `mcp__plugin_easel-core_easel__qa` (the page's `width` and `height`, `fixedFrame: true`, `checks: ["contrast", "text_clipping"]`).
 
 ---
 
@@ -336,7 +336,7 @@ Use the brand file's Primary hex (and a lighter step such as `--brand-400` for d
 ## Step 10: Brand Application Examples
 
 ### Business Card
-3.5x2in, flex column, `justify-content: space-between`. Name in display font 14pt/700, title 9pt uppercase in brand color, contact 8pt gray. Export with `mcp__plugin_easel-core_easel__render_pdf` (`width: "3.5in"`, `height: "2in"`).
+3.5x2in trim, flex column, `justify-content: space-between`. Name in display font 14pt/700, title 9pt uppercase in brand color, contact 8pt gray. For print, add 1/8in (3mm) bleed on every side: a 3.75x2.25in page (`@page { size: 3.75in 2.25in; margin: 0 }`) with the background running to its edge, and every word at least 1/8in inside the trim (the safe margin), so 1/4in from the page edge; the printer's own spec wins. Export with `mcp__plugin_easel-core_easel__render_pdf` (`file`; the `@page` size is used).
 
 ### Email Signature
 Table-based: logo mark (48px) with brand-color `border-right`, name/title/contact stacked in adjacent cell. Use Arial, inline styles only. (Full HTML email is not covered by Easel yet.)
@@ -345,7 +345,7 @@ Table-based: logo mark (48px) with brand-color `border-right`, name/title/contac
 
 ## Step 11: Verify and Save
 
-1. **Render a proof sheet** (scratchpad HTML): every logo variation on light, dark, and brand-color backgrounds; the icon mark at 16, 32, 48, and 180px; the favicon in a mock browser tab; the avatar inside a circle crop. Render it with `mcp__plugin_easel-core_easel__render_still` (`file`, `width`, `height`, `scale: 2`) and view it with Read. Check: mark still recognizable at 16px, no strokes vanish, contrast holds on every background, nothing touches the circular crop. Run `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast", "text_clipping"]`) on the same page; for a full review use `easel-core:critique`.
+1. **Render a proof sheet** (scratchpad HTML): every logo variation on light, dark, and brand-color backgrounds; the icon mark at 16, 32, 48, and 180px; the favicon in a mock browser tab; the avatar inside a circle crop. Render it with `mcp__plugin_easel-core_easel__render_still` (`file`, `width`, `height`, `scale: 2`) and view it with Read. Check: mark still recognizable at 16px, no strokes vanish, contrast holds on every background, nothing touches the circular crop. Run `mcp__plugin_easel-core_easel__qa` (the same `width` and `height`, `fixedFrame: true`, `checks: ["contrast", "text_clipping"]`) on the same page; it measures the text, so judge the mark's own contrast on each background by eye; for a full review use `easel-core:critique`.
 2. **Offer to write back** to `.easel/brand.md` (via `easel-core:brand`), updating only changed fields: brand name and tagline, Visual Theme & Atmosphere, Color (hex), Typography faces, Voice & Brand, and the Logo section (mark file, minimum size, clear space, icon style). Show the diff and ask before saving.
 
 ---

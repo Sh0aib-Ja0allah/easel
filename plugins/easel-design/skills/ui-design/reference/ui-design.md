@@ -123,8 +123,12 @@ Every interactive element needs all five states. No exceptions.
     outline-offset: 2px;
   }
 
-  /* Disabled — dimmed, no hover/active effects (don't add pointer-events: none — it hides the not-allowed cursor) */
-  &:disabled {
+  /* Disabled — dimmed, no hover/active effects (don't add pointer-events: none — it hides the not-allowed cursor).
+     Mark it disabled, not only dimmed: the `disabled` attribute, aria-disabled="true" (block the click in JS),
+     or a disabled <fieldset>. WCAG exempts inactive controls from text contrast, and so does Easel's qa, which
+     lists their text as exempt; a control that only looks disabled (a class, opacity on a div) is measured
+     like any other text and fails at this opacity. */
+  &:disabled, &[aria-disabled="true"] {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
@@ -140,7 +144,7 @@ Every interactive element needs all five states. No exceptions.
   hover:bg-indigo-500 hover:-translate-y-0.5 hover:shadow-lg
   active:translate-y-0 active:bg-indigo-700
   focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-  disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
+  disabled:opacity-50 disabled:cursor-not-allowed
   transition-all duration-150">
   Click me
 </button>

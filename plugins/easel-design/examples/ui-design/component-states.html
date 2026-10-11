@@ -22,7 +22,7 @@
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     height: 40px; padding: 0 16px; border-radius: var(--radius); border: 1px solid transparent;
-    font: 600 15px/1 var(--sans); white-space: nowrap; cursor: pointer;
+    font: 700 15px/1 var(--sans); white-space: nowrap; cursor: pointer;
     transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
   }
   .btn-primary { background: var(--primary); color: #fff; }
@@ -37,7 +37,7 @@
   .btn svg { flex: none; }
 
   .field { display: grid; gap: 6px; }
-  .field label { font: 500 14px/1.3 var(--sans); color: var(--text); }
+  .field label { font: 400 14px/1.3 var(--sans); color: var(--text); }
   .input {
     width: 100%; height: 40px; padding: 0 12px; border-radius: var(--radius);
     border: 1px solid var(--border-strong); background: var(--bg);
@@ -49,27 +49,27 @@
   .input:disabled { background: var(--disabled-bg); color: var(--disabled-text); border-style: dashed; cursor: not-allowed; }
   .input-mono { font-family: var(--mono); }
   .hint { font: 400 13px/1.4 var(--sans); color: var(--muted); margin: 0; }
-  .hint.error { color: var(--error); display: flex; gap: 6px; align-items: flex-start; font-weight: 500; }
+  .hint.error { color: var(--error); display: flex; gap: 6px; align-items: flex-start; font-weight: 400; }
   .hint.error svg { flex: none; margin-top: 1px; }
 
   .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 20px; display: grid; gap: 16px; }
   .card-head { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; }
   .card-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--surface); display: grid; place-items: center; }
-  .card h3 { margin: 0; font: 600 17px/1.25 var(--sans); color: var(--text); }
+  .card h3 { margin: 0; font: 700 17px/1.25 var(--sans); color: var(--text); }
   .card .meta { margin: 2px 0 0; font: 400 14px/1.3 var(--sans); color: var(--muted); }
-  .badge { font: 600 12px/1 var(--sans); padding: 6px 8px; border-radius: 999px; background: var(--surface); color: var(--text); border: 1px solid var(--border); white-space: nowrap; }
+  .badge { font: 700 12px/1 var(--sans); padding: 6px 8px; border-radius: 999px; background: var(--surface); color: var(--text); border: 1px solid var(--border); white-space: nowrap; }
   .amount { display: flex; align-items: baseline; justify-content: space-between; }
-  .amount b { font: 500 28px/1 var(--mono); color: var(--text); letter-spacing: -0.02em; }
+  .amount b { font: 400 28px/1 var(--mono); color: var(--text); letter-spacing: -0.02em; }
   .amount span { font: 400 14px/1 var(--sans); color: var(--muted); }
   .bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
   .bar i { display: block; height: 100%; background: var(--success); border-radius: 3px; }
   .people { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .people li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; font: 400 14px/1.3 var(--sans); color: var(--text); }
-  .avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 600 11px/1 var(--sans); background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-  .paid { color: var(--success-text); font-weight: 600; display: inline-flex; gap: 4px; align-items: center; }
-  .owed { color: var(--error); font-weight: 600; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 700 11px/1 var(--sans); background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .paid { color: var(--success-text); font-weight: 700; display: inline-flex; gap: 4px; align-items: center; }
+  .owed { color: var(--error); font-weight: 700; }
   .card-actions { display: flex; gap: 12px; align-items: center; }
-  .link { font: 600 15px/1 var(--sans); color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+  .link { font: 700 15px/1 var(--sans); color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
 
   .skeleton .sk { display: block; background: var(--border); border-radius: 6px; }
   .skeleton .card-icon { background: var(--border); }
@@ -83,15 +83,15 @@
   .sheet header p { margin: 6px 0 0; font-size: 16px; color: var(--muted); }
   .sheet header code { font: 400 14px/1 var(--mono); color: var(--muted); }
   .group + .group { margin-top: 56px; }
-  .group h2 { margin: 0 0 4px; font: 600 20px/1.25 var(--sans); }
+  .group h2 { margin: 0 0 4px; font: 700 20px/1.25 var(--sans); }
   .group > p { margin: 0 0 20px; font-size: 14px; color: var(--muted); }
   .states { display: grid; gap: 24px; }
   .states.five { grid-template-columns: repeat(5, 1fr); }
   .states.four { grid-template-columns: repeat(4, 1fr); }
   .state { display: grid; gap: 12px; align-content: start; }
-  .state-name { font: 500 12px/1 var(--mono); color: var(--muted); text-transform: lowercase; }
+  .state-name { font: 400 12px/1 var(--mono); color: var(--muted); text-transform: lowercase; }
   .state .btn { justify-self: start; }
-  aside.cards h2 { margin: 0 0 4px; font: 600 20px/1.25 var(--sans); }
+  aside.cards h2 { margin: 0 0 4px; font: 700 20px/1.25 var(--sans); }
   aside.cards > p { margin: 0 0 20px; font-size: 14px; color: var(--muted); }
 </style>
 </head>

@@ -22,7 +22,7 @@ Objective and structured: a strict modular grid, a grotesque sans in a few weigh
 ## 3. Typography
 - Display: Inter 700, 64-140px, tight leading (0.95)
 - Body: Inter 400, 16px / 1.45
-- Captions: Inter 500, 12px
+- Captions: Inter 400, 12px
 - Scale: modular from the grid unit, not a ratio
 
 ## 4. Spacing & Grid

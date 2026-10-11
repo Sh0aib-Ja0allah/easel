@@ -35,13 +35,19 @@ References:
    `typography` rulebooks (`mcp__plugin_easel-core_easel__craft`).
 4. **Build** one page at the trim size plus bleed (`@page { size: ... }`, a root sized to it, and
    every background extended into the bleed). Use the brand faces if the project has their font files, otherwise a bundled face (Inter, Space
-   Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). No CDNs: renders
-   are offline.
+   Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math). Bundled weights are
+   400 and 700 (Inter also 900); 500 renders as 400 and 600 as 700. No CDNs: renders
+   are offline. Art that runs off the edge on purpose (a shape, a photo, a cropped numeral drawn
+   as a shape) carries the attribute `data-easel-bleed`, so qa lists it as exempt instead of
+   failing the frame; never put it on text, which stays inside the trim and its safe margin.
 5. **Proof:** `mcp__plugin_easel-core_easel__render_still` at screen size (and `scale: 2`), plus a small version (about 300 px
    tall) to test hierarchy from a distance. Look at both.
-6. **Check** with `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping", "contrast"]`); fix every hard failure.
+6. **Check** with `mcp__plugin_easel-core_easel__qa` (`width` and `height`: the root's size in CSS px with the bleed,
+   mm x 96 / 25.4; `fixedFrame: true`; `checks: ["text_clipping", "contrast"]`); fix every hard failure and every
+   contrast finding (graphic mode reports contrast without refusing, but a finding is still text below AA).
 7. **Print file:** `mcp__plugin_easel-core_easel__render_pdf` (`file`; the page's `@page` size is used, so include the bleed).
-   Report the PDF size in mm or inches and the page count. Tell the user that CMYK conversion, if
+   Report the page size (the `@page` size you set, bleed included, in mm or inches) and the page
+   count. Tell the user that CMYK conversion, if
    the printer needs it, is done with the printer's profile in a layout tool.
 8. **Critique:** `easel-core:critique` with the **design** rubric. Fix what scores below 7 when the
    fix is in reach; re-render, re-check.

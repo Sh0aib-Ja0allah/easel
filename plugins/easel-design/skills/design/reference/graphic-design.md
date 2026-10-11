@@ -67,7 +67,7 @@ Fold in the composition, color, and typography decisions from Steps 4-6, build t
 Never deliver an image you haven't looked at:
 
 1. **Read the rendered PNG.** Check: every word spelled exactly as briefed, text legible at the size it will be seen, brand colors correct, one clear focal point, nothing important in cropped or UI-overlaid zones, product/logo not distorted
-2. **Run `mcp__plugin_easel-core_easel__qa`** with `checks: ["contrast", "text_clipping"]` -- catches low-contrast text and copy that overflows the canvas
+2. **Run `mcp__plugin_easel-core_easel__qa`** with the piece's `width` and `height`, `fixedFrame: true` and `checks: ["contrast", "text_clipping"]` -- catches low-contrast text, clipped copy and content that runs past the canvas; fix every contrast finding, not only the hard failures
 3. **Fix one issue at a time**, re-render, and Read the result again
 4. For a fuller review, use `easel-core:critique`
 
@@ -101,7 +101,7 @@ Text over a raster:
 </div>
 ```
 
-Render it with `render_still` (`width: 1200`, `height: 628`), Read the PNG, and run `qa` -- contrast over a busy photo often needs a scrim.
+Render it with `render_still` (`width: 1200`, `height: 628`), Read the PNG, and run `qa` at the same `width` and `height` with `fixedFrame: true` -- contrast over a busy photo often needs a scrim.
 
 ---
 
@@ -383,7 +383,8 @@ Before delivering any graphic, verify:
 - [ ] Colors match the brand palette (`.easel/brand.md`), or the user was told defaults were used
 - [ ] Typography uses the brand fonts (bundled or local font files -- renders are offline)
 - [ ] Clear visual hierarchy -- eye knows where to look first
-- [ ] Text contrast meets WCAG 2.x: 4.5:1 for normal text, 3:1 for large text (>=24px, or >=18.66px bold) and for UI shapes like CTA buttons -- verified with `qa` (`checks: ["contrast", "text_clipping"]`)
+- [ ] Text contrast meets WCAG 2.x: 4.5:1 for normal text, 3:1 for large text (>=24px, or >=18.66px bold) -- verified with `qa` (`checks: ["contrast", "text_clipping"]`), which measures text only
+- [ ] UI shapes like CTA buttons reach 3:1 against what surrounds them -- checked by hand: the shape's fill and its ground as hex, through the palette tool's `--contrast` (the design skill gives the command)
 - [ ] Proper spacing -- nothing feels cramped
 - [ ] Dimensions match the requested size
 - [ ] Rendered PNG was Read and every word checked
