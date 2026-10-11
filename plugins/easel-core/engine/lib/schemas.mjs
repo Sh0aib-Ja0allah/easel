@@ -28,8 +28,14 @@ function crossChecks(kind, d) {
     for (let i = 1; i < d.cues.length; i++) if (d.cues[i].frame < d.cues[i - 1].frame) { p.push('cues must be in frame order'); break; }
   }
   if (kind === 'brief' && d.checkins) {
+    // An approved check-in needs every earlier one approved or skipped (the user's choice); a skipped
+    // one never stands in for an earlier one that is still pending or has changes requested.
     const order = ['story', 'look', 'storyboard'];
-    for (let i = 1; i < order.length; i++) if (d.checkins[order[i]] === 'approved' && d.checkins[order[i - 1]] !== 'approved' && d.checkins[order[i - 1]] !== 'skipped') p.push(`check-in "${order[i]}" is approved before "${order[i - 1]}"`);
+    const done = (k) => d.checkins[k] === 'approved' || d.checkins[k] === 'skipped';
+    for (let i = 1; i < order.length; i++) {
+      if (d.checkins[order[i]] !== 'approved') continue;
+      for (let j = 0; j < i; j++) if (!done(order[j])) p.push(`check-in "${order[i]}" is approved before "${order[j]}"`);
+    }
   }
   if (kind === 'provenance' && Array.isArray(d.assets)) {
     for (const a of d.assets) {

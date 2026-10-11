@@ -9,20 +9,26 @@
 // Adapted for Easel from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (plugins/animate/skills/animate/tools/textcheck.mjs), MIT License, Copyright (c) 2026 cth9191.
 // Modified by Easel (2026-10-11): runs inside the engine's offline page (newPage/waitReady), takes the
-// format from window.__easel.aspect, returns a qa check object instead of printing.
+// format from window.__easel.aspect, returns a qa check object instead of printing; refuses a TIMELINE it
+// cannot sample, and fails when no frame was sampled or the text drawn could not be traced.
 import { newPage, openBrowser, waitReady, ASPECTS } from './browser.mjs';
-import { checkDeclared, compositionInfo } from './video.mjs';
+import { LIMITS } from './video.mjs';
 
 const DEFAULT_SAFE = { top: 240, bottom: 420, right: 140 };   // 9:16 phone UI (caption bar, side buttons)
 
-function scan({ every, safe }) {
-  const T = window.TIMELINE, W = T.width, H = T.height, P = CanvasRenderingContext2D.prototype;
+// W, H, fps, nFrames: the TIMELINE as checked in Node (finite and inside the render_video bounds).
+function scan({ every, safe, W, H, fps, nFrames }) {
+  const T = window.TIMELINE, P = CanvasRenderingContext2D.prototype;
   const rec = [];
+  let traced = 0, elsewhere = 0;   // strings drawn on the W x H canvas, and on any other canvas
   const wrap = (name) => {
     const orig = P[name];
     P[name] = function (str, x, y, maxW) {
       const s = String(str);
-      if (s.trim() && this.canvas.width === W && this.canvas.height === H && this.globalAlpha > 0.05) {
+      const shown = s.trim() && this.globalAlpha > 0.05;
+      if (shown && (this.canvas.width !== W || this.canvas.height !== H)) elsewhere++;
+      else if (shown) {
+        traced++;
         const m = this.measureText(s), w = maxW != null ? Math.min(m.width, maxW) : m.width;
         const al = this.textAlign, x0 = al === 'center' ? x - w / 2 : al === 'right' || al === 'end' ? x - w : x;
         const asc = m.actualBoundingBoxAscent || 0, desc = m.actualBoundingBoxDescent || 0;
@@ -55,14 +61,13 @@ function scan({ every, safe }) {
   const inBridge = (t) => bridges.some((r) => Math.abs(t - r.tc) < (r.d ?? 0.6) + 1e-6);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const issues = new Map(), add = (kind, text, t) => { const k = kind + '|' + text; const v = issues.get(k); if (v) { v.t1 = t; v.frames++; } else issues.set(k, { kind, text, t0: t, t1: t, frames: 1 }); };
-  const nFrames = T.frames || Math.round(T.duration * T.fps);
   // every Nth frame, plus the first and last frame of every shot (a 3-frame shot is never skipped)
   const fs = new Set(); for (let f = 0; f < nFrames; f += every) fs.add(f);
-  for (const sh of T.shots || []) { const a = Math.round(sh.t0 * T.fps), b = Math.round(sh.t1 * T.fps) - 1; if (a < nFrames) fs.add(a); if (b >= a && b < nFrames) fs.add(b); }
+  for (const sh of Array.isArray(T.shots) ? T.shots : []) { const a = Math.round(sh.t0 * fps), b = Math.round(sh.t1 * fps) - 1; if (!Number.isFinite(a) || !Number.isFinite(b)) continue; if (a >= 0 && a < nFrames) fs.add(a); if (b >= a && b < nFrames) fs.add(b); }
   let frames = 0;
   try {
     for (const f of [...fs].sort((x, y) => x - y)) {
-      const t = f / T.fps; if (inBridge(t)) continue;
+      const t = f / fps; if (inBridge(t)) continue;
       rec.length = 0; window.__easel.t = t; window.renderFrame(t, cv); frames++;
       const seen = new Map();
       for (const b of rec) { const k = `${b.s}|${Math.round(b.x0)}|${Math.round(b.y0)}`; if (!seen.has(k)) seen.set(k, b); }
@@ -83,12 +88,12 @@ function scan({ every, safe }) {
       }
     }
   } finally { undo.forEach((u) => u()); }
-  return { frames, issues: [...issues.values()].map((i) => ({ ...i, t0: +i.t0.toFixed(3), t1: +i.t1.toFixed(3) })) };
+  return { frames, traced, elsewhere, issues: [...issues.values()].map((i) => ({ ...i, t0: +i.t0.toFixed(3), t1: +i.t1.toFixed(3) })) };
 }
 
 function gridScan() {
   const T = window.TIMELINE;
-  if (!T.bpm || !T.fps) return { bpm: T.bpm || null, missing: true };
+  if (!(T.bpm > 0 && T.fps > 0 && Number.isFinite(T.bpm) && Number.isFinite(T.fps))) return { bpm: T.bpm || null, missing: true };
   // 8ths everywhere; 16ths inside the fast window [fastFrom, fastTo) when the piece declares one
   const E8 = 60 / T.bpm / 2, E16 = E8 / 2, g0 = T.gridOffset || 0, tol = 0.5 / T.fps + 1e-6;
   const fast = typeof T.fastFrom === 'number' ? [T.fastFrom, typeof T.fastTo === 'number' ? T.fastTo : Infinity] : null;
@@ -101,13 +106,28 @@ function gridScan() {
   return { bpm: T.bpm, e8: +E8.toFixed(4), gridOffset: g0, fast: fast && [fast[0], fast[1] === Infinity ? null : fast[1]], events: events.length, off };
 }
 
-// args: html | file, aspect, every (sample every Nth frame, default 6), textIgnore [[t0, t1, why], ...]
+// The TIMELINE fields canvas_text samples by: finite numbers inside the render_video bounds, or the check is
+// refused (a missing or non-finite value sampled no frame and passed; an infinite one never stopped).
+function sampling(T) {
+  const got = (v) => (typeof v === 'string' ? JSON.stringify(v) : String(v));
+  for (const k of ['duration', 'fps', 'width', 'height']) {
+    const v = T[k], [lo, hi, unit] = LIMITS[k];
+    const whole = k === 'width' || k === 'height';
+    if (typeof v !== 'number' || !Number.isFinite(v) || (whole && !Number.isInteger(v))) throw new Error(`canvas_text: window.TIMELINE.${k} must be a finite number${whole ? ' of whole pixels' : ''} (${lo} to ${hi}${unit}); got ${got(v)}. Set TIMELINE.duration (seconds), fps, width and height (the canvas size) in the piece.`);
+    if (v < lo || v > hi) throw new Error(`canvas_text: window.TIMELINE.${k} is ${v}; it must be ${lo} to ${hi}${unit}, as for render_video.`);
+  }
+  const most = Math.ceil(T.duration * T.fps) + 1;
+  if (T.frames !== undefined && T.frames !== null && !(Number.isInteger(T.frames) && T.frames >= 1 && T.frames <= most)) throw new Error(`canvas_text: window.TIMELINE.frames must be a whole number from 1 to ${most} (duration x fps); got ${got(T.frames)}. Leave it out to sample duration x fps frames.`);
+  return { W: T.width, H: T.height, fps: T.fps, nFrames: T.frames || Math.round(T.duration * T.fps) };
+}
+
+// args: html | file, aspect, theme, every (sample every Nth frame, default 6), textIgnore [[t0, t1, why], ...]
 // want(name) picks which of canvas_text and beat_grid to return. Returns null for a page that is not a canvas piece.
 export async function canvasChecks(args, src, want = () => true, { browser: shared } = {}) {
   const [aw, ah] = args.aspect ? ASPECTS[args.aspect] : [];
   const browser = shared || (await openBrowser());
   try {
-    const { page, context, errors } = await newPage(browser, { width: args.width || aw || 1080, height: args.height || ah || 1920, aspect: args.aspect || null, seed: args.seed ?? 1, reducedMotion: args.reducedMotion });
+    const { page, context, errors } = await newPage(browser, { width: args.width || aw || 1080, height: args.height || ah || 1920, colorScheme: args.theme || 'light', aspect: args.aspect || null, seed: args.seed ?? 1, reducedMotion: args.reducedMotion });
     try {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
       await waitReady(page);
@@ -125,19 +145,22 @@ export async function canvasChecks(args, src, want = () => true, { browser: shar
         }
       }
       if (!want('canvas_text')) return checks;
-      const info = await compositionInfo(page);
-      checkDeclared(info, ['duration', 'fps']);   // the frames sampled are duration x fps: the render_video bounds apply
-      const safe = info.height > info.width ? (await page.evaluate(() => window.TIMELINE.safe || null)) || DEFAULT_SAFE : null;
-      const r = await page.evaluate(scan, { every: args.every || 6, safe });
+      const T = sampling(await page.evaluate(() => { const T = window.TIMELINE; return { duration: T.duration, fps: T.fps, width: T.width, height: T.height, frames: T.frames }; }));
+      const safe = T.H > T.W ? (await page.evaluate(() => window.TIMELINE.safe || null)) || DEFAULT_SAFE : null;
+      const r = await page.evaluate(scan, { every: args.every || 6, safe, ...T });
       const ignore = args.textIgnore || [];
       const allowed = (i) => ignore.some(([a, b]) => i.t0 >= a - 1e-6 && i.t1 <= b + 1e-6);
       const hard = r.issues.filter((i) => !allowed(i) && i.kind !== 'under the phone UI (safe zone)');
       const warn = r.issues.filter((i) => !allowed(i) && i.kind === 'under the phone UI (safe zone)');
+      // Nothing sampled, or text drawn that the trace could not see, is not a pass.
+      const blind = !r.frames ? `no frame was sampled (${T.nFrames} frames at ${T.fps} fps${T.nFrames ? ', all inside morph bridges' : ''}): check TIMELINE.duration, fps and frames`
+        : !r.traced && r.elsewhere ? `the piece drew ${r.elsewhere} strings, all on a canvas that is not ${T.W}x${T.H} (TIMELINE.width x height), so none could be traced: draw on the canvas renderFrame(t, canvas) is given, at the TIMELINE size` : null;
       checks.push({
-        name: 'canvas_text', pass: hard.length === 0, hard: true, value: hard.length,
+        name: 'canvas_text', pass: !blind && hard.length === 0, hard: true, value: blind ? null : hard.length,
         threshold: 'no canvas text cut off by the frame edge or overlapping other text (morph bridges skipped)',
-        framesSampled: r.frames, ...(args.aspect ? { aspect: args.aspect } : {}),
-        findings: [...hard.map((i) => ({ ...i, severity: 'fail' })), ...warn.map((i) => ({ ...i, severity: 'warn', fix: 'move it above the bottom safe band / left of the right-hand buttons' }))],
+        framesSampled: r.frames, textTraced: r.traced, ...(r.traced && r.elsewhere ? { untraced: r.elsewhere } : {}), ...(args.aspect ? { aspect: args.aspect } : {}),
+        ...(!blind && !r.traced ? { note: 'the piece drew no text with fillText or strokeText: nothing to check (text drawn as paths or images is not seen)' } : {}),
+        findings: [...(blind ? [{ fix: blind }] : []), ...hard.map((i) => ({ ...i, severity: 'fail' })), ...warn.map((i) => ({ ...i, severity: 'warn', fix: 'move it above the bottom safe band / left of the right-hand buttons' }))],
         ...(r.issues.some(allowed) ? { allowed: r.issues.filter(allowed).length } : {}),
         ...(errors.length ? { pageErrors: [...new Set(errors)].slice(0, 5) } : {}),
       });

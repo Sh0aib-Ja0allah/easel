@@ -11,6 +11,7 @@ import { measureImage, compareSheet } from './lib/refs.mjs';
 import { audioScore, PALETTES } from './lib/score.mjs';
 import { muxAudio } from './lib/audio.mjs';
 import { renderPdf, PAPER } from './lib/pdf.mjs';
+import { MAX_SEED } from './lib/browser.mjs';
 import { embedFonts } from './lib/embed.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
@@ -40,7 +41,7 @@ export const tools = {
   render_still: {
     description:
       'Render a page to PNG: inline HTML, or a file (.html, .svg, .png, .jpg). Renders offline with the bundled OFL fonts (Inter, Newsreader, JetBrains Mono, Space Grotesk, Caveat, STIX Two Text, Noto Sans Math) and a seeded Math.random. ' +
-      'Use sizes for several outputs (e.g. social formats), theme "both" for light and dark (prefers-color-scheme), t to seek an animated page. Output goes to ./easel-out/<slug>/ unless outDir is given. Look at the PNG after rendering.',
+      'Use sizes for several outputs (e.g. social formats; an integer N is an N x N square), theme "both" for light and dark (prefers-color-scheme; an SVG file renders on a dark page in dark), t to seek an animated page (CSS, Web Animations and SVG SMIL). An .svg file must be well-formed XML (write & as &amp;, &nbsp; as &#160;). Output goes to ./easel-out/<slug>/ unless outDir is given. Look at the PNG after rendering.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -51,25 +52,25 @@ export const tools = {
         outDir: { type: 'string', description: 'Explicit output folder (overrides slug).' },
         width: { type: 'integer', minimum: 1, maximum: 8192 },
         height: { type: 'integer', minimum: 1, maximum: 8192 },
-        sizes: { type: 'array', maxItems: 32, items: { type: 'object', required: ['width', 'height'], properties: { width: { type: 'integer', minimum: 1, maximum: 8192 }, height: { type: 'integer', minimum: 1, maximum: 8192 }, name: { type: 'string' } }, additionalProperties: false } },
+        sizes: { type: 'array', maxItems: 32, items: { anyOf: [{ type: 'integer', minimum: 1, maximum: 8192 }, { type: 'object', required: ['width', 'height'], properties: { width: { type: 'integer', minimum: 1, maximum: 8192 }, height: { type: 'integer', minimum: 1, maximum: 8192 }, name: { type: 'string' } }, additionalProperties: false }] }, description: 'Sizes to render: {width, height, name} or an integer N for an N x N square (named "N").' },
         scale: { type: 'number', minimum: 0.25, maximum: 4, description: 'Device pixel ratio (2 for retina output).' },
         theme: { enum: ['light', 'dark', 'both'] },
         transparent: { type: 'boolean', description: 'Transparent background (PNG alpha).' },
         fullPage: { type: 'boolean' },
-        selector: { type: 'string', description: 'CSS selector: screenshot only this element.' },
-        t: { type: 'number', minimum: 0, description: 'Seek animated pages to this time in seconds before capture.' },
+        selector: { type: 'string', description: 'CSS selector: screenshot only this element (it must match a visible element).' },
+        t: { type: 'number', minimum: 0, maximum: 3600, description: 'Seek animated pages to this time in seconds before capture.' },
         aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'Render a format-aware page (e.g. an animate piece) in this format; also the default size (1920x1080, 1080x1920, 1080x1080, 1080x1350).' },
-        seed: { type: 'integer', description: 'Seed for Math.random (default 1).' },
+        seed: { type: 'integer', minimum: 0, maximum: MAX_SEED, description: 'Seed for Math.random and crypto random values (default 1; 0 to 4294967295, each its own sequence).' },
         reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" renders the page\'s reduced-motion path.' },
       },
       additionalProperties: false,
     },
-    run: (args) => renderStill(args),
+    run: (args, ctx) => renderStill(args, ctx),
   },
   render_pdf: {
     description:
       'Render a page (.html or .svg, or inline html) to a print PDF: posters, flyers, business cards, printable guides, slide decks (one page per CSS page or per slide with page breaks). ' +
-      'Size from the page\'s own @page rule by default (an SVG prints at its own width and height, else its viewBox, in CSS px), or format (A4, Letter, ...) or width and height with units ("8.5in", "210mm", "1280px"); backgrounds are printed; no margins (put bleed and margins in the page). Offline, with the bundled fonts. Check the pages with render_still before sending to print.',
+      'Size from the page\'s own @page rule by default (an SVG prints at its own width and height, else its viewBox, in CSS px), or format (A4, Letter, ...) or width and height with units ("8.5in", "210mm", "1280px"; each more than 0 and at most 200in); backgrounds are printed; no margins (put bleed and margins in the page). Returns the page count and pageSize (pt and mm) it printed. Offline, with the bundled fonts. Check the pages with render_still before sending to print.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -80,16 +81,17 @@ export const tools = {
         landscape: { type: 'boolean' }, printBackground: { type: 'boolean', description: 'Print backgrounds (default true).' },
         viewportWidth: { type: 'integer', minimum: 320, maximum: 7680, description: 'Layout viewport before printing (default 1280).' },
         viewportHeight: { type: 'integer', minimum: 240, maximum: 7680 },
-        theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' }, t: { type: 'number', minimum: 0 },
+        theme: { enum: ['light', 'dark'] }, seed: { type: 'integer', minimum: 0, maximum: MAX_SEED }, t: { type: 'number', minimum: 0, maximum: 3600 },
+        reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" prints the page\'s reduced-motion path.' },
       },
       additionalProperties: false,
     },
-    run: (args) => renderPdf(args),
+    run: (args, ctx) => renderPdf(args, ctx),
   },
   contact_sheet: {
     description:
       'Lay many renders out on one sheet so you can compare them at a glance: a logo or icon at a size ladder (e.g. 16 to 512 px) on light and dark, several directions side by side, or existing PNGs (storyboard panels). ' +
-      'Each item is a file (.html, .svg, .png, .jpg) or inline html. Returns the sheet PNG and every cell file.',
+      'Each item is a file (.html, .svg, .png, .jpg) or inline html, not both. Returns the sheet PNG and every cell file (cells/<name>-<item>-<theme>...png).',
     inputSchema: {
       type: 'object',
       required: ['items'],
@@ -105,12 +107,12 @@ export const tools = {
       },
       additionalProperties: false,
     },
-    run: (args) => contactSheet(args),
+    run: (args, ctx) => contactSheet(args, ctx),
   },
   render_video: {
     description:
       'Render an animated page to MP4 (H.264, yuv420p). The page animates through window.renderAt(t), window.renderFrame(t) (animate-kit canvas pieces), a paused GSAP timeline at window.__timelines[<data-composition-id>] (HyperFrames format), or CSS animations; every frame is seeked to t = n / fps, so output is deterministic. ' +
-      'Duration, fps and size default to the composition root (data-duration, data-fps, data-width, data-height) or window.TIMELINE / window.__composition; for a plain page or SVG, the duration is measured from its CSS animations (one loop of an infinite one). aspects renders extra formats (16:9, 9:16, 1:1, 4:5) from the same page, which lays itself out responsively or reads window.__easel.aspect. audio muxes a track; audio "page" uses the page\'s own score (window.renderAudioWav), mastered to -14 LUFS and also saved as <name>.wav. Review the result with filmstrip.',
+      'Duration, fps and size default to the composition root (data-duration, data-fps, data-width, data-height) or window.TIMELINE / window.__composition; for a plain page or SVG, the duration is measured from its CSS animations (one loop of an infinite one). aspects renders extra formats (16:9, 9:16, 1:1, 4:5) from the same page, which lays itself out responsively or reads window.__easel.aspect; each format has its own size, so width and height cannot be given with aspects. audio muxes a track; audio "page" uses the page\'s own score (window.renderAudioWav), mastered to -14 LUFS and also saved as <name>.wav. Review the result with filmstrip.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -118,7 +120,7 @@ export const tools = {
         name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
         duration: { type: 'number', minimum: 0.04, maximum: 600 }, fps: { type: 'number', minimum: 1, maximum: 120 },
         width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
-        aspects: { type: 'array', maxItems: 4, items: { enum: ['16:9', '9:16', '1:1', '4:5'] } },
+        aspects: { type: 'array', maxItems: 4, items: { enum: ['16:9', '9:16', '1:1', '4:5'] }, description: 'Render these formats (1920x1080, 1080x1920, 1080x1080, 1080x1350), one file each; not with width or height.' },
         audio: { type: 'string', description: 'Path to an audio file to mux (trimmed to the video length), or "page" for the page\'s own score (window.renderAudioWav), mastered to -14 LUFS.' },
         crf: { type: 'integer', minimum: 0, maximum: 51, description: 'x264 quality, lower is better (default 18).' },
         preset: { enum: ['ultrafast', 'veryfast', 'fast', 'medium', 'slow'] },
@@ -131,13 +133,14 @@ export const tools = {
   },
   filmstrip: {
     description:
-      'Capture an animated page at several times and lay the frames out on one sheet with timestamps, so you can look at the motion before or after rendering video. Give times (seconds) or count (evenly spaced over the duration: the duration argument, the duration the page declares, or for a plain page or SVG its CSS animations).',
+      'Put frames from several times on one sheet with timestamps, so you can look at motion: of an animated page (html, or a .html or .svg file) before or after rendering video, or of a local video file (.mp4, .mov, .webm, .mkv, .m4v: a rendered piece, a generated clip, a finished film). Give times (seconds) or count (evenly spaced over the duration: the duration argument, else the page\'s declared duration or its CSS animations, or the video\'s length). ' +
+      'For a video, frames are taken with ffmpeg at its own size; aspect, theme, seed, reducedMotion, width and height are page arguments and are refused.',
     inputSchema: {
       type: 'object',
       properties: {
-        html: { type: 'string' }, file: { type: 'string' }, name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+        html: { type: 'string' }, file: { type: 'string', description: 'A page (.html, .svg) or a local video (.mp4, .mov, .webm, .mkv, .m4v).' }, name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
         times: { type: 'array', maxItems: 48, items: { type: 'number', minimum: 0 } }, count: { type: 'integer', minimum: 1, maximum: 48 },
-        duration: { type: 'number', minimum: 0.04 }, width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
+        duration: { type: 'number', minimum: 0.04, description: 'Spread count over this many seconds (default the page\'s duration, or the whole video).' }, width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
         columns: { type: 'integer', minimum: 1, maximum: 12 }, cellWidth: { type: 'integer', minimum: 64, maximum: 1920 }, title: { type: 'string' },
         aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'Capture a format-aware page in this format (sets the size unless width/height are given).' },
         theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' },
@@ -149,9 +152,10 @@ export const tools = {
   },
   qa: {
     description:
-      'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images); for canvas pieces (window.renderFrame + window.TIMELINE, e.g. animate pieces) canvas_text traces every string drawn on sampled frames: cut off by the frame or overlapping other text fails, under the phone UI on portrait formats warns (pass aspect to check one format), and beat_grid checks that TIMELINE.cuts and TIMELINE.morphs land on the 8th-note grid of TIMELINE.bpm (16ths inside TIMELINE.fastFrom to fastTo); named in checks on a piece without TIMELINE.bpm it fails. Pass reducedMotion "reduce" to check a page\'s reduced-motion path. ' +
-      'Media checks (local files only): stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
-      'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. A check named in checks that cannot run (e.g. loudness on a video with no audio track) fails, and so does a call where no check ran. Contrast is a hard gate when mode is "ui". fixedFrame: true adds frame_overflow (content past the frame) for fixed-size graphics.',
+      'Measured quality gates. Page checks (html or file): text_clipping (letters cut off by their box, a clipping ancestor, a partial clip-path inset or the frame, measured on the ink; a scroll box counts only with fixedFrame; screen-reader-only and image-replacement text is skipped) and contrast (WCAG AA per line of text against the pixels behind it; field values, placeholders and open shadow DOM text included; ::before/::after text, gradient text and text a filter or blend mode repaints are listed as unmeasured, inactive controls (:disabled, aria-disabled="true", a disabled fieldset) as exempt). Contrast that measured nothing fails when named in checks, else it is reported with pass null (not run). ' +
+      'For canvas pieces (window.renderFrame + window.TIMELINE, e.g. animate pieces) canvas_text traces every string drawn on sampled frames: cut off by the frame or overlapping other text fails, under the phone UI on portrait formats warns; a TIMELINE without finite duration, fps, width and height is refused, and sampling no frame or drawing text only on a canvas of another size fails. beat_grid checks that TIMELINE.cuts and TIMELINE.morphs land on the 8th-note grid of TIMELINE.bpm (16ths inside TIMELINE.fastFrom to fastTo); named in checks on a piece without TIMELINE.bpm it fails. aspect and theme apply to the page and canvas checks. Pass reducedMotion "reduce" to check a page\'s reduced-motion path. ' +
+      'Media checks (local files only; a file ffmpeg cannot decode cleanly is refused): stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
+      'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. A check named in checks that cannot run (e.g. loudness on a video with no audio track) fails, and so does a call where no check ran. Contrast is a hard gate when mode is "ui". fixedFrame: true adds frame_overflow (content past the frame) for fixed-size graphics; an element marked data-easel-bleed (art that bleeds off on purpose, never text to read) and its contents are exempt from it and listed.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -159,14 +163,14 @@ export const tools = {
         video: { type: 'string', description: 'Path to a local video file.' }, audio: { type: 'string', description: 'Path to a local audio file.' }, image: { type: 'string', description: 'Path to a local image file.' },
         width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
         times: { type: 'array', maxItems: 24, items: { type: 'number', minimum: 0 }, description: 'For animated pages: check at these times.' },
-        mode: { enum: ['ui', 'graphic', 'video'] }, theme: { enum: ['light', 'dark'] },
+        mode: { enum: ['ui', 'graphic', 'video'] }, theme: { enum: ['light', 'dark'], description: 'prefers-color-scheme for the page and canvas checks (default light).' },
         checks: { type: 'array', items: { enum: ['text_clipping', 'contrast', 'canvas_text', 'beat_grid', 'stillness', 'colour_cast', 'loudness'] } },
         fixedFrame: { type: 'boolean', description: 'A fixed-size graphic (post, ad, poster, slide): content running past width x height fails (frame_overflow). Leave off for scrolling pages.' },
-        aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'canvas_text: the format to check a format-aware piece in.' },
+        aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'The format to check a format-aware page or piece in: sets window.__easel.aspect and, unless width/height are given, the size (1920x1080, 1080x1920, 1080x1080, 1080x1350).' },
         every: { type: 'integer', minimum: 1, maximum: 48, description: 'canvas_text: sample every Nth frame (default 6), plus the first and last frame of each shot.' },
         textIgnore: { type: 'array', maxItems: 32, items: { type: 'array', minItems: 2, maxItems: 3 }, description: 'canvas_text: [[t0, t1, "why"], ...] windows where crowded or cropped text is deliberate.' },
         stillSeconds: { type: 'number', minimum: 0.1, maximum: 5, description: 'stillness: the longest still stretch allowed (default 2 s, at most 5).' }, castMaxRatio: { type: 'number', minimum: 0, maximum: 1 },
-        lufsMin: { type: 'number', minimum: -18, maximum: -10, description: 'loudness: lowest integrated LUFS allowed (default -16; -18 to -10).' },
+        lufsMin: { type: 'number', minimum: -18, maximum: -10, description: 'loudness: lowest integrated LUFS allowed (default -16; -18 to -10; not above lufsMax).' },
         lufsMax: { type: 'number', minimum: -18, maximum: -10, description: 'loudness: highest integrated LUFS allowed (default -12; -18 to -10).' },
         slug: { type: 'string' }, outDir: { type: 'string' },
         reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" renders the page\'s reduced-motion path.' },
@@ -216,7 +220,7 @@ export const tools = {
   },
   mux_audio: {
     description:
-      'Part of the easel-core:score skill (use the skill for the whole job: which audio, mux, loudness). Puts an audio track (a score from audio_score, or the user\'s own track) on a video that already exists: the video stream is copied unchanged, the audio becomes AAC, and the result is cut to the shorter of the two (shortest: false keeps the longer). master: true first masters the track to lufs (default -14). Writes <name>.mp4 (default <video name>-audio) to ./easel-out/<slug>/; never overwrites the input; reports the result\'s loudness (LUFS) against the -16 to -12 range. For a page you are still rendering, use render_video audio instead. The easel-core:score skill covers the whole job (which audio, mux, loudness check).',
+      'Part of the easel-core:score skill (use the skill for the whole job: which audio, mux, loudness). Puts an audio track (a score from audio_score, or the user\'s own track) on a video that already exists: the video stream is copied unchanged, the audio becomes AAC, and the result is cut to the shorter of the two (shortest: false keeps the longer). master: true first masters the track to lufs (default -14); giving lufs masters the track to it (master: false with lufs is refused). Writes <name>.mp4 (default <video name>-audio) to ./easel-out/<slug>/; never overwrites the input video or audio, even through a link or another case of the name; reports the result\'s loudness (LUFS) against the -16 to -12 range. For a page you are still rendering, use render_video audio instead. The easel-core:score skill covers the whole job (which audio, mux, loudness check).',
     inputSchema: {
       type: 'object',
       required: ['video', 'audio'],
@@ -224,7 +228,7 @@ export const tools = {
         video: { type: 'string', description: 'Path to the video (.mp4, .mov, .webm).' },
         audio: { type: 'string', description: 'Path to the audio (.wav, .mp3, .m4a, .flac, .ogg).' },
         master: { type: 'boolean', description: 'Master the track to lufs first (default false; audio_score output is already mastered).' },
-        lufs: { type: 'number', minimum: -24, maximum: -9, description: 'Loudness target with master (default -14).' },
+        lufs: { type: 'number', minimum: -24, maximum: -9, description: 'Master the track to this integrated loudness (implies master; default -14 with master: true).' },
         offset: { type: 'number', minimum: 0, maximum: 600, description: 'Start the audio this many seconds into the video.' },
         shortest: { type: 'boolean', description: 'Cut to the shorter stream (default true).' },
         name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
@@ -235,7 +239,7 @@ export const tools = {
   },
   measure_image: {
     description:
-      'Measure reference images before matching a look: trims screenshot borders (writes <name>.trim.png into outDir), reports each picture\'s size, aspect and content box, its most common colours (exact bucket means with their share), points sampled as a 5x5 median, and with accent the bright saturated colours by hue family (core and halo). Give image files or a folder. Reference pixels stay local: use a job folder, never commit them.',
+      'Measure reference images before matching a look: trims screenshot borders (writes <name>.trim.png into outDir), reports each picture\'s size, aspect and content box, its most common colours (exact bucket means with their share), points sampled as a 5x5 median, and with accent the bright saturated colours by hue family (core and halo). Give image files or a folder; a folder scan leaves out trimmed copies and Easel\'s own sheets (contact sheets, filmstrips, comparisons; listed as skipped). A point outside the picture is refused. Reference pixels stay local: use a job folder, never commit them.',
     inputSchema: {
       type: 'object',
       required: ['images'],
@@ -253,7 +257,7 @@ export const tools = {
   },
   compare_images: {
     description:
-      'A comparison sheet for matching a look: a reference image and our frame (render it first with render_still) side by side at the same height on a 10% proportion grid, plus both palettes as numbers. Compare proportions first, then palette, texture and type. crop picks a region of the reference (in its pixels, after autoTrim), cropOurs the matching region of our frame.',
+      'A comparison sheet for matching a look: a reference image and our frame (render it first with render_still) side by side at the same height on a 10% proportion grid, plus both palettes as numbers. Compare proportions first, then palette, texture and type. crop picks a region of the reference ([x, y, width, height] in its pixels, after autoTrim), cropOurs the matching region of our frame; a crop must start inside its picture and a region running past the edge stops there.',
     inputSchema: {
       type: 'object',
       required: ['reference', 'ours'],
@@ -271,15 +275,17 @@ export const tools = {
   },
   embed_fonts: {
     description:
-      'Make an SVG carry its fonts. Text that names a bundled family (e.g. <text font-family="Space Grotesk">) looks right in Easel renders, which inject the bundled faces, but falls back to a default serif in a browser, Figma or slides. ' +
-      'This writes a copy with the faces its text really uses (family, weight, style) embedded as base64 WOFF2 @font-face rules: <name> (default "<stem>-embedded").svg in outDir (default the SVG\'s own folder). Never overwrites the input. Refuses a family that is not bundled (Inter, Newsreader, JetBrains Mono, Space Grotesk, Caveat, STIX Two Text, Noto Sans Math); generic fallbacks such as sans-serif are fine. Reports the families and faces embedded and the size. Deliver the -embedded.svg.',
+      'Make an SVG or HTML page carry its fonts. Text in a bundled family looks right in Easel renders, which inject the bundled faces, but falls back to a default font when a browser opens the file on its own. ' +
+      'This writes a copy with the faces its text really uses (read from computed styles, including ::before/::after content, <use> instances and, for a page, desktop and phone widths) as base64 WOFF2 @font-face rules: <name> (default "<stem>-embedded").svg or .html in outDir (default the file\'s own folder, so relative links keep working); a page gains one <style data-easel-fonts> in its <head>. Never overwrites any file. ' +
+      'Refuses an SVG that is not well-formed XML, and a family that is not bundled (Inter, Newsreader, JetBrains Mono, Space Grotesk, Caveat, STIX Two Text, Noto Sans Math; generic fallbacks such as sans-serif are fine). Warns about characters the Latin-only faces lack (CJK, Arabic, ...). ' +
+      'Embedding helps in browsers and web pages; design apps, slide tools and email clients often ignore embedded fonts, and an SVG for email must not be embedded (mail clients strip its <style>). Deliver the -embedded file.',
     inputSchema: {
       type: 'object',
       required: ['file'],
       properties: {
-        file: { type: 'string', description: 'Path to the .svg.' },
-        outDir: { type: 'string', description: 'Folder for the copy (default the SVG\'s own folder).' },
-        name: { type: 'string', description: 'File name of the copy without .svg (default "<stem>-embedded").' },
+        file: { type: 'string', description: 'Path to the .svg, .html or .htm.' },
+        outDir: { type: 'string', description: 'Folder for the copy (default the file\'s own folder).' },
+        name: { type: 'string', description: 'File name of the copy without its extension (default "<stem>-embedded").' },
       },
       additionalProperties: false,
     },

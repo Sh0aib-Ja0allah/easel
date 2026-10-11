@@ -80,3 +80,36 @@ test('compare_images takes one image on each side: a folder of references is ref
   assert.equal(r.reference.file, join(one, 'ref.png'));
   assert.equal(r.ours.file, ours);
 });
+
+// EN-16: a crop or a point outside the picture is refused with a plain message, never a raw canvas error,
+// a sheet with a negative box, or the colour of an edge pixel.
+test('compare_images and measure_image refuse crops and points outside the picture', { skip }, async () => {
+  const d = join(out, 'bounds');
+  await assert.rejects(m.compareSheet({ reference: ref, ours, crop: [0, 0, 0, 0], outDir: d }), /crop \[0, 0, 0, 0\] is empty: width and height must be at least 1/);
+  await assert.rejects(m.compareSheet({ reference: ref, ours, crop: [5000, 5000, 320, 180], outDir: d }), /crop \[5000, 5000, 320, 180\] starts outside the reference \(280 x 380\)/);
+  await assert.rejects(m.compareSheet({ reference: ref, ours, autoTrim: true, crop: [200, 10, 10, 10], outDir: d }), /starts outside the reference \(200 x 300 after autoTrim\)/);
+  await assert.rejects(m.compareSheet({ reference: ref, ours, cropOurs: [0, 700, 10, 10], outDir: d }), /cropOurs \[0, 700, 10, 10\] starts outside ours \(360 x 640\)/);
+  // a crop that runs past the edge stops at the edge (the box says so)
+  const r = await m.compareSheet({ reference: ref, ours, crop: [200, 300, 500, 500], outDir: d, name: 'edge' });
+  assert.deepEqual(r.reference.box, [200, 300, 80, 80]);
+  await assert.rejects(m.measureImage({ images: [ref], points: [[100, 150], [200, 10]] }), /point \[200, 10\] is outside the picture \(200 x 300 after trim; trim: false measures the whole image\)/);
+  await assert.rejects(m.measureImage({ images: [ref], trim: false, points: [[279, 379], [280, 0]] }), /point \[280, 0\] is outside the picture \(280 x 380\)/);
+});
+
+// CM-05: a folder scan skips the sheets Easel makes (contact sheets, filmstrips, comparisons) whatever
+// their names, and says so; a sheet named on its own is still measured.
+test('measure_image: a folder scan skips Easel sheets and lists them as skipped', { skip }, async () => {
+  const shelf = join(out, 'references');
+  mkdirSync(shelf, { recursive: true });
+  copyFileSync(ref, join(shelf, 'ref1.png'));
+  copyFileSync(ours, join(shelf, 'ref2.png'));
+  const { contactSheet } = await import('../lib/contact.mjs');
+  const sheet = await contactSheet({ items: [{ file: join(shelf, 'ref1.png') }, { file: join(shelf, 'ref2.png') }], outDir: shelf, name: 'refs-sheet' });
+  await m.compareSheet({ reference: ref, ours, outDir: shelf, name: 'side-by-side' });
+  const r = await m.measureImage({ images: [shelf] });
+  assert.deepEqual(r.images.map((i) => i.file.split(/[\\/]/).pop()), ['ref1.png', 'ref2.png']);
+  assert.deepEqual(r.skipped.map((s) => s.file.split(/[\\/]/).pop()), ['refs-sheet.png', 'side-by-side.png']);
+  assert.match(r.skipped[0].reason, /sheet/);
+  const named = await m.measureImage({ images: [sheet.sheet] });
+  assert.equal(named.images.length, 1, 'a sheet given by name is measured');
+});

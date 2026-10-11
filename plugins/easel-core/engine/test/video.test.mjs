@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { doctorReport } from '../lib/doctor.mjs';
 
@@ -92,4 +92,28 @@ test('an SVG with CSS animation: filmstrip count and render_video take the CSS l
 
 test('a page without a duration is refused with a clear message', { skip }, async () => {
   await assert.rejects(m.renderVideo({ html: '<html><body>static</body></html>', outDir: join(out, 'nodur') }), /No duration/);
+});
+
+// EN-14: the size a page declares is read once the page is ready, not at load.
+test('render_video reads the declared size after the page is ready', { skip }, async () => {
+  const late = '<!doctype html><body style="margin:0"><canvas id=c></canvas><script>window.__ready = false; setTimeout(() => { window.TIMELINE = { width: 320, height: 240, duration: 0.3, fps: 10 }; const c = document.getElementById("c"); c.width = 320; c.height = 240; window.renderAt = (t) => { const g = c.getContext("2d"); g.fillStyle = `hsl(${t * 300},70%,50%)`; g.fillRect(0, 0, 320, 240); }; window.__ready = true; }, 300);</script></body>';
+  const v = await m.renderVideo({ html: late, outDir: join(out, 'late'), preset: 'ultrafast' });
+  const p = m.probe(v.videos[0].file);
+  assert.deepEqual([p.video.width, p.video.height, p.video.frames], [320, 240, 3]);
+});
+
+// EN-20: aspects sets each format's size, so width or height with aspects is refused instead of being ignored.
+test('render_video refuses width or height together with aspects', { skip }, async () => {
+  await assert.rejects(m.renderVideo({ file: fx('anim-gsap.html'), outDir: join(out, 'mix'), aspects: ['1:1'], width: 640 }), /width.*aspects/);
+  await assert.rejects(m.renderVideo({ file: fx('anim-gsap.html'), outDir: join(out, 'mix'), aspects: ['1:1'], height: 640 }), /height.*aspects/);
+});
+
+// EN-19: render_video, mux_audio and the sheets write to a hidden partial file that does not end in .mp4
+// (or .png), so one left behind after a crash is never mistaken for output (or played as a finished video).
+test('the partial file is hidden, beside the output, and not named like a video', async () => {
+  const { partialPath } = await import('../lib/probe.mjs');
+  const f = join(tmpdir(), 'clip.mp4'), p = partialPath(f);
+  assert.equal(dirname(p), dirname(f));
+  assert.match(basename(p), /^\.clip\.mp4-\d+-[0-9a-f]{8}\.partial$/);
+  assert.notEqual(partialPath(f), p, 'unique per call');
 });

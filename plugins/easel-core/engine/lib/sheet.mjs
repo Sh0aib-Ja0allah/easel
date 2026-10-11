@@ -1,10 +1,13 @@
 // Composes images into one sheet (contact sheet, logo size ladder, filmstrip) by laying them out
 // in an HTML grid next to the images and screenshotting it. No image library needed. Images are
-// referenced by file URL, so names with "#", "?", "%" or spaces (and other drives) load.
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+// referenced by file URL, so names with "#", "?", "%" or spaces (and other drives) load. The sheet
+// carries Easel's sheet mark, so measuring a folder of references leaves it out.
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { newPage } from './browser.mjs';
+import { markSheet, writeOutput } from './image.mjs';
+import { partialPath, removeQuietly } from './probe.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const BG = { light: '#ffffff', dark: '#141414', checker: 'repeating-conic-gradient(#e8e8e8 0 25%, #ffffff 0 50%) 0 0 / 16px 16px' };
@@ -29,17 +32,17 @@ export async function composeSheet(browser, { cells, out, columns, title, maxCel
   </style></head><body>${title ? `<h1>${esc(title)}</h1>` : ''}<div class="grid">${shown
     .map((c) => `<figure><div class="well" style="background:${BG[c.background] || c.background || BG.light}"><img src="${esc(pathToFileURL(c.file).href)}" width="${c.w}" height="${c.h}" alt=""></div><figcaption>${esc(c.label)}</figcaption></figure>`)
     .join('')}</div></body></html>`;
-  const htmlPath = join(dirname(out), `.${basename(out)}.html`);
+  const htmlPath = `${partialPath(out)}.html`; // unique: two sheets of one name at once never share a page
   writeFileSync(htmlPath, html);
   const { page, context } = await newPage(browser, { width: cols * colW + (cols - 1) * gap + 2 * gap, height: 200 });
   try {
     await page.goto(pathToFileURL(htmlPath).href);
     await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map((i) => i.decode().catch(() => null))); });
-    await page.screenshot({ path: out, fullPage: true });
+    writeOutput(out, markSheet(await page.screenshot({ fullPage: true })));
     const size = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight }));
     return { file: out, ...size, cells: cells.length };
   } finally {
     await context.close();
-    rmSync(htmlPath, { force: true });
+    removeQuietly(htmlPath);
   }
 }

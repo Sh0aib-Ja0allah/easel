@@ -9,14 +9,20 @@ import { tools } from './tools.mjs';
 import { validateArgs } from './lib/validate.mjs';
 
 // A flag's value is a string. With the tool's schema it becomes what the schema asks for: a number
-// only for number/integer keys (so --slug 007 stays "007"), a boolean for boolean keys, parsed JSON
-// for object/array keys. Without a schema (an unknown key or tool) it is guessed as before.
-function coerce(v, type) {
-  if (v === undefined) return true;
+// only for number/integer keys (so --slug 007 stays "007"; 1e1, .5 and -2.5 count), a boolean for
+// boolean keys, parsed JSON for object/array keys. Without a schema (an unknown key or tool) it is
+// guessed as before. A flag with no value is true, and refused where the schema wants a typed value
+// that is not a boolean (--name alone would otherwise become the name "true").
+const NUMBER = /^-?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i;
+function coerce(v, type, key) {
   const types = type === undefined ? null : [].concat(type);
   const can = (t) => !types || types.includes(t);
+  if (v === undefined) {
+    if (can('boolean')) return true;
+    throw new Error(`--${key} needs a value`);
+  }
   if (can('boolean') && (v === 'true' || v === 'false')) return v === 'true';
-  if ((can('number') || can('integer')) && /^-?\d+(\.\d+)?$/.test(v)) return Number(v);
+  if ((can('number') || can('integer')) && NUMBER.test(v)) return Number(v);
   if ((can('object') || can('array')) && /^[[{]/.test(v)) { try { return JSON.parse(v); } catch { /* keep as string */ } }
   return v;
 }
@@ -62,7 +68,7 @@ export function parseArgs(argv) {
       for (const [k, v] of Object.entries(j)) set(k, v);
     } else {
       const k = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-      set(k, coerce(value, props && Object.hasOwn(props, k) ? props[k].type : undefined));
+      set(k, coerce(value, props && Object.hasOwn(props, k) ? props[k].type : undefined, key));
     }
   }
   return { name, args };

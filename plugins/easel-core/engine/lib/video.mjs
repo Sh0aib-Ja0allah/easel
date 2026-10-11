@@ -1,15 +1,17 @@
 // render_video: seek a page frame by frame (t = n / fps) and pipe PNG frames into ffmpeg.
-// filmstrip: a few frames at chosen times on one sheet, so a vision model can review motion.
+// filmstrip: a few frames at chosen times on one sheet, so a vision model can review motion: of a
+// page (seeked in the browser) or of a video file (frames grabbed with ffmpeg).
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { existsSync, mkdirSync, statSync } from 'node:fs';
+import { extname, join, resolve } from 'node:path';
 import { ASPECTS, newPage, openBrowser, waitReady } from './browser.mjs';
 import { masterWav, writeBase64 } from './audio.mjs';
 import { requireBinary } from './binaries.mjs';
+import { commit, killTree, mediaInfo, partialPath, removeQuietly, run } from './probe.mjs';
 import { outputDir } from './render.mjs';
 import { releaseSource, resolveSource } from './source.mjs';
 import { composeSheet } from './sheet.mjs';
+import { pngSize, writeOutput } from './image.mjs';
 
 const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'video';
 
@@ -57,7 +59,7 @@ function encoder(ffmpeg, { fps, file, crf, audio, duration, preset }) {
   // yuv420p needs even dimensions: pad by one pixel instead of letting x264 crop silently.
   args.push('-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2', '-c:v', 'libx264', '-preset', preset, '-crf', String(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
   if (audio) args.push('-c:a', 'aac', '-b:a', '192k', '-t', String(duration), '-map', '0:v:0', '-map', '1:a:0');
-  args.push(file);
+  args.push('-f', 'mp4', file);
   const proc = spawn(ffmpeg, args, { stdio: ['pipe', 'ignore', 'pipe'], windowsHide: true });
   let stderr = '';
   proc.stderr.on('data', (d) => (stderr += d));
@@ -77,15 +79,10 @@ function encoder(ffmpeg, { fps, file, crf, audio, duration, preset }) {
     proc.stdin.once('drain', onDrain);
     proc.once('close', onClose);
   });
-  // abort: stop ffmpeg without letting it finish the file (a failed render must not look playable)
-  const abort = async () => { if (!closed) { proc.stdin.destroy(); proc.kill('SIGKILL'); } await done.catch(() => {}); };
+  // abort: stop ffmpeg without letting it finish the file (a failed render must not look playable); on
+  // Windows the whole tree, or the real ffmpeg behind a package-manager shim would finalise it
+  const abort = async () => { if (!closed) { proc.stdin.destroy(); killTree(proc); } await done.catch(() => {}); };
   return { write, end: async () => { proc.stdin.end(); await done; }, abort };
-}
-
-// Windows can hold a file a moment after the process that wrote it exits: retry, and never let the
-// cleanup hide the error that caused it.
-function removePartial(file) {
-  try { rmSync(file, { force: true, recursive: true, maxRetries: 5, retryDelay: 100 }); } catch { /* the render error matters more */ }
 }
 
 async function renderOne(browser, src, opts) {
@@ -103,7 +100,7 @@ async function renderOne(browser, src, opts) {
     if (audio === 'page') audio = await opts.pageAudio(page);
     // Encode to a partial file and move it into place only when every frame is in: a render that fails
     // half way leaves no truncated (but playable) MP4 behind, and never replaces a good earlier one.
-    const partial = join(dirname(opts.file), `.${basename(opts.file, '.mp4')}-${process.pid}-${randomBytes(4).toString('hex')}.partial.mp4`);
+    const partial = partialPath(opts.file);
     const enc = encoder(opts.ffmpeg, { fps, file: partial, crf: opts.crf, audio, duration, preset: opts.preset });
     try {
       for (let n = 0; n < frames; n++) {
@@ -113,15 +110,10 @@ async function renderOne(browser, src, opts) {
       await enc.end();
     } catch (err) {
       await enc.abort();
-      removePartial(partial);
+      removeQuietly(partial);
       throw err;
     }
-    try {
-      renameSync(partial, opts.file);
-    } catch (err) {
-      removePartial(partial);
-      throw new Error(`could not write ${opts.file} (${err.code || err.message}); is it open in another program?`);
-    }
+    commit(partial, opts.file);
     return { file: opts.file, width: opts.width + (opts.width % 2), height: opts.height + (opts.height % 2), fps, duration, frames, bytes: statSync(opts.file).size, ...(opts.aspect ? { aspect: opts.aspect } : {}), ...(audio ? { audio } : {}), blocked: [...new Set(blocked)], errors: [...new Set(errors)] };
   } finally {
     await context.close();
@@ -130,6 +122,9 @@ async function renderOne(browser, src, opts) {
 
 export async function renderVideo(args) {
   const t0 = Date.now();
+  // aspects sets each format's size: a width or height beside it would be silently ignored
+  const sized = ['width', 'height'].filter((k) => args[k] !== undefined);
+  if (sized.length && args.aspects && args.aspects.length) throw new Error(`${sized.join(' and ')} cannot be combined with aspects, which sets each format's size (16:9 1920x1080, 9:16 1080x1920, 1:1 1080x1080, 4:5 1080x1350): drop one`);
   const ffmpeg = requireBinary('ffmpeg');
   let audio = args.audio;
   if (audio !== undefined && audio !== 'page') {
@@ -147,9 +142,8 @@ export async function renderVideo(args) {
     if (mastered) return mastered;
     const b64 = await page.evaluate(async () => (typeof window.renderAudioWav === 'function' ? window.renderAudioWav() : null));
     if (!b64) throw new Error('audio is "page" but the page has no window.renderAudioWav()');
-    const raw = writeBase64(join(out, `${name}-score-raw.wav`), b64);
-    mastered = masterWav(raw, join(out, `${name}.wav`)).file;
-    rmSync(raw, { force: true });
+    const raw = writeBase64(partialPath(join(out, `${name}-score-raw.wav`)), b64);
+    try { mastered = (await masterWav(raw, join(out, `${name}.wav`))).file; } finally { removeQuietly(raw); }
     return mastered;
   };
   const src = resolveSource(args, out, name);
@@ -160,9 +154,11 @@ export async function renderVideo(args) {
     // Default size: the composition's data-width/height, else 1920x1080.
     let base = { width: args.width, height: args.height };
     if ((!base.width || !base.height) && !(args.aspects && args.aspects.length)) {
-      const { page, context } = await newPage(browser, { width: 1920, height: 1080 });
+      const { page, context } = await newPage(browser, { width: 1920, height: 1080, seed: args.seed ?? 1, colorScheme: args.theme || 'light', reducedMotion: args.reducedMotion });
       try {
-        await page.goto(src.url, { waitUntil: 'load' });
+        await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
+        // a page may declare its size only once it is ready (TIMELINE set before __ready flips)
+        await waitReady(page);
         const info = await compositionInfo(page);
         checkDeclared(info, ['width', 'height'].filter((k) => !base[k]));
         base = { width: base.width || info.width || 1920, height: base.height || info.height || 1080 };
@@ -188,8 +184,67 @@ export async function renderVideo(args) {
   return { videos: results, ms: Date.now() - t0, ...(warnings.length ? { warnings: [...new Set(warnings)] } : {}) };
 }
 
+// count times evenly spaced over a duration, each in the middle of its slice
+const spread = (duration, count) => Array.from({ length: count }, (_, i) => +((duration * i) / count + duration / (2 * count)).toFixed(3));
+
+const VIDEO = new Set(['.mp4', '.mov', '.webm', '.mkv', '.m4v']);
+const PAGE_ONLY = ['html', 'aspect', 'theme', 'seed', 'reducedMotion', 'width', 'height'];
+
+// One frame of a video at t s, as PNG. Seeking past the last frame's start gives nothing, though that
+// frame is still the picture at t: then the last second is decoded, each frame written over the one
+// before, and the final frame stays.
+async function grabFrame(ffmpeg, file, t, out) {
+  const partial = partialPath(out);
+  const grab = async (seek, frames = []) => {
+    const r = await run(ffmpeg, ['-hide_banner', '-nostdin', '-v', 'error', '-xerror', ...seek, '-i', file, ...frames, '-an', '-sn', '-dn', '-c:v', 'png', '-f', 'image2', '-update', '1', '-y', partial], { timeout: 60000 });
+    if (r.status !== 0) throw new Error(`ffmpeg could not take a frame at t = ${t} s from ${file}: ${r.stderr.trim().slice(-400)}`);
+    return existsSync(partial) && statSync(partial).size > 0;
+  };
+  try {
+    if (!(await grab(['-ss', String(t)], ['-frames:v', '1'])) && !(await grab(['-sseof', '-1']))) throw new Error(`no frame at t = ${t} s in ${file}`);
+  } catch (err) {
+    removeQuietly(partial);
+    throw err;
+  }
+  return commit(partial, out);
+}
+
+async function videoFilmstrip(args, t0) {
+  const page = PAGE_ONLY.filter((k) => args[k] !== undefined);
+  if (page.length) throw new Error(`${page.length > 1 ? `${page.slice(0, -1).join(', ')} and ${page.at(-1)} are` : `${page[0]} is`} for a page, not a video: filmstrip on a video file takes times or count (with duration, columns, cellWidth, title, name, slug, outDir)`);
+  // ffmpeg would fetch a URL as happily as a file: local files only, as everywhere in the engine
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(String(args.file))) throw new Error(`filmstrip takes a local video file, not a URL: download it into the job folder first (${args.file})`);
+  const file = resolve(String(args.file));
+  if (!existsSync(file) || !statSync(file).isFile()) throw new Error(`File not found: ${file}`);
+  const ffmpeg = requireBinary('ffmpeg');
+  const info = await mediaInfo(file);
+  if (!info.video) throw new Error(`${file} has no video stream (sound only, or just cover art): there is no picture to look at`);
+  if (!(info.duration > 0)) throw new Error(`could not read the length of ${file}`);
+  const length = +info.duration.toFixed(3);
+  if (args.duration !== undefined && args.duration > length) throw new Error(`duration ${args.duration} s is longer than the video (${length} s): leave it out to spread the frames over the whole video`);
+  const times = args.times && args.times.length ? args.times : spread(args.duration || length, args.count || 8);
+  for (const t of times) if (t >= length) throw new Error(`t = ${t} s is past the end of the video (${length} s): give times below its length`);
+  const out = outputDir(args);
+  const framesDir = join(out, 'filmstrip-frames');
+  mkdirSync(framesDir, { recursive: true });
+  const name = slugOf(args.name || 'filmstrip');
+  const cells = [];
+  for (const [i, t] of times.entries()) {
+    const frame = await grabFrame(ffmpeg, file, t, join(framesDir, `${name}-${String(i).padStart(2, '0')}.png`));
+    cells.push({ file: frame, label: `t = ${t.toFixed(2)} s`, ...pngSize(frame), background: 'light' });
+  }
+  const browser = await openBrowser();
+  try {
+    const sheet = await composeSheet(browser, { cells, out: join(out, `${name}.png`), columns: args.columns || Math.min(cells.length, 4), title: args.title, maxCell: args.cellWidth || 360 });
+    return { filmstrip: sheet.file, frames: cells.map((c) => ({ file: c.file, label: c.label })), video: { file, duration: length, width: cells[0].width, height: cells[0].height }, ms: Date.now() - t0 };
+  } finally {
+    await browser.close();
+  }
+}
+
 export async function filmstrip(args) {
   const t0 = Date.now();
+  if (args.file && VIDEO.has(extname(String(args.file)).toLowerCase())) return videoFilmstrip(args, t0);
   const out = outputDir(args);
   const framesDir = join(out, 'filmstrip-frames');
   mkdirSync(framesDir, { recursive: true });
@@ -214,14 +269,12 @@ export async function filmstrip(args) {
       if (!times || !times.length) {
         if (!args.duration) checkDeclared(info, ['duration']);
         if (!duration) throw new Error('Give times (seconds) or a duration (or data-duration on the composition root; CSS animations are measured when there is neither).');
-        const count = args.count || 8;
-        times = Array.from({ length: count }, (_, i) => +((duration * i) / count + duration / (2 * count)).toFixed(3));
+        times = spread(duration, args.count || 8);
       }
       const vp = page.viewportSize();
       for (const [i, t] of times.entries()) {
         await page.evaluate((tt) => window.__easelSeek(tt), t);
-        const file = join(framesDir, `${name}-${String(i).padStart(2, '0')}.png`);
-        await page.screenshot({ path: file, animations: 'allow' });
+        const file = writeOutput(join(framesDir, `${name}-${String(i).padStart(2, '0')}.png`), await page.screenshot({ animations: 'allow' }));
         cells.push({ file, label: `t = ${t.toFixed(2)} s`, width: vp.width, height: vp.height, background: 'light' });
       }
     } finally {

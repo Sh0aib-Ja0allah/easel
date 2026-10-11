@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { doctorReport } from '../lib/doctor.mjs';
-import { familyList, pickWeight } from '../lib/embed.mjs';
+import { faceCoverage, familyList, pickWeight } from '../lib/embed.mjs';
 import { tools } from '../tools.mjs';
 
 const ready = ['playwright-core', 'chromium'].every((n) => doctorReport().checks.find((c) => c.name === n)?.ok);
@@ -52,6 +52,7 @@ test('embeds the Space Grotesk face a <text font-family="Space Grotesk"> uses, b
   assert.ok(text.startsWith('<?xml'), 'the rest of the file is kept');
   assert.equal(sha(f), before, 'the input is not changed');
   assert.deepEqual(r.ignoredFallbacks, undefined);
+  assert.deepEqual(r.warnings, undefined);
 });
 
 test('the embedded copy renders like the original in render_still, and carries its font without the engine\'s', { skip }, async () => {
@@ -94,7 +95,7 @@ test('refuses a family that is not bundled, listing the bundled ones, and writes
   assert.deepEqual(readdirSync(join(out, 'unbundled')), ['unbundled.svg']);
 });
 
-test('never overwrites the input; refuses files that are not SVG', { skip }, async () => {
+test('never overwrites the input; refuses files that are not SVG or HTML', { skip }, async () => {
   const f = svgFile('keep', WORDMARK);
   const before = sha(f);
   await assert.rejects(m.embedFonts({ file: f, name: 'keep' }), /would overwrite the input/);
@@ -102,7 +103,92 @@ test('never overwrites the input; refuses files that are not SVG', { skip }, asy
   assert.equal(sha(f), before);
   const png = join(out, 'keep', 'x.png');
   writeFileSync(png, 'not an svg');
-  await assert.rejects(m.embedFonts({ file: png }), /takes an \.svg file/);
+  await assert.rejects(m.embedFonts({ file: png }), /takes an \.svg or \.html file/);
   await assert.rejects(m.embedFonts({ file: join(out, 'keep', 'missing.svg') }), /File not found/);
   assert.ok(!existsSync(join(out, 'keep', 'keep-embedded.svg')));
+});
+
+// Parses a file as a browser opening it on its own would (XML), and says what is wrong if anything.
+const xmlError = async (file) => {
+  const browser = await m.openBrowser();
+  try {
+    const { page, context } = await m.newPage(browser, { width: 64, height: 64, fonts: false });
+    try {
+      return await page.evaluate((s) => { const d = new DOMParser().parseFromString(s, 'image/svg+xml'); const e = d.querySelector('parsererror'); return e ? e.textContent : d.documentElement.localName === 'svg' && d.documentElement.firstElementChild?.localName; }, readFileSync(file, 'utf8'));
+    } finally { await context.close(); }
+  } finally { await browser.close(); }
+};
+
+test('the faces\' cmaps: Latin subsets cover Latin, not Latin Extended, CJK or Arabic', () => {
+  const inter = faceCoverage('inter/inter-latin-400-normal.woff2');
+  for (const c of 'Aaz09&©éß€—“') assert.ok(inter.has(c.codePointAt(0)), c);
+  for (const c of 'Łź東京م') assert.ok(!inter.has(c.codePointAt(0)), c);
+  assert.ok(faceCoverage('noto-sans-math/noto-sans-math-latin-400-normal.woff2').has(0x2248), 'Noto Sans Math has ≈');
+});
+
+test('refuses an SVG that is not well-formed XML, naming the parser\'s message and the usual fix, and writes nothing', { skip }, async () => {
+  const cases = {
+    amp: ['<text x="10" y="40" font-family="Inter">R&D</text>', /EntityRef: expecting ';'/],
+    nbsp: ['<text x="10" y="40" font-family="Inter">Acme&nbsp;Co &copy;</text>', /Entity 'nbsp' not defined/],
+    dup: ['<text x="10" x="12" y="40" font-family="Inter">Dup</text>', /Attribute x redefined/],
+    comment: ['<!-- a -- b --><text x="10" y="40" font-family="Inter">C</text>', /Double hyphen within comment/],
+  };
+  for (const [name, [body, message]] of Object.entries(cases)) {
+    const f = svgFile(`bad-${name}`, `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">${body}</svg>`);
+    await assert.rejects(m.embedFonts({ file: f }), (e) => {
+      assert.match(e.message, /not well-formed XML/, name);
+      assert.match(e.message, message, name);
+      assert.match(e.message, /line 1/, name);
+      assert.match(e.message, /&amp;/, name);
+      assert.match(e.message, /&#160;/, name);
+      return true;
+    });
+    assert.deepEqual(readdirSync(join(out, `bad-${name}`)), [`bad-${name}.svg`], name);
+  }
+  const late = svgFile('bad-late', `\n<?xml version="1.0" encoding="UTF-8"?>\n${WORDMARK.replace(/^<\?xml[^>]*>\n/, '')}`);
+  await assert.rejects(m.embedFonts({ file: late }), /not well-formed XML[\s\S]*XML declaration allowed only at the start/);
+  const html = svgFile('bad-root', '<html><body><p style="font-family:Inter">Hi</p></body></html>');
+  await assert.rejects(m.embedFonts({ file: html }), /root element is <html>, not <svg>/);
+  const nons = svgFile('bad-ns', '<svg width="200" height="60"><text y="40" font-family="Inter">Hi</text></svg>');
+  await assert.rejects(m.embedFonts({ file: nons }), /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+});
+
+test('text in <defs> placed by a <use font-family="Caveat"> embeds Caveat, and is not reported as naming no family', { skip }, async () => {
+  const f = svgFile('use', '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="120" viewBox="0 0 600 120">\n<defs><text id="w" font-size="64">Wordmark</text><symbol id="s"><text y="20" font-weight="700">Sym</text></symbol></defs>\n<rect width="600" height="120" fill="#fff"/>\n<use xlink:href="#w" x="20" y="80" font-family="Caveat"/><g font-family="Space Grotesk"><use href="#s"/></g>\n</svg>\n');
+  const r = await m.embedFonts({ file: f });
+  assert.deepEqual(r.faces.map((x) => `${x.family} ${x.weight} ${x.style}`), ['Caveat 400 normal', 'Space Grotesk 700 normal']);
+  assert.deepEqual(r.warnings, undefined);
+});
+
+test('a comment before the root that mentions <svg>: the faces go inside the root element and the copy is well-formed', { skip }, async () => {
+  const f = svgFile('comment', '<?xml version="1.0"?>\n<!-- Exported from a tool. Root element: <svg> -->\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="120" viewBox="0 0 600 120">\n<rect width="600" height="120" fill="#fff"/>\n<text x="20" y="80" font-family="Caveat" font-size="64">Wordmark</text>\n</svg>\n');
+  const r = await m.embedFonts({ file: f });
+  assert.deepEqual(r.families, ['Caveat']);
+  const text = readFileSync(r.file, 'utf8');
+  assert.ok(text.indexOf('<style data-easel-fonts="">') > text.indexOf('viewBox="0 0 600 120">'), 'inside the root element');
+  assert.ok(text.startsWith('<?xml version="1.0"?>\n<!-- Exported from a tool. Root element: <svg> -->\n'), 'the prolog is kept');
+  assert.equal(await xmlError(r.file), 'style', 'well-formed, the style is the root\'s first child');
+});
+
+test('never replaces an existing file: an unrelated file with the name asked for, or the copy from an earlier run', { skip }, async () => {
+  const f = svgFile('noclobber', WORDMARK);
+  const other = join(out, 'noclobber', 'other.svg');
+  writeFileSync(other, '<svg xmlns="http://www.w3.org/2000/svg"><!-- someone else\'s --></svg>');
+  const before = sha(other);
+  await assert.rejects(m.embedFonts({ file: f, name: 'other' }), /already exists[\s\S]*never replaces/);
+  assert.equal(sha(other), before);
+  const first = await m.embedFonts({ file: f });
+  const kept = sha(first.file);
+  await assert.rejects(m.embedFonts({ file: f }), /noclobber-embedded\.svg already exists/);
+  assert.equal(sha(first.file), kept);
+});
+
+test('warns about characters the embedded Latin faces do not cover; a bundled fallback that covers them is embedded too', { skip }, async () => {
+  const f = svgFile('scripts', '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120"><text y="40" font-family="Inter, sans-serif">Łódź 東京 مرحبا 🎉</text><text y="80" font-family="Space Grotesk">Café — “ok” ©</text><text y="110" font-family="\'STIX Two Text\', \'Noto Sans Math\', serif">x ≈ y</text></svg>');
+  const r = await m.embedFonts({ file: f });
+  assert.deepEqual(r.faces.map((x) => `${x.family} ${x.weight}`), ['Inter 400', 'Noto Sans Math 400', 'Space Grotesk 400', 'STIX Two Text 400']);
+  assert.equal(r.warnings.length, 1, JSON.stringify(r.warnings));
+  assert.match(r.warnings[0], /^Inter: 9 character\(s\) the embedded faces do not cover \(Ł ź 東 京 م ر ح ب ا\)/);
+  assert.match(r.warnings[0], /Latin/);
+  assert.deepEqual(r.ignoredFallbacks, undefined, 'Noto Sans Math is embedded, not ignored');
 });

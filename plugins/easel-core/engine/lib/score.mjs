@@ -6,10 +6,11 @@
 // from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263 (kit/score-head.js), MIT License,
 // Copyright (c) 2026 cth9191. Modified by Easel (2026-10-11): driven by a cue-sheet plan instead of a
 // piece's TIMELINE; three palettes; a duck before every hit; a fade at the end. Decision D16.
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { newPage, openBrowser } from './browser.mjs';
 import { masterWav, writeBase64 } from './audio.mjs';
+import { partialPath, removeQuietly } from './probe.mjs';
 import { loudness } from './qa.mjs';
 import { outputDir } from './render.mjs';
 import { validateData } from './schemas.mjs';
@@ -174,12 +175,11 @@ export async function audioScore(args) {
     const { page, context } = await newPage(browser, { width: 16, height: 16, fonts: false });
     try { b64 = await page.evaluate(synthInPage, plan); } finally { await context.close(); }
   } finally { await browser.close(); }
-  const raw = writeBase64(join(out, `${name}-raw.wav`), b64);
   const file = join(out, `${name}.wav`);
+  const raw = writeBase64(partialPath(join(out, `${name}-raw.wav`)), b64);
   const target = args.lufs ?? -14;
-  masterWav(raw, file, { target });
-  rmSync(raw, { force: true });
-  const loud = loudness(file, { min: target - 2, max: target + 2 });
+  try { await masterWav(raw, file, { target }); } finally { removeQuietly(raw); }
+  const loud = await loudness(file, { min: target - 2, max: target + 2 });
   const unknown = plan.events.filter((e) => e.unknown).map((e) => e.unknown);
   return {
     file, durationSec: plan.durationSec, lufs: loud.value, pass: loud.pass, palette, key: plan.key, bpm: plan.bpm,

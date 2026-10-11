@@ -28,6 +28,17 @@ test('brief rules', () => {
   expectProblem('brief', { ...b, extra: 1 }, /not an allowed property/);
 });
 
+test('brief check-ins: an approved one needs every earlier one approved or skipped; a skip hides nothing (CM-10)', () => {
+  const b = load('brief');
+  const with_ = (checkins) => validateData('brief', { ...b, checkins });
+  assert.match(with_({ story: 'pending', look: 'skipped', storyboard: 'approved' }).join(' | '), /"storyboard" is approved before "story"/);
+  assert.match(with_({ story: 'changes-requested', look: 'skipped', storyboard: 'approved' }).join(' | '), /"storyboard" is approved before "story"/);
+  assert.match(with_({ story: 'approved', look: 'pending', storyboard: 'approved' }).join(' | '), /"storyboard" is approved before "look"/);
+  assert.deepEqual(with_({ story: 'approved', look: 'skipped', storyboard: 'approved' }), []);
+  assert.deepEqual(with_({ story: 'skipped', look: 'skipped', storyboard: 'approved' }), []);
+  assert.deepEqual(with_({ story: 'pending', look: 'skipped', storyboard: 'pending' }), []);
+});
+
 test('beats rules', () => {
   const b = load('beats');
   expectProblem('beats', { ...b, beats: [...b.beats, { ...b.beats[0] }], totalSec: 16 }, /used twice/);

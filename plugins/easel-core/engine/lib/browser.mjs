@@ -1,12 +1,15 @@
 // Browser sessions for rendering. Every page is offline: file:, data: and blob: load normally,
 // https://easel.local/... is served from the plugin (fonts) and the data dir (libraries), known
 // CDN URLs for GSAP are mapped to the local copy, and every other network request is blocked.
-// An init script makes Math.random and crypto random values seeded and Date/performance clocks follow
-// the render time; every context runs in UTC with the en-US locale, whatever the machine's settings.
-import { existsSync, readFileSync } from 'node:fs';
+// An init script makes Math.random and crypto random values seeded and Date/performance clocks (and
+// requestAnimationFrame timestamps) follow the render time; every context runs in UTC with the en-US
+// locale, whatever the machine's settings.
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loadPlaywright, findPackage } from './deps.mjs';
 import { PLUGIN_DIR } from './paths.mjs';
+import { xmlProblem } from './source.mjs';
 
 export const FONTS_DIR = join(PLUGIN_DIR, 'fonts');
 const LOCAL_ORIGIN = 'https://easel.local';
@@ -66,8 +69,8 @@ export function fontFaceCss() {
 }
 
 const INIT_SCRIPT = ({ seed, css, aspect }) => {
-  // Runs in the page before any of its scripts.
-  let s = seed >>> 0 || 1;
+  // Runs in the page before any of its scripts. Seeds are 0 to 2^32 - 1 (newPage checks), each its own stream.
+  let s = seed >>> 0;
   Math.random = function () {
     s = (s + 0x6d2b79f5) | 0;
     let t = Math.imul(s ^ (s >>> 15), 1 | s);
@@ -77,7 +80,7 @@ const INIT_SCRIPT = ({ seed, css, aspect }) => {
   // crypto.getRandomValues and crypto.randomUUID follow the seed as well, from a stream of their own
   // (Math.random gives the same numbers as before). The real call runs first, so bad arguments throw
   // exactly as they would; its random bytes are then overwritten.
-  let cs = (Math.imul(seed >>> 0 || 1, 0x9e3779b1) ^ 0x85ebca6b) >>> 0 || 1;
+  let cs = (Math.imul(seed >>> 0, 0x9e3779b1) ^ 0x85ebca6b) >>> 0 || 1;
   const next32 = () => {
     cs = (cs + 0x6d2b79f5) | 0;
     let t = Math.imul(cs ^ (cs >>> 15), 1 | cs);
@@ -119,25 +122,45 @@ const INIT_SCRIPT = ({ seed, css, aspect }) => {
   EaselDate.parse = RealDate.parse;
   window.Date = EaselDate;
   performance.now = () => window.__easel.t * 1000;
+  Object.defineProperty(performance, 'timeOrigin', { configurable: true, get: () => EPOCH });
+  // requestAnimationFrame timestamps: the render time plus 1/60 s for every frame that ran callbacks,
+  // so a page reads the same values on every run (and a draw loop such as p5's still advances).
+  // Workers keep the real clock and random: a worker page cannot be seeded from here.
+  const raf = window.requestAnimationFrame.bind(window);
+  let frames = 0, lastFrame = null;
+  window.requestAnimationFrame = (cb) => raf((real) => { if (real !== lastFrame) { lastFrame = real; frames++; } cb(window.__easel.t * 1000 + (frames * 1000) / 60); });
+  // window.__ready: any assignment (false at load, true later) marks the page as one waitReady waits for.
+  let ready, readySet = false;
+  Object.defineProperty(window, '__ready', { configurable: true, enumerable: true, get: () => ready, set: (v) => { ready = v; readySet = true; } });
+  Object.defineProperty(window, '__easelReadySet', { get: () => readySet });
   if (css) {
     const add = () => { const st = document.createElement('style'); st.setAttribute('data-easel', 'fonts'); st.textContent = css; (document.head || document.documentElement).prepend(st); };
     if (document.documentElement) add(); else document.addEventListener('DOMContentLoaded', add, { once: true });
   }
   // Seek the page to time t (seconds): renderAt(t), else renderFrame(t) (the animate kit's canvas
   // contract), else every registered GSAP timeline; then every CSS animation/transition through the
-  // Web Animations API.
+  // Web Animations API, and the SMIL clock (<animate>, <animateTransform>) of every outermost <svg>.
+  // An SVG shown through <img>, <object> or CSS keeps its own clock and is not seeked.
   window.__easelSeek = (t) => {
+    if (!Number.isFinite(t * 1000)) throw new Error(`t must be a finite time in seconds, not ${t}`);
     window.__easel.t = t;
     if (typeof window.renderAt === 'function') window.renderAt(t);
     else if (typeof window.renderFrame === 'function') window.renderFrame(t);
     else if (window.__timelines) for (const tl of Object.values(window.__timelines)) { if (tl && typeof tl.seek === 'function') tl.seek(t, false); }
     const anims = document.getAnimations();
     for (const a of anims) { a.pause(); a.currentTime = t * 1000; }
+    let smil = false;
+    for (const svg of document.querySelectorAll('svg')) {
+      if (svg.ownerSVGElement || typeof svg.setCurrentTime !== 'function') continue;
+      svg.pauseAnimations();
+      svg.setCurrentTime(t);
+      smil = smil || !!svg.querySelector('animate,animateTransform,animateMotion,set');
+    }
     // Let the caller wait for a face first used at this time, and for the paused animation state to
     // be committed to a frame (two rAFs; 100 ms fallback so nothing can hang).
     const waits = [];
     if (document.fonts.status !== 'loaded') waits.push(document.fonts.ready);
-    if (anims.length) waits.push(Promise.race([new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))), new Promise((r) => setTimeout(r, 100))]));
+    if (anims.length || smil) waits.push(Promise.race([new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))), new Promise((r) => setTimeout(r, 100))]));
     return waits.length ? Promise.all(waits).then(() => null) : null;
   };
 };
@@ -163,7 +186,11 @@ export async function openBrowser() {
 
 export const ASPECTS = { '16:9': [1920, 1080], '9:16': [1080, 1920], '1:1': [1080, 1080], '4:5': [1080, 1350] };
 
+export const MAX_SEED = 0xffffffff;
+
 export async function newPage(browser, { width, height, scale = 1, colorScheme = 'light', seed = 1, transparent = false, fonts = true, allowNetwork = false, aspect = null, reducedMotion = 'no-preference' } = {}) {
+  // a larger or negative seed would wrap onto another one's stream
+  if (!Number.isInteger(seed) || seed < 0 || seed > MAX_SEED) throw new Error(`seed must be an integer from 0 to ${MAX_SEED}, not ${seed}`);
   // reducedMotion 'reduce' renders the page's prefers-reduced-motion path (render_still, filmstrip, render_video, qa)
   // UTC and en-US: dates, number formats and Intl output must not depend on the machine rendering them.
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, colorScheme, reducedMotion: reducedMotion === 'reduce' ? 'reduce' : 'no-preference', timezoneId: 'UTC', locale: 'en-US' });
@@ -172,7 +199,10 @@ export async function newPage(browser, { width, height, scale = 1, colorScheme =
     const url = route.request().url();
     if (/^(file|data|blob|about):/.test(url)) return route.continue();
     if (url.startsWith(`${LOCAL_ORIGIN}/fonts/`)) {
-      const p = fontPath(decodeURIComponent(url.slice(`${LOCAL_ORIGIN}/fonts/`.length).split('?')[0]));
+      // a malformed %-escape is a missing font, not a crash (the request would otherwise never settle)
+      let rel = null;
+      try { rel = decodeURIComponent(url.slice(`${LOCAL_ORIGIN}/fonts/`.length).split('?')[0]); } catch { /* 404 below */ }
+      const p = rel === null ? null : fontPath(rel);
       return p ? route.fulfill({ path: p, contentType: MIME[extname(p)] || 'application/octet-stream', headers: { 'access-control-allow-origin': '*' } }) : route.fulfill({ status: 404, body: 'font not found' });
     }
     let lib = url.startsWith(`${LOCAL_ORIGIN}/lib/`) ? basename(url.split('?')[0]) : null;
@@ -200,14 +230,35 @@ export async function newPage(browser, { width, height, scale = 1, colorScheme =
   return { page, context, blocked, errors };
 }
 
+// An SVG wrapper whose original text is not well-formed XML is refused here (see svgWrapper).
+export async function checkXml(page) {
+  const bad = await page.evaluate(() => window.__easelXmlError || null);
+  if (bad) throw new Error(xmlProblem(bad));
+}
+
+// Does a local script file name window.__ready (as a word: __readyQueue does not count)?
+function namesReady(url) {
+  try {
+    const f = fileURLToPath(url);
+    return statSync(f).size < 16 * 1024 * 1024 && /\b__ready\b/.test(readFileSync(f, 'utf8'));
+  } catch { return false; }
+}
+
 // Wait until the page says it is ready (window.__ready, if the page uses it; window.ASSETS_READY,
 // the animate kit's promise for embedded images), fonts are loaded and images are decoded. Every wait
 // is bounded by timeoutMs, so a page that never gets ready fails with a message instead of hanging.
 export async function waitReady(page, timeoutMs = 30000) {
   await page.waitForLoadState('load');
-  // __ready is used when an inline script names it or any script (inline or external) has set it by
-  // load (typically to false, flipped to true later); a page that never mentions it is not slowed down.
-  const usesReady = await page.evaluate(() => window.__ready !== undefined || [...document.scripts].some((s) => s.textContent.includes('__ready')));
+  await checkXml(page);
+  // __ready is used when any script has assigned it by load (typically false, flipped to true later),
+  // or a script names it: inline, or an external local file that may set it only later. A page that
+  // never names it is not slowed down.
+  const seen = await page.evaluate(() => ({
+    set: window.__easelReadySet === true || window.__ready !== undefined,
+    inline: [...document.scripts].some((s) => !s.src && /\b__ready\b/.test(s.textContent)),
+    files: [...document.scripts].map((s) => s.src).filter((u) => u.startsWith('file:')),
+  }));
+  const usesReady = seen.set || seen.inline || seen.files.some(namesReady);
   if (usesReady) {
     try {
       await page.waitForFunction(() => !!window.__ready, null, { timeout: timeoutMs });

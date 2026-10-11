@@ -7,6 +7,7 @@ const tools = {
   ...realTools,
   boom: { description: 'throws', inputSchema: { type: 'object' }, run: async () => { throw new Error('kaboom'); } },
   need: { description: 'needs x', inputSchema: { type: 'object', required: ['x'], properties: { x: { type: 'number' } }, additionalProperties: false }, run: async (a) => a.x * 2 },
+  ctx: { description: 'reports its context', inputSchema: { type: 'object' }, run: async (a, c) => ({ signal: !!(c && c.signal), aborted: !!(c && c.signal && c.signal.aborted) }) },
 };
 const call = (name, args, id = 1) => handle({ jsonrpc: '2.0', id, method: 'tools/call', params: { name, arguments: args } }, tools);
 
@@ -101,4 +102,11 @@ test('parseLine reports parse errors as -32700', () => {
   const p = parseLine('{not json');
   assert.equal(p.ok, false);
   assert.equal(p.response.error.code, -32700);
+});
+
+test('tools/call passes the server context (the cancellation signal) on to the tool', async () => {
+  const ctl = new AbortController();
+  const r = await handle({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'ctx', arguments: {} } }, tools, { signal: ctl.signal });
+  assert.deepEqual(JSON.parse(r.result.content[0].text), { signal: true, aborted: false });
+  assert.deepEqual(JSON.parse((await call('ctx', {})).result.content[0].text), { signal: false, aborted: false });
 });

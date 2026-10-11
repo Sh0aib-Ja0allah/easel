@@ -31,7 +31,8 @@ pieces.forEach((p, i) => {
     const r = await m.renderStill({ file, outDir: join(out, `png-${i}`), width: p.width, height: p.height, theme: 'both' }, { browser });
     assert.equal(r.warnings, undefined, JSON.stringify(r.warnings));
     assert.equal(r.files.length, 2);
-    const q = await m.qa({ file, width: p.width, height: p.height, fixedFrame: true, checks: ['text_clipping', 'contrast'], outDir: join(out, `qa-${i}`) });
+    // default checks: a piece with no text reports contrast as not run (naming contrast would fail it)
+    const q = await m.qa({ file, width: p.width, height: p.height, fixedFrame: true, outDir: join(out, `qa-${i}`) });
     assert.equal(q.pass, true, JSON.stringify(q.checks.map((c) => [c.name, c.pass, c.findings])));
     assert.equal(q.checks.find((c) => c.name === 'contrast').findings.length, 0);
   });

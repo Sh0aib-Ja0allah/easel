@@ -40,7 +40,8 @@ pieces.forEach((p, i) => {
   test(`${p.skill}: ${p.file} at ${p.width}x${p.height} renders offline and passes qa${p.fixedFrame ? ' (fixed frame)' : ''}`, { skip }, async () => {
     const r = await m.renderStill({ file, outDir: join(out, `png-${i}`), width: p.width, height: p.height }, { browser });
     assert.equal(r.warnings, undefined, JSON.stringify(r.warnings));
-    const q = await m.qa({ file, width: p.width, height: p.height, mode: p.mode, fixedFrame: !!p.fixedFrame, checks: ['text_clipping', 'contrast'], outDir: join(out, `qa-${i}`) });
+    // default checks: a piece with no text reports contrast as not run (naming contrast would fail it)
+    const q = await m.qa({ file, width: p.width, height: p.height, mode: p.mode, fixedFrame: !!p.fixedFrame, outDir: join(out, `qa-${i}`) });
     assert.equal(q.pass, true, JSON.stringify(q.checks.map((c) => [c.name, c.pass, c.findings])));
     const contrast = q.checks.find((c) => c.name === 'contrast');
     assert.equal(contrast.findings.length, 0, `contrast below AA: ${JSON.stringify(contrast.findings)}`);

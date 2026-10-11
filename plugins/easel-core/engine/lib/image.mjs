@@ -1,10 +1,37 @@
 // Image measurements done in the browser (canvas pixels), so the engine needs no image library.
-import { readFileSync } from 'node:fs';
+import { closeSync, openSync, readFileSync, readSync, writeFileSync } from 'node:fs';
 import { extname } from 'node:path';
 import { newPage } from './browser.mjs';
+import { commit, partialPath, removeQuietly } from './probe.mjs';
 
 const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
 export const dataUrl = (file) => `data:${MIME[extname(file).toLowerCase()] || 'image/png'};base64,${readFileSync(file).toString('base64')}`;
+
+// Writes an output through a partial file renamed into place (see commit): never a half-written file
+// under the final name, never through a link already at that name.
+export function writeOutput(file, data) {
+  const partial = partialPath(file);
+  try { writeFileSync(partial, data); } catch (err) { removeQuietly(partial); throw err; }
+  return commit(partial, file);
+}
+
+// Easel marks the sheets it makes (contact sheets, filmstrips, comparisons) with a PNG text chunk, so a
+// folder of references can leave them out whatever they are called.
+const MARK = Buffer.from('tEXtSoftware\0Easel sheet', 'latin1');
+const CRC = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+const crc32 = (b) => { let c = 0xffffffff; for (const x of b) c = CRC[(c ^ x) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+export function markSheet(png) {
+  if (png.readUInt32BE(0) !== 0x89504e47) return png;
+  const chunk = Buffer.alloc(MARK.length + 8);
+  chunk.writeUInt32BE(MARK.length - 4, 0);
+  MARK.copy(chunk, 4);
+  chunk.writeUInt32BE(crc32(MARK), MARK.length + 4);
+  return Buffer.concat([png.subarray(0, 33), chunk, png.subarray(33)]); // right after IHDR (8 + 25 bytes)
+}
+export function isSheet(file) {
+  const fd = openSync(file, 'r');
+  try { const b = Buffer.alloc(80); return b.subarray(0, readSync(fd, b, 0, 80, 0)).indexOf(MARK) === 37; } finally { closeSync(fd); }
+}
 
 // PNG width/height from the IHDR chunk.
 export function pngSize(file) {

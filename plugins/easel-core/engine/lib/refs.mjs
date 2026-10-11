@@ -8,16 +8,17 @@
 // (plugins/animate/skills/animate/tools/measure/refs.mjs and tools/compare.mjs), MIT License,
 // Copyright (c) 2026 cth9191. Modified by Easel (2026-10-11): engine tools (offline page, images as
 // files, results as JSON); compare takes two images (render the frame first with render_still).
-import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { basename, extname, join, resolve } from 'node:path';
 import { newPage, openBrowser } from './browser.mjs';
-import { dataUrl } from './image.mjs';
+import { dataUrl, isSheet, markSheet, writeOutput } from './image.mjs';
 import { outputDir } from './render.mjs';
 
 const IMG = /\.(png|jpe?g|webp)$/i;
 
-// Runs in the page: decode, trim, palette, points, accents. Returns the trimmed PNG as base64.
-function measureInPage({ url, top, points, accent, trim, crop }) {
+// Runs in the page: decode, trim, palette, points, accents. Returns the trimmed PNG as base64, or
+// { error } for a crop or a point outside the picture. cropOf names the crop and the picture in that error.
+function measureInPage({ url, top, points, accent, trim, crop, cropOf = ['crop', 'the image'], trimName = 'trim' }) {
   return (async () => {
     const img = new Image(); img.src = url; await img.decode();
     const W = img.naturalWidth, H = img.naturalHeight, c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -32,8 +33,17 @@ function measureInPage({ url, top, points, accent, trim, crop }) {
       while (y0 < y1 && rowFlat(y0)) y0++; while (y1 > y0 && rowFlat(y1)) y1--;
       while (x0 < x1 && colFlat(x0)) x0++; while (x1 > x0 && colFlat(x1)) x1--;
     }
-    if (crop) { x0 += crop[0]; y0 += crop[1]; x1 = Math.min(x1, x0 + crop[2] - 1); y1 = Math.min(y1, y0 + crop[3] - 1); }
+    const size = (w, h) => `${w} x ${h}${x0 || y0 || x1 < W - 1 || y1 < H - 1 ? ` after ${trimName}` : ''}`;
+    if (crop) {
+      const [name, of] = cropOf, at = `${name} [${crop.join(', ')}]`;
+      if (!(crop[2] >= 1 && crop[3] >= 1)) return { error: `${at} is empty: width and height must be at least 1` };
+      if (crop[0] > x1 - x0 || crop[1] > y1 - y0) return { error: `${at} starts outside ${of} (${size(x1 - x0 + 1, y1 - y0 + 1)}): give [x, y, width, height] inside it` };
+      // a crop that runs past the edge stops at the edge (the box reports what was used)
+      x0 += crop[0]; y0 += crop[1]; x1 = Math.min(x1, x0 + crop[2] - 1); y1 = Math.min(y1, y0 + crop[3] - 1);
+    }
     const cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+    const off = points.find(([x, y]) => !(x < cw && y < ch));
+    if (off) return { error: `point [${off.join(', ')}] is outside the picture (${size(cw, ch)}${x0 || y0 || cw < W || ch < H ? '; trim: false measures the whole image' : ''}): points are [x, y] pixels inside it` };
     const t = document.createElement('canvas'); t.width = cw; t.height = ch; t.getContext('2d').drawImage(c, x0, y0, cw, ch, 0, 0, cw, ch);
     const td = t.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, cw, ch).data, m = new Map();
     for (let i = 0; i < td.length; i += 8) { const k = ((td[i] >> 4) << 8) | ((td[i + 1] >> 4) << 4) | (td[i + 2] >> 4); const v = m.get(k) || [0, 0, 0, 0]; v[0] += td[i]; v[1] += td[i + 1]; v[2] += td[i + 2]; v[3]++; m.set(k, v); }
@@ -61,11 +71,20 @@ function measureInPage({ url, top, points, accent, trim, crop }) {
   })();
 }
 
-function listImages(paths) {
+// The images named, and every image in a folder named, except Easel's own outputs there: trimmed
+// copies, and sheets (contact sheets, filmstrips, comparisons: by their mark, or the default name
+// "compare"), which go to `skipped`. An image named on its own is always measured.
+function listImages(paths, skipped = []) {
   return paths.flatMap((p) => {
     const a = resolve(p);
     if (!existsSync(a)) throw new Error(`File not found: ${a}`);
-    if (statSync(a).isDirectory()) return readdirSync(a).filter((n) => IMG.test(n) && !/\.trim\.png$|^compare([-.]|$)/i.test(n)).sort().map((n) => join(a, n));
+    if (statSync(a).isDirectory()) {
+      return readdirSync(a).filter((n) => IMG.test(n) && !/\.trim\.png$/i.test(n)).sort().map((n) => join(a, n)).filter((f) => {
+        const sheet = /^compare([-.]|$)/i.test(basename(f)) || (/\.png$/i.test(f) && statSync(f).isFile() && isSheet(f));
+        if (sheet) skipped.push({ file: f, reason: 'an Easel sheet (contact sheet, filmstrip or comparison), not a reference' });
+        return !sheet;
+      });
+    }
     if (!IMG.test(a)) throw new Error(`Not a PNG, JPG or WEBP image: ${a}`);
     return [a];
   });
@@ -73,8 +92,9 @@ function listImages(paths) {
 
 export async function measureImage(args) {
   const t0 = Date.now();
-  const files = listImages(args.images);
-  if (!files.length) throw new Error('No PNG, JPG or WEBP images found.');
+  const skipped = [];
+  const files = listImages(args.images, skipped);
+  if (!files.length) throw new Error(`No PNG, JPG or WEBP images found${skipped.length ? ` (${skipped.length} Easel sheets left out)` : ''}.`);
   const out = args.outDir || args.slug ? outputDir(args) : null;
   if (out) mkdirSync(out, { recursive: true });
   const browser = await openBrowser();
@@ -84,14 +104,15 @@ export async function measureImage(args) {
     try {
       for (const f of files) {
         const r = await page.evaluate(measureInPage, { url: dataUrl(f), top: args.top || 10, points: args.points || [], accent: !!args.accent, trim: args.trim !== false, crop: null });
+        if (r.error) throw new Error(`${basename(f)}: ${r.error}`);
         const { png, ...rest } = r;
         let trimmed;
-        if (out && (rest.box[0] || rest.box[1] || rest.box[2] !== rest.width || rest.box[3] !== rest.height)) { trimmed = join(out, `${basename(f, extname(f))}.trim.png`); writeFileSync(trimmed, Buffer.from(png, 'base64')); }
+        if (out && (rest.box[0] || rest.box[1] || rest.box[2] !== rest.width || rest.box[3] !== rest.height)) trimmed = writeOutput(join(out, `${basename(f, extname(f))}.trim.png`), Buffer.from(png, 'base64'));
         results.push({ file: f, ...rest, ...(trimmed ? { trimmed } : {}) });
       }
     } finally { await context.close(); }
   } finally { await browser.close(); }
-  return { images: results, note: 'Thin lines read lighter than they are in a screenshot (anti-aliasing): take line colours from the source (SVG or CSS) when there is one.', ms: Date.now() - t0 };
+  return { images: results, ...(skipped.length ? { skipped } : {}), note: 'Thin lines read lighter than they are in a screenshot (anti-aliasing): take line colours from the source (SVG or CSS) when there is one.', ms: Date.now() - t0 };
 }
 
 // The comparison sheet, drawn in the page: both images at the same height, a 10% grid on each, labels.
@@ -134,11 +155,12 @@ export async function compareSheet(args) {
     try {
       await page.setContent('<!doctype html><html><body></body></html>');
       await page.evaluate(() => document.fonts.ready);
-      const mRef = await page.evaluate(measureInPage, { url: dataUrl(ref), top: args.top || 6, points: [], accent: false, trim: !!args.autoTrim, crop: args.crop || null });
-      const mOurs = await page.evaluate(measureInPage, { url: dataUrl(ours), top: args.top || 6, points: [], accent: false, trim: false, crop: args.cropOurs || null });
+      const mRef = await page.evaluate(measureInPage, { url: dataUrl(ref), top: args.top || 6, points: [], accent: false, trim: !!args.autoTrim, crop: args.crop || null, cropOf: ['crop', 'the reference'], trimName: 'autoTrim' });
+      const mOurs = await page.evaluate(measureInPage, { url: dataUrl(ours), top: args.top || 6, points: [], accent: false, trim: false, crop: args.cropOurs || null, cropOf: ['cropOurs', 'ours'] });
+      for (const r of [mRef, mOurs]) if (r.error) throw new Error(r.error);
       const sheet = await page.evaluate(sheetInPage, { a: { url: dataUrl(ref), box: mRef.box }, b: { url: dataUrl(ours), box: mOurs.box }, height: args.height || 960, grid: args.grid !== false, labels: [args.referenceLabel || 'reference', args.oursLabel || 'ours'] });
       const file = join(out, `${name}.png`);
-      writeFileSync(file, Buffer.from(sheet.png, 'base64'));
+      writeOutput(file, markSheet(Buffer.from(sheet.png, 'base64')));
       const strip = ({ png, ...r }) => r;
       return { sheet: file, width: sheet.width, height: sheet.height, reference: { file: ref, ...strip(mRef) }, ours: { file: ours, ...strip(mOurs) }, check: 'Compare in this order: proportions on the 10% grid (subject size, margins, line weight relative to the subject), the palette numbers, the texture, the type.', ms: Date.now() - t0 };
     } finally { await context.close(); }

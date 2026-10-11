@@ -63,7 +63,7 @@ test('audio_score: the example cue sheet becomes a 12 s stereo WAV at -14 LUFS, 
   let max = 0; for (let i = 0; i < A.length; i++) max = Math.max(max, Math.abs(A[i] - B[i]));
   assert.ok(max <= 8, `two renders differ by up to ${max} LSB`);
   assert.equal(a.lufs, b.lufs);
-  assert.ok(m.loudness(a.file).pass, 'inside the -16 to -12 LUFS gate');
+  assert.ok((await m.loudness(a.file)).pass, 'inside the -16 to -12 LUFS gate');
 });
 
 test('audio_score: palettes differ, a custom target is met, bad input is refused clearly', { skip }, async () => {

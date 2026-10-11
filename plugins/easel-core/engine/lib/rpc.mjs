@@ -1,5 +1,6 @@
 // MCP JSON-RPC message handling, shared by the stdio server and the tests.
-// Transport-free: handle(msg, tools) returns the response object, or undefined for notifications.
+// Transport-free: handle(msg, tools, ctx) returns the response object, or undefined for notifications.
+// ctx.signal (the server's, for notifications/cancelled) is passed on to the tool as run(args, ctx).
 import { validateArgs } from './validate.mjs';
 import { ENGINE_VERSION } from './version.mjs';
 
@@ -19,7 +20,7 @@ export function parseLine(line) {
   }
 }
 
-export async function handle(msg, tools) {
+export async function handle(msg, tools, ctx = {}) {
   if (Array.isArray(msg)) return error(null, -32600, 'Invalid Request: batches are not supported');
   if (!isObject(msg)) return error(null, -32600, 'Invalid Request: expected a JSON object');
   const request = hasId(msg);
@@ -56,7 +57,7 @@ export async function handle(msg, tools) {
         const problems = validateArgs(tool.inputSchema, args);
         if (problems.length) return result(id, toolError(`Invalid arguments: ${problems.join('; ')}`));
         try {
-          const out = await tool.run(args);
+          const out = await tool.run(args, ctx);
           return result(id, toolResult(out));
         } catch (err) {
           return result(id, toolError(err && err.message ? err.message : String(err)));

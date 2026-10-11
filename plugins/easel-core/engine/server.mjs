@@ -12,16 +12,28 @@ export function startServer({ input = process.stdin, output = process.stdout } =
   // stdout belongs to the protocol: route any stray console output to stderr.
   for (const k of ['log', 'info', 'debug', 'warn']) console[k] = (...a) => process.stderr.write(format(...a) + '\n');
   const pending = new Set();
+  // tools/call requests in flight, by id: notifications/cancelled aborts one (the tool stops where it
+  // can) and its response is never sent, as MCP asks.
+  const inflight = new Map();
   const send = (msg) => output.write(JSON.stringify(msg) + '\n');
   const rl = createInterface({ input, crlfDelay: Infinity });
   rl.on('line', (line) => {
     if (!line.trim()) return;
     const parsed = parseLine(line);
     if (!parsed.ok) return send(parsed.response);
-    const p = handle(parsed.msg, tools)
-      .then((res) => { if (res) send(res); })
+    const msg = parsed.msg;
+    const isObj = msg !== null && typeof msg === 'object' && !Array.isArray(msg);
+    if (isObj && msg.method === 'notifications/cancelled' && (msg.id === undefined || msg.id === null)) {
+      const ctl = msg.params && typeof msg.params === 'object' ? inflight.get(msg.params.requestId) : undefined;
+      if (ctl) ctl.abort();
+      return;
+    }
+    const ctl = isObj && msg.method === 'tools/call' && msg.id !== undefined && msg.id !== null ? new AbortController() : null;
+    if (ctl) inflight.set(msg.id, ctl);
+    const p = handle(msg, tools, ctl ? { signal: ctl.signal } : {})
+      .then((res) => { if (res && !(ctl && ctl.signal.aborted)) send(res); })
       .catch((err) => process.stderr.write(`easel: unexpected error: ${err && err.stack}\n`))
-      .finally(() => pending.delete(p));
+      .finally(() => { pending.delete(p); if (ctl && inflight.get(msg.id) === ctl) inflight.delete(msg.id); });
     pending.add(p);
   });
   rl.on('close', async () => {

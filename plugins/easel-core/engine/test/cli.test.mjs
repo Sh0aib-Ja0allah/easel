@@ -59,3 +59,12 @@ test('cli refuses argument names that would reach Object.prototype and skip vali
     assert.doesNotMatch(r.stdout, /via proto/);
   }
 });
+
+test('a flag with no value is refused for a string key (not the string "true"); numbers may have an exponent', () => {
+  assert.throws(() => parseArgs(['craft', '--name']), /--name needs a value/);
+  assert.throws(() => parseArgs(['render_still', '--name', '--width', '20']), /--name needs a value/);
+  assert.deepEqual(parseArgs(['render_still', '--width', '1e1', '--scale', '.5', '--t', '2.5e-1', '--transparent']).args, { width: 10, scale: 0.5, t: 0.25, transparent: true });
+  const r = run('craft', '--name');
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /--name needs a value/);
+});
