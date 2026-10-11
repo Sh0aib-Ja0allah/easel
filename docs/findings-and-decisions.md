@@ -229,3 +229,10 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 
 - **Decision:** the math style's pi-shaped hero is replaced by an original round hero (`dotHero`), and the crosshatch and sketchbook heroes carry a cream shine instead of a cream asterisk. References to the Manim library's API names stay in code comments and docs as technical notes; no style is named after it.
 - **Reason:** a pi-shaped creature with eyes is a well-known channel's mascot, and a terracotta dot with a cream asterisk reads as a brand mark. HANDOFF §5: originals over copies, no trademarks or protected creators.
+
+### D16. Audio is a JavaScript synth in the engine; mgaudio is not ported ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** task T2.4's audio decision is the architecture's second option. Scores are synthesized with Web Audio (`OfflineAudioContext`) inside the engine's offline browser: animate pieces keep their own `src/score.js` (rendered with `render_video` `audio: "page"`), and the new `audio_score` engine tool turns a cue sheet (`cues.json`) into a score with the same instruments (adapted from animate's synth). Every score is mastered to -14 LUFS with a two-pass ffmpeg loudnorm. Python is not needed by any Easel feature.
+- **Reason:** mg-styles-15's `mgaudio` is about 8,700 lines of Python built on NumPy; a Node port is a project of its own, and depending on it would make Python plus NumPy a required install on Windows. The browser synth is already a dependency (Chromium), runs offline, and is used by every animate piece. mgaudio's genre recipes (chill, club, retro, world) are kept as ideas: `audio_score` has warm, bright and retro palettes.
+- **Determinism note:** Chromium's Web Audio rounds a few hundred samples per render differently (1 LSB of 16-bit audio); two renders of the same cue sheet match to within 8 LSB after mastering (tested), not byte for byte.
+- **Deviates from:** architecture.md section 4 "Audio", which preferred a Node port of mgaudio.

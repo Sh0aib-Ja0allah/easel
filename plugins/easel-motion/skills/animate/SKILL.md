@@ -208,6 +208,8 @@ boundary, and run the review.
 | `<easel-motion>/grammars/formats.md` | 8 story formats (engine x stage x clock), which are proven | step 1 |
 | `<easel-motion>/grammars/story.md` | beat-level story rules | step 1 |
 | `<easel-motion>/grammars/frame.md` | what a key frame must hold, in any style | steps 2-3 |
+| `<easel-motion>/grammars/<id>.md` | explainer grammars: math-explainer, keynote-ui, finance-chart, science-cartoon, editorial-collage, whiteboard, storytime, kinetic-type, presenter | step 1, when the piece is that kind of explainer |
+| `<easel-motion>/recipes/` | looks written down without a kit yet (cave painting to analytic cubist); build one with style-match | step 0, when the user asks for one |
 | `<easel-motion>/styles/README.md` | the styles, the STYLE hooks contract, mixing styles | steps 0, 2 |
 | `<easel-motion>/styles/<id>/STYLE.md` | a style's rules and frame checklist; `demo/` is a 6 s piece in it | step 2 |
 | `<easel-motion>/kit/` | the shared renderer: drawing kit, eras and morphs, storyboard, synth | building |

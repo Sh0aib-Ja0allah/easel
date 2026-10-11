@@ -1,7 +1,7 @@
 # easel-core
 
 The shared foundation every other Easel plugin depends on: the render engine (an MCP server and a
-CLI), measured quality gates, shared data formats, craft rulebooks and critique rubrics, and four
+CLI), measured quality gates, shared data formats, craft rulebooks and critique rubrics, and five
 skills.
 
 ## Skills
@@ -12,6 +12,7 @@ skills.
 | `/easel-core:brief` | Plan a multi-step job: intake, then story, look and storyboard check-ins |
 | `/easel-core:brand` | Create or find `.easel/brand.md`, the brand file every skill reads |
 | `/easel-core:critique` | Review rendered work with `qa` measurements and the read-only `critic` agent |
+| `/easel-core:score` | Music and sound effects from a cue sheet, synthesized offline and mastered to -14 LUFS |
 
 ## Engine tools
 
@@ -19,8 +20,10 @@ Called by skills as `mcp__plugin_easel-core_easel__<tool>`, or from a terminal w
 `node engine/cli.mjs <tool> --json @args.json`:
 
 `doctor`, `render_still`, `contact_sheet`, `render_video`, `filmstrip`, `qa`, `validate`,
-`craft`, `ping`. Renders are offline and deterministic: bundled OFL fonts, seeded randomness,
-every frame seeked to `t = n / fps`.
+`audio_score`, `measure_image`, `compare_images`, `craft`, `ping`. Renders are offline and
+deterministic: bundled OFL fonts, seeded randomness, every frame seeked to `t = n / fps`. Pages
+can be HTML/SVG/CSS, GSAP timelines (HyperFrames format), `renderAt(t)` or animate-kit canvas
+pieces (`renderFrame(t)`).
 
 ## Requirements
 

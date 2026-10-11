@@ -127,7 +127,7 @@ Every visual artifact is a web page that can be put into an exact state at any t
 | `render_video` | Page + duration + fps + aspect ratios → MP4 (and ProRes with alpha, v2) |
 | `filmstrip` | Frames at chosen times side by side, so a vision model can review motion |
 | `qa` | Measured checks: text clipping, contrast, canvas text (cut off, overlapping, under the phone UI) and beat grid for canvas pieces, dead or still stretches, loudness, colour-cast gate |
-| `audio_score` | Cue sheet → synthesized music and SFX → WAV mastered to −14 LUFS |
+| `audio_score` | Cue sheet → synthesized music and SFX (warm, bright or retro) → WAV mastered to −14 LUFS |
 | `measure_image` | Reference images → trimmed copies, size and aspect, exact palette with shares, sampled points, accent families (for matching a look) |
 | `compare_images` | A reference and our frame side by side on a 10% proportion grid, with both palettes |
 | `craft` | Return a craft rulebook or rubric by name |
@@ -141,9 +141,8 @@ Every visual artifact is a web page that can be put into an exact state at any t
 
 ### Audio
 
-- **Preferred: port `mgaudio` (Python) to Node.** It's the most complete synthesizer and mastering chain among the sources.
-- **If porting is too costly:** make Python an *optional* dependency that only `score` needs, and keep a simple JS synth (like animate's) as the default.
-- Track this as task T2.4.
+- **Decided (D16, T2.4): a JavaScript synth in the engine.** Scores are synthesized with Web Audio in the engine's offline browser and mastered to -14 LUFS (two-pass loudnorm). Animate pieces carry their own score (`render_video` `audio: "page"`); `audio_score` turns a cue sheet into one. mgaudio (Python) was not ported; Python is not needed.
+- Two renders of one score match to within a few LSB of 16-bit audio (Chromium's Web Audio rounding), not byte for byte.
 
 ### Setup and caching
 

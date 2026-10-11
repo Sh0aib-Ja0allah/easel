@@ -13,6 +13,9 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   or overlapping fails, under the phone UI warns; per format) and `beat_grid` (cuts and morph
   centres on the 8th-note grid). `render_still` reports the real size of element and full-page
   captures.
+- **easel-core `score` skill and `audio_score` tool:** a cue sheet becomes a synthesized score
+  (sections, a dip before the payoff hit, named effects) mastered to -14 LUFS; JavaScript synth,
+  no Python (decision D16).
 - **easel-core:** `measure_image` and `compare_images` tools for matching a look from references
   (adapted from animate's reference tools).
 - **easel-core fonts:** Caveat, STIX Two Text (with italics), Noto Sans Math and Inter 900 (OFL).
@@ -23,6 +26,10 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   style in any formats (`tools/new-piece.mjs`), the storyboard page (`board.html`), renders in every
   format with the piece's own score, and the quality loop (qa per format, filmstrips, the critic).
   An 8 s example piece (`examples/water-cycle`) renders in 16:9 and 9:16.
+- **easel-motion grammars and recipes:** nine explainer grammars (math explainer, keynote UI,
+  finance chart, science cartoon, editorial collage, whiteboard, storytime, kinetic type,
+  presenter) and ten style recipes (cave painting to analytic cubist), translated from
+  huashu-art-motion and named after the look, never an artist or channel.
 - **easel-motion `style-match` skill:** a new style from the user's references: measure, start
   the kit (`tools/new-style.mjs`), draw the piece's own frames, compare on a proportion grid, one
   check-in, save `styles/<name>/`. A blank starter piece (`templates/blank`) runs in any style.

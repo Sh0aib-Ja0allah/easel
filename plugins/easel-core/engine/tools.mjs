@@ -8,6 +8,7 @@ import { qa } from './lib/qa.mjs';
 import { KINDS, loadSchema, validateData, validateFile } from './lib/schemas.mjs';
 import { craft } from './lib/craft.mjs';
 import { measureImage, compareSheet } from './lib/refs.mjs';
+import { audioScore, PALETTES } from './lib/score.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -165,6 +166,23 @@ export const tools = {
       const problems = args.file ? validateFile(args.kind, args.file) : validateData(args.kind, args.data);
       return { kind: args.kind, valid: problems.length === 0, problems };
     },
+  },
+  audio_score: {
+    description:
+      'Synthesize a score from a cue sheet (cues.json: fps, durationSec, bpm, key, cues of kind scene, beat, hit, caption, sfx, music-start, music-stop) and master it to -14 LUFS: a chord per scene section (pad, bass on the beat, a motif at each scene start), a dip into near-silence before every hit and the loudest moment on it, and sound effects by name (whoosh, swish, pop, click, tick, chime, riser, impact, blip). ' +
+      'Offline and deterministic (Web Audio in the engine browser; no Python). Writes <name>.wav to ./easel-out/<slug>/ and reports its loudness. Mux it with render_video audio, or check it with qa.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', description: 'Path to a cues.json.' },
+        cues: { type: 'object', description: 'The cue sheet itself (instead of file).' },
+        palette: { enum: PALETTES, description: 'warm (soft triangle pads; default), bright (saw pads, brighter plucks) or retro (square waves).' },
+        lufs: { type: 'number', minimum: -24, maximum: -9, description: 'Integrated loudness target (default -14).' },
+        name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => audioScore(args),
   },
   measure_image: {
     description:

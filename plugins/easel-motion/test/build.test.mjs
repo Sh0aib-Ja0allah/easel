@@ -156,3 +156,17 @@ test('new-style: a blank or shipped starting kit, a STYLE.md skeleton, only unde
     assert.ok(build(join(root, 'easel-out', 'job', 'piece')).lines > 500);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+test('translated grammars and recipes: English bodies, attribution headers, no creator names in names or text', () => {
+  const names = /3blue1brown|3b1b|kurzgesagt|\bvox\b|rsa animate|minute physics|ghibli|kusama|\bharing\b|shinkai|kirby|dal[ií]\b|mario|monet|van gogh|mucha|picasso|braque|leonardo|da vinci|klimt|munch|seurat|matisse|rembrandt|hopper|huashu|xiaohei|peanut/i;
+  const files = [...readdirSync(join(PLUGIN, 'grammars')).map((f) => join('grammars', f)), ...readdirSync(join(PLUGIN, 'recipes')).map((f) => join('recipes', f))].filter((f) => f.endsWith('.md'));
+  const huashu = files.filter((f) => readFileSync(join(PLUGIN, f), 'utf8').includes('alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35'));
+  assert.equal(huashu.length, 19, huashu.join(', '));   // 9 grammars + 10 recipes
+  for (const f of files) {
+    assert.doesNotMatch(f, names, f);
+    // the source repository's own name is the attribution, not a style name
+    const text = readFileSync(join(PLUGIN, f), 'utf8').replaceAll('alchaincyf/huashu-art-motion', 'SOURCE'), body = text.startsWith('<!--') ? text.slice(text.indexOf('-->') + 3) : text;
+    assert.doesNotMatch(body, /[\u3000-\u9fff\uff00-\uffef]/, `${f}: Chinese text outside the header`);
+    assert.doesNotMatch(body, names, f);
+  }
+});

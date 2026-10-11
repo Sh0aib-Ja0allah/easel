@@ -74,7 +74,7 @@ export function doctorReport(env = process.env, os = platform()) {
   // Easel calls Python as `python`; on macOS and Linux only `python3` may exist, so report either.
   let py = spawnSync('python', ['--version'], { encoding: 'utf8', windowsHide: true, timeout: 10000, env });
   if ((py.error || py.status !== 0) && os !== 'win32') py = spawnSync('python3', ['--version'], { encoding: 'utf8', windowsHide: true, timeout: 10000, env });
-  add('python (optional)', !py.error && py.status === 0, false, py.status === 0 ? (py.stdout || py.stderr).trim() : 'not found', 'Only needed for optional audio features.');
+  add('python (optional)', !py.error && py.status === 0, false, py.status === 0 ? (py.stdout || py.stderr).trim() : 'not found', 'Not needed by Easel today (audio is synthesized in the engine, decision D16); reported for your own scripts.');
   const ase = asepritePaths(env, os).find((p) => existsSync(p));
   add('aseprite (optional)', !!ase, false, ase || 'not found', 'Only needed for easel-pixel. Aseprite is a paid app from https://www.aseprite.org (Easel is not affiliated with it).');
 
