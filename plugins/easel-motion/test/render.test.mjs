@@ -140,3 +140,21 @@ test('the water-cycle example: one piece renders in 16:9 and 9:16 with its score
   assert.ok(b.files[0].width > 1200 && b.files[0].height > 400, JSON.stringify(b.files[0]));   // 16:9 panels: 1980 x 513
   assert.deepEqual(m.pngSize(b.files[0].file), { width: b.files[0].width, height: b.files[0].height });
 });
+
+test('the style-match example: the blueprint style is found beside the piece, renders in 9:16 and 16:9, and matches its compare sheets', { skip }, async () => {
+  const d = join(out, 'style-match');
+  cpSync(join(PLUGIN, 'examples', 'style-match'), d, { recursive: true });
+  const { file } = build(join(d, 'piece'));
+  assert.match(readFileSync(file, 'utf8'), /name: 'blueprint'/);
+  for (const aspect of ['9:16', '16:9']) {
+    const q = await m.qa({ file, aspect, checks: ['canvas_text', 'beat_grid'], every: 3, outDir: join(d, 'qa') });
+    assert.equal(q.pass, true, `${aspect}: ${JSON.stringify(q.checks)}`);
+  }
+  const still = await m.renderStill({ file, outDir: join(d, 'shots'), name: 'idea', aspect: '9:16', scale: 0.5, t: 2.25 }, { browser });
+  assert.equal(still.warnings, undefined, JSON.stringify(still.warnings));
+  const refs = await eng('refs.mjs');
+  const cmp = await refs.compareSheet({ reference: join(d, 'references', 'bulb.png'), ours: still.files[0].file, outDir: join(d, 'cmp'), name: 'idea', height: 675 });
+  assert.equal(cmp.reference.palette[0].hex, cmp.ours.palette[0].hex, 'the same ground colour as the reference');
+  const committed = await m.compareImages(browser, still.files[0].file, join(PLUGIN, 'examples', 'style-match', 'compare', 'ours-idea.png'));
+  assert.ok(committed.psnr >= SHARED_PSNR, `the committed example frame is current: ${committed.psnr}`);
+});

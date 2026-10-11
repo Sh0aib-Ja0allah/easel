@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Start a new animate piece: copy a style's demo (or a starter template) into a job folder, set
 // piece.json, and make its head format-aware so one piece renders in every format it lists.
-//   usage: node <easel-motion>/tools/new-piece.mjs <dest dir> [--style riso] [--from demo|piece|beat-cut]
+//   usage: node <easel-motion>/tools/new-piece.mjs <dest dir> [--style riso] [--from demo|blank|piece|beat-cut]
 //                                                  [--formats 9:16,16:9] [--title "..."] [--mix a,b]
-// --from demo (default): the style's own demo, whose scenes already speak its kit. "piece" and
-// "beat-cut" are the starter templates (their scenes are drawn with the cut-paper kit, so they take
-// --style cut-paper; mix other styles in with --mix).
+// --from demo (default): the style's own demo, whose scenes already speak its kit. "blank" is a neutral
+// starter whose scenes use only the STYLE hooks, so it runs in any style (the default for a style made
+// with style-match, which has no demo yet). "piece" and "beat-cut" are the starter templates (drawn
+// with the cut-paper kit, so they take --style cut-paper; mix other styles in with --mix).
 // Formats: the demo heads are written for 9:16 (W = 1080, H = 1920). With any other format listed,
 // the head gets the template's FORMATS block (W, H, SAFE and CX per format, from window.__easel.aspect
 // under the engine or ?format= in a browser) and the canvas CSS that keeps its real aspect.
@@ -43,12 +44,16 @@ export function formatAwareHead(head, formats) {
 export function newPiece(dest, { style = 'cut-paper', from = 'demo', formats = ['9:16'], title, mix = [] } = {}) {
   const D = path.resolve(dest);
   if (fs.existsSync(path.join(D, 'piece.json'))) throw new Error(`${D} already has a piece.json; not overwriting it`);
-  if (!fs.existsSync(path.join(PLUGIN, 'styles', style, 'kit.js'))) throw new Error(`unknown style "${style}"`);
+  // a style the user made (style-match) lives in a styles/ folder beside the piece or above it
+  const own = (() => { for (let d = path.dirname(D); ; d = path.dirname(d)) { if (fs.existsSync(path.join(d, 'styles', style, 'kit.js'))) return true; if (path.dirname(d) === d) return false; } })();
+  const shipped = fs.existsSync(path.join(PLUGIN, 'styles', style, 'kit.js'));
+  if (!shipped && !own) throw new Error(`unknown style "${style}" (not in easel-motion, and no styles/${style}/kit.js beside or above ${D})`);
+  if (!shipped && from === 'demo') from = 'blank';   // a new style has no demo yet: start from the blank piece
   for (const f of formats) if (!FORMATS.includes(f)) throw new Error(`unknown format "${f}" (use ${FORMATS.join(', ')})`);
   const srcDir = from === 'demo' ? path.join(PLUGIN, 'styles', style, 'demo') : path.join(PLUGIN, 'templates', from);
-  if (!fs.existsSync(path.join(srcDir, 'piece.json'))) throw new Error(`unknown starting point "${from}" (use demo, piece or beat-cut)`);
-  // the starter templates' scenes are drawn with the cut-paper kit
-  if (from !== 'demo' && style !== 'cut-paper') throw new Error(`the ${from} template is drawn in cut-paper; for ${style}, start from its demo (--from demo), or use --style cut-paper and mix ${style} in (--mix ${style})`);
+  if (!fs.existsSync(path.join(srcDir, 'piece.json'))) throw new Error(`unknown starting point "${from}" (use demo, blank, piece or beat-cut)`);
+  // the piece and beat-cut templates' scenes are drawn with the cut-paper kit; blank runs in any style
+  if ((from === 'piece' || from === 'beat-cut') && style !== 'cut-paper') throw new Error(`the ${from} template is drawn in cut-paper; for ${style}, start from its demo (--from demo), or use --style cut-paper and mix ${style} in (--mix ${style})`);
   fs.mkdirSync(D, { recursive: true });
   fs.cpSync(path.join(srcDir, 'src'), path.join(D, 'src'), { recursive: true });
   for (const f of ['brief.md', 'LOG.md']) if (fs.existsSync(path.join(srcDir, f))) fs.copyFileSync(path.join(srcDir, f), path.join(D, f));
@@ -69,7 +74,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   const args = process.argv.slice(2), opt = {};
   const dest = args.shift();
   for (let i = 0; i < args.length; i += 2) opt[args[i].replace(/^--/, '')] = args[i + 1];
-  if (!dest || dest.startsWith('--')) { console.error('usage: node tools/new-piece.mjs <dest dir> [--style riso] [--from demo|piece|beat-cut] [--formats 9:16,16:9] [--title "..."] [--mix a,b]'); process.exit(2); }
+  if (!dest || dest.startsWith('--')) { console.error('usage: node tools/new-piece.mjs <dest dir> [--style riso] [--from demo|blank|piece|beat-cut] [--formats 9:16,16:9] [--title "..."] [--mix a,b]'); process.exit(2); }
   try {
     const r = newPiece(dest, { style: opt.style, from: opt.from, formats: opt.formats ? opt.formats.split(',') : undefined, title: opt.title, mix: opt.mix ? opt.mix.split(',') : [] });
     console.log(`new piece in ${r.dir} from ${r.from}: style ${r.piece.style}${r.piece.mix ? ` (+ ${r.piece.mix.join(', ')})` : ''}, formats ${r.piece.formats.join(', ')}`);

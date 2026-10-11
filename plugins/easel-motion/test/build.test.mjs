@@ -19,7 +19,7 @@ test('all seven styles are present, each with STYLE.md, kit.js and a demo', () =
 });
 
 test('every demo and template builds (copied out, so the plugin tree stays clean)', () => {
-  for (const rel of [...STYLES.map((s) => `styles/${s}/demo`), 'templates/piece', 'templates/beat-cut', 'examples/water-cycle']) {
+  for (const rel of [...STYLES.map((s) => `styles/${s}/demo`), 'templates/piece', 'templates/beat-cut', 'templates/blank', 'examples/water-cycle']) {
     const d = copy(rel);
     try {
       // a copied demo has no styles/ folder beside it: the style comes from the plugin
@@ -121,13 +121,38 @@ test('new-piece: a 9:16-only demo piece keeps its head; templates need cut-paper
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('the animate skill names only tools and files that exist', () => {
-  const skill = readFileSync(join(PLUGIN, 'skills', 'animate', 'SKILL.md'), 'utf8');
-  for (const t of skill.match(/mcp__plugin_easel-core_easel__\w+/g)) assert.match(t, /__(render_still|render_video|filmstrip|contact_sheet|qa|validate|craft|doctor)$/, t);
-  for (const rel of skill.match(/<easel-motion>\/[\w./-]+/g)) {
-    const p = join(PLUGIN, rel.replace('<easel-motion>/', '').replace(/\/<id>\/.*$/, ''));
-    assert.ok(existsSync(p), `${rel} -> ${p}`);
+test('the skills name only engine tools and plugin files that exist', () => {
+  const engineTools = new Set([...readFileSync(join(PLUGIN, '..', 'easel-core', 'engine', 'tools.mjs'), 'utf8').matchAll(/^ {2}(\w+): \{$/gm)].map((m) => m[1]));
+  assert.ok(engineTools.has('render_video') && engineTools.has('measure_image'), [...engineTools].join(','));
+  for (const skill of ['animate', 'style-match']) {
+    const dir = join(PLUGIN, 'skills', skill), text = readdirSync(dir).filter((f) => f.endsWith('.md')).map((f) => readFileSync(join(dir, f), 'utf8')).join('\n');
+    for (const t of text.match(/mcp__plugin_easel-core_easel__\w+/g) || []) assert.ok(engineTools.has(t.split('__').pop()), `${skill}: ${t}`);
+    for (const rel of text.match(/<easel-motion>\/[\w./-]+/g) || []) {
+      const p = join(PLUGIN, rel.replace('<easel-motion>/', '').replace(/\/<id>\/.*$/, '').replace(/\/$/, ''));
+      assert.ok(existsSync(p), `${skill}: ${rel} -> ${p}`);
+    }
+    for (const m of text.match(/\$\{CLAUDE_PLUGIN_ROOT\}\/[\w./-]+/g) || []) assert.ok(existsSync(join(PLUGIN, m.replace('${CLAUDE_PLUGIN_ROOT}/', ''))), `${skill}: ${m}`);
   }
-  for (const f of ['intake.md', 'craft.md']) assert.ok(existsSync(join(PLUGIN, 'skills', 'animate', f)), f);
-  assert.ok(existsSync(join(PLUGIN, 'tools', 'new-piece.mjs')));
+});
+
+test('new-style: a blank or shipped starting kit, a STYLE.md skeleton, only under styles/, never overwriting', async () => {
+  const { newStyle } = await import('../tools/new-style.mjs');
+  const root = mkdtempSync(join(tmpdir(), 'easel-newstyle-'));
+  try {
+    const a = newStyle(join(root, 'styles', 'neon-ink'));
+    assert.equal(a.from, 'blank');
+    assert.match(readFileSync(join(root, 'styles', 'neon-ink', 'kit.js'), 'utf8'), /name: 'neon-ink'/);
+    for (const h of ['## Measured', '## Frame checklist', '## Not matched', '## Proven on']) assert.ok(readFileSync(join(root, 'styles', 'neon-ink', 'STYLE.md'), 'utf8').includes(h), h);
+    newStyle(join(root, 'styles', 'warm-print'), { from: 'riso' });
+    assert.match(readFileSync(join(root, 'styles', 'warm-print', 'kit.js'), 'utf8'), /name: 'warm-print'/);
+    assert.throws(() => newStyle(join(root, 'styles', 'neon-ink')), /not overwriting/);
+    assert.throws(() => newStyle(join(root, 'looks', 'x')), /folder called styles/);
+    assert.throws(() => newStyle(join(root, 'styles', 'Bad Name')), /lower-case/);
+    assert.throws(() => newStyle(join(root, 'styles', 'y'), { from: 'nope' }), /unknown starting kit/);
+    // a piece in the new style starts from the blank starter and builds
+    const { newPiece } = await import('../tools/new-piece.mjs');
+    const r = newPiece(join(root, 'easel-out', 'job', 'piece'), { style: 'neon-ink', formats: ['16:9'] });
+    assert.equal(r.from, 'templates/blank');
+    assert.ok(build(join(root, 'easel-out', 'job', 'piece')).lines > 500);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

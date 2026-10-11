@@ -13,6 +13,8 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   or overlapping fails, under the phone UI warns; per format) and `beat_grid` (cuts and morph
   centres on the 8th-note grid). `render_still` reports the real size of element and full-page
   captures.
+- **easel-core:** `measure_image` and `compare_images` tools for matching a look from references
+  (adapted from animate's reference tools).
 - **easel-core fonts:** Caveat, STIX Two Text (with italics), Noto Sans Math and Inter 900 (OFL).
 - **easel-motion:** the animate kit, seven styles (crosshatch, cut-paper, isometric, math, pixel,
   riso, sketchbook) with demos and golden frames, starter templates, story grammars and the build
@@ -21,6 +23,11 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   style in any formats (`tools/new-piece.mjs`), the storyboard page (`board.html`), renders in every
   format with the piece's own score, and the quality loop (qa per format, filmstrips, the critic).
   An 8 s example piece (`examples/water-cycle`) renders in 16:9 and 9:16.
+- **easel-motion `style-match` skill:** a new style from the user's references: measure, start
+  the kit (`tools/new-style.mjs`), draw the piece's own frames, compare on a proportion grid, one
+  check-in, save `styles/<name>/`. A blank starter piece (`templates/blank`) runs in any style.
+  Example: `examples/style-match` (three reference sheets -> the `blueprint` style -> a piece in
+  9:16 and 16:9 -> comparison sheets).
 
 ## easel-core 0.1.0 (2026-10-11)
 

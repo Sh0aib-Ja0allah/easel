@@ -7,6 +7,7 @@ import { renderVideo, filmstrip } from './lib/video.mjs';
 import { qa } from './lib/qa.mjs';
 import { KINDS, loadSchema, validateData, validateFile } from './lib/schemas.mjs';
 import { craft } from './lib/craft.mjs';
+import { measureImage, compareSheet } from './lib/refs.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -164,6 +165,42 @@ export const tools = {
       const problems = args.file ? validateFile(args.kind, args.file) : validateData(args.kind, args.data);
       return { kind: args.kind, valid: problems.length === 0, problems };
     },
+  },
+  measure_image: {
+    description:
+      'Measure reference images before matching a look: trims screenshot borders (writes <name>.trim.png into outDir), reports each picture\'s size, aspect and content box, its most common colours (exact bucket means with their share), points sampled as a 5x5 median, and with accent the bright saturated colours by hue family (core and halo). Give image files or a folder. Reference pixels stay local: use a job folder, never commit them.',
+    inputSchema: {
+      type: 'object',
+      required: ['images'],
+      properties: {
+        images: { type: 'array', minItems: 1, maxItems: 32, items: { type: 'string' }, description: 'PNG, JPG or WEBP files, or folders of them.' },
+        top: { type: 'integer', minimum: 1, maximum: 32, description: 'How many colours to list (default 10).' },
+        points: { type: 'array', maxItems: 32, items: { type: 'array', minItems: 2, maxItems: 2, items: { type: 'integer', minimum: 0 } }, description: '[[x, y], ...] in the trimmed picture.' },
+        accent: { type: 'boolean', description: 'Also list bright, saturated colours by hue family (neon, inks on black).' },
+        trim: { type: 'boolean', description: 'Drop flat borders and letterboxing first (default true).' },
+        slug: { type: 'string' }, outDir: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => measureImage(args),
+  },
+  compare_images: {
+    description:
+      'A comparison sheet for matching a look: a reference image and our frame (render it first with render_still) side by side at the same height on a 10% proportion grid, plus both palettes as numbers. Compare proportions first, then palette, texture and type. crop picks a region of the reference (in its pixels, after autoTrim), cropOurs the matching region of our frame.',
+    inputSchema: {
+      type: 'object',
+      required: ['reference', 'ours'],
+      properties: {
+        reference: { type: 'string' }, ours: { type: 'string' },
+        crop: { type: 'array', minItems: 4, maxItems: 4, items: { type: 'integer', minimum: 0 } },
+        cropOurs: { type: 'array', minItems: 4, maxItems: 4, items: { type: 'integer', minimum: 0 } },
+        autoTrim: { type: 'boolean' }, grid: { type: 'boolean' }, height: { type: 'integer', minimum: 120, maximum: 2160 },
+        top: { type: 'integer', minimum: 1, maximum: 16 }, referenceLabel: { type: 'string' }, oursLabel: { type: 'string' },
+        name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => compareSheet(args),
   },
   craft: {
     description:

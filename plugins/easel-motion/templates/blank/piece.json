@@ -1,0 +1,22 @@
+{
+  "name": "blank",
+  "title": "Blank piece",
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 24,
+    "bpm": 120,
+    "duration": 6.0,
+    "frames": 144
+  },
+  "storyFormat": "F2 morph chain (2 eras, 1 hero morph)",
+  "style": "cut-paper",
+  "review": {
+    "safe": {
+      "top": 240,
+      "bottom": 420,
+      "right": 140
+    },
+    "refs": {}
+  }
+}
