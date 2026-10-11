@@ -11,6 +11,7 @@ import { existsSync, statSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 import { ASPECTS, newPage, openBrowser, waitReady } from './browser.mjs';
 import { requireBinary } from './binaries.mjs';
+import { killTree } from './probe.mjs';
 import { releaseSource, resolveSource } from './source.mjs';
 import { outputDir } from './render.mjs';
 import { canvasChecks } from './canvastext.mjs';
@@ -454,12 +455,14 @@ export function runFfmpeg(args, { timeoutMs = FF_TIMEOUT } = {}) {
     const p = spawn(bin, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     const out = [], err = [];
     let size = 0, why = null;
-    const stop = (msg) => { if (!why) { why = msg; p.kill('SIGKILL'); } };
+    // stop the whole tree and answer now: on Windows the real ffmpeg behind a Chocolatey shim outlives a
+    // plain kill and holds the pipes open, so 'close' would never come (CI hung here)
+    const stop = (msg) => { if (why) return; why = msg; clearTimeout(timer); killTree(p); p.stdout.destroy(); p.stderr.destroy(); p.unref(); reject(new Error(msg)); };
     const timer = setTimeout(() => stop(`ffmpeg timed out after ${timeoutMs / 1000} s`), timeoutMs);
     p.stdout.on('data', (d) => { size += d.length; if (size > FF_MAX) stop('ffmpeg wrote more than 256 MB'); else out.push(d); });
     p.stderr.on('data', (d) => err.push(d));
-    p.on('error', (e) => { clearTimeout(timer); reject(e); });
-    p.on('close', (status) => { clearTimeout(timer); if (why) reject(new Error(why)); else resolvePromise({ status, stdout: Buffer.concat(out), stderr: Buffer.concat(err).toString('utf8') }); });
+    p.on('error', (e) => { clearTimeout(timer); if (!why) reject(e); });
+    p.on('close', (status) => { clearTimeout(timer); if (!why) resolvePromise({ status, stdout: Buffer.concat(out), stderr: Buffer.concat(err).toString('utf8') }); });
   });
 }
 function runFfmpegSync(args, { timeoutMs = FF_TIMEOUT } = {}) {
