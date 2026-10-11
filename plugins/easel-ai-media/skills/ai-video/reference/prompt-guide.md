@@ -33,7 +33,8 @@ Everything below sits on top of the **common editorial collage constraints** (ne
 The collage look is born here. When a video model animates the whole poster, this single
 image carries the entire aesthetic, so invest in it. Generate it with
 `mcp__plugin_easel-ai-media_media__generate` kind `image` (a dry run first, which returns the
-cost estimate; call again with `confirm: true` once the user agrees). Structure every image
+cost estimate and a `quote`; call again with the same arguments, `confirm: true` and that `quote`
+once the user agrees). Structure every image
 prompt in 5 parts:
 
 ```
@@ -123,7 +124,7 @@ scanned texture" rather than "not 3D"); SDXL-family models take a separate negat
 
 The video prompt turns "pan a poster" into "a living collage". Animate each approved keyframe
 with `mcp__plugin_easel-ai-media_media__generate` kind `video`, passing the keyframe in `refs`
-and the shot length in `seconds` (dry run first, then `confirm: true`). Use the **5-axis**
+and the shot length in `seconds` (dry run first, then `confirm: true` with its `quote`). Use the **5-axis**
 structure; all five axes matter, especially **feel** and **colour**, which set mood and
 palette movement:
 

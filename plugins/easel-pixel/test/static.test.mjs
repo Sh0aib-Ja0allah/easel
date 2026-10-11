@@ -105,3 +105,24 @@ test('the eval mocks describe the pinned package\'s tools; one stateful agent an
     assert.doesNotMatch(readFileSync(f, 'utf8'), /run_lua is on|ALLOW_LUA=1/);
   }
 });
+
+test('honest about status and the bridge: a preview until the end-to-end run; Lua off means the tool, not the bridge', () => {
+  const pj = json('.claude-plugin/plugin.json');
+  assert.match(pj.description, /^Preview: /);
+  assert.equal(pj.version, '1.0.0');
+  const readme = read('README.md'), top = readme.split('\n## ')[0];
+  assert.match(top, /\*\*Preview\.\*\*/);
+  assert.match(top, /never been tested end to end with a real Aseprite/);
+  assert.match(top, /0\/5/);
+  assert.match(top, /\/easel-pixel:pixel[\s\S]*Aseprite 1\.3\+/, 'says what the owner runs to lift the preview');
+  assert.doesNotMatch(readme, /Lua execution in Aseprite stays off/);
+  assert.match(readme, /only keeps the package's `run_lua` tool\s+out of the `aseprite` MCP server/);
+  assert.match(readme, /127\.0\.0\.1/);
+  assert.match(readme, /any program on your\s+computer can send Aseprite commands through it, Lua included/);
+  assert.match(readme, /Run it only while you draw/);
+  const launcher = read('server/launch.mjs');
+  assert.doesNotMatch(launcher, /Lua execution \(run_lua\) stays off/);
+  assert.match(launcher, /no\s+(?:\/\/ )?authentication or Origin check/);
+  assert.match(body('skills/pixel/SKILL.md'), /any program on\s+this computer can send Aseprite commands through it/);
+});
+

@@ -6,8 +6,8 @@ past a content filter; cloning a friend's voice without consent). Each has a "sk
 and an LLM grader on what the skill does: the cost is shown and agreed before any spend, the
 first approval gate is kept, the safety requests are declined with an alternative. No provider is
 called: the `media` server is answered by the mocks in `mocks/media/` (its `generate` mock is a
-dry run), and the server itself is covered by the plugin's tests with recorded responses
-(`npm --prefix plugins/easel-ai-media test`).
+dry run), and the server itself is covered by the plugin's tests with synthetic provider
+fixtures, not live APIs (`npm --prefix plugins/easel-ai-media test`).
 
 ## Run (real model calls on your account; once per release)
 

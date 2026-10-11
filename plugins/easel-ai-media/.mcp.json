@@ -7,6 +7,7 @@
       ],
       "env": {
         "EASEL_MEDIA_MAX_USD": "${user_config.max_spend_usd}",
+        "EASEL_MEDIA_DATA": "${CLAUDE_PLUGIN_DATA}",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
         "EASEL_CFG_GEMINI": "${user_config.gemini_api_key}",
         "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",

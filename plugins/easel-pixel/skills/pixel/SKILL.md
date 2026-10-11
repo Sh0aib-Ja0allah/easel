@@ -20,7 +20,8 @@ allowed-tools: mcp__plugin_easel-pixel_aseprite__preflight mcp__plugin_easel-pix
      (github.com/with-pebbly/aseprite-ai-artist, skills/studio/SKILL.md), MIT License, Copyright (c) 2026 with-pebbly;
      see NOTICE.md. Modified by Easel (2026-10-11): Easel frontmatter, routing and tool names; setup through the
      plugin's launch.mjs; brief through one message or easel-core:brief; the concept/image-model step dropped;
-     critique through easel-core:critic with the pixel rubric on exported views; output to ./easel-out/<slug>/. -->
+     critique through easel-core:critic with the pixel rubric on exported views; output to ./easel-out/<slug>/;
+     the note on what the local bridge exposes. -->
 
 # Pixel art in Aseprite
 
@@ -37,7 +38,9 @@ outfit, headwear, facial hair, colour scheme, job or name pun, so it cannot read
 
 Aseprite 1.3 or later is the user's own app, bought and installed by them. Easel is not
 affiliated with, endorsed by or sponsored by Aseprite or Igara Studio; say this once, the first
-time you set up.
+time you set up. Say this once too: while the bridge runs and Aseprite is open, any program on
+this computer can send Aseprite commands through it, Lua scripts included (the bridge has no
+password), so close Aseprite when not drawing (the plugin README has the details).
 
 1. Call `mcp__plugin_easel-pixel_aseprite__preflight`. If `ready` is true, go to step 2.
 2. If the `aseprite` tools are missing or preflight is not ready on first use, run setup once in

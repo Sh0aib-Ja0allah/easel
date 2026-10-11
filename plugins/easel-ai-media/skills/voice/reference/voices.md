@@ -9,7 +9,8 @@ only way Easel clones a voice.
 
 Narration is generated with `mcp__plugin_easel-ai-media_media__generate` kind `tts`: pass the
 words in `text`, the voice id in `voice` and the language in `language` (a dry run with a cost
-estimate first; call again with `confirm: true` once the user agrees). The ids below are for
+estimate and a `quote` first; call again with the same arguments, `confirm: true` and that `quote`
+once the user agrees). The ids below are for
 `xai/tts-v1` on Atlas Cloud; other providers (OpenAI, ElevenLabs) have their own voice
 libraries, and the same selection rules apply. Voice ids change: check them against the
 provider's current list before a long job.
@@ -83,11 +84,15 @@ their consent:
 1. Get the statement with `mcp__plugin_easel-ai-media_media__consent_template`.
 2. The voice owner gives the statement themselves, in their own words, naming the purpose.
    Save it as `consent.json` in the job folder `./easel-out/<slug>/`, together with their
-   recording of the statement.
+   recording of the statement: the owner themselves reading all of it aloud, never generated
+   speech (Easel refuses its own output, silence, and a clip shorter than the statement takes
+   to read).
 3. Generate with `mcp__plugin_easel-ai-media_media__generate` kind `voice-clone`, passing
    `voiceName`, the owner's own recordings in `samples` (a clean 20-60 s of solo speech works
-   best), and `consentFile`. Without the consent file the clone is refused. Every clone is
-   logged to `consent-log.jsonl` in the job folder.
+   best), and `consentFile`, all as names in the job folder (`consent.json`, `sample-1.wav`).
+   Without the consent file the clone is refused. Every clone is logged to `consent-log.jsonl`
+   in the job folder. The checks are a procedure the user must honour, not proof of consent:
+   they cannot tell who is speaking.
 4. Narrate with kind `tts` and the new voice's id, following the same rules as any other voice.
 
 **Never clone a public figure, or anyone who has not consented.** A recording of someone found

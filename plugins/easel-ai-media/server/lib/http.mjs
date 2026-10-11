@@ -65,10 +65,37 @@ export async function download(provider, url, { maxBytes = MAX_DOWNLOAD } = {}) 
   throw new Error(`too many redirects for the ${provider} result`);
 }
 
-export async function request(provider, { method = 'GET', url, headers = {}, body, form, binary = false, redirect = 'follow' }) {
+const KEY_HEADER = /^(authorization|x-goog-api-key|xi-api-key)$/i;
+export const carriesKey = (headers = {}) => Object.keys(headers).some((h) => KEY_HEADER.test(h));
+
+// Where a redirect of a request that carries the key may go: only to that provider's own https
+// hosts (checkUrl with keyFor), never anywhere else (fetch would follow it and keep the
+// x-goog-api-key or xi-api-key header on the way). Returns the next URL, or throws.
+export function keyedRedirect(provider, from, location) {
+  let next;
+  try { next = new URL(location, from).href; } catch { throw new Error(`${provider}: refused a redirect to an invalid address`); }
+  try { return checkUrl(next, { keyFor: provider }); } catch (e) { throw new Error(`${provider}: refused to follow a redirect of a request that carries the key (${e.message})`); }
+}
+
+// One request. A request that carries a key is never redirected by fetch: each hop is checked here
+// first (keyedRedirect), up to 5; a 303 (or a 301/302 after a POST) goes on as a GET with no body.
+export async function request(provider, req) {
+  if (!carriesKey(req.headers)) return exchange(provider, req); // downloads follow redirects by hand themselves
+  let cur = { ...req, redirect: 'manual' };
+  for (let hop = 0; hop <= 5; hop++) {
+    // the key only ever goes to the provider's own hosts, over https
+    checkUrl(cur.url, { keyFor: provider });
+    const res = await exchange(provider, cur);
+    if (!(res.status >= 300 && res.status < 400 && res.location)) return res;
+    const url = keyedRedirect(provider, cur.url, res.location);
+    const method = cur.method || 'GET';
+    cur = res.status === 303 || ((res.status === 301 || res.status === 302) && method === 'POST') ? { ...cur, url, method: 'GET', body: undefined, form: undefined } : { ...cur, url };
+  }
+  throw new Error(`${provider}: too many redirects`);
+}
+
+async function exchange(provider, { method = 'GET', url, headers = {}, body, form, redirect = 'follow' }) {
   const record = process.env.EASEL_MEDIA_RECORD;
-  // the key only ever goes to the provider's own hosts, over https
-  if (Object.keys(headers).some((h) => /^(authorization|x-goog-api-key|xi-api-key)$/i.test(h))) checkUrl(url, { keyFor: provider });
   if (process.env.EASEL_MEDIA_FIXTURES) {
     const { route, dir } = fixtureRoute(provider, method, url);
     if (record) appendFileSync(record, JSON.stringify({ provider, method, url, headers: Object.fromEntries(Object.entries(headers).map(([k, v]) => [k, maskSecrets(v)])), body: body === undefined ? undefined : body, form: form ? Object.keys(form) : undefined }) + '\n');
@@ -76,7 +103,8 @@ export async function request(provider, { method = 'GET', url, headers = {}, bod
     const buf = route.file ? readFileSync(join(dir, route.file)) : Buffer.from(route.json !== undefined ? JSON.stringify(route.json) : route.text || '');
     return { status, ok: status < 400, location: route.location, contentType: route.contentType || (route.json !== undefined ? 'application/json' : 'application/octet-stream'), buffer: buf, json: () => JSON.parse(buf.toString('utf8')) };
   }
-  const init = { method, redirect, headers: { 'User-Agent': USER_AGENT, ...headers } };
+  // a key never rides along on a redirect fetch follows by itself
+  const init = { method, redirect: carriesKey(headers) ? 'manual' : redirect, headers: { 'User-Agent': USER_AGENT, ...headers } };
   if (form) {
     const fd = new FormData();
     for (const [k, v] of Object.entries(form)) for (const item of [].concat(v)) fd.append(k, item.blob || item, item.name);

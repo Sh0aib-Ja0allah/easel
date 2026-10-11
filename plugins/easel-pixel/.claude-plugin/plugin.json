@@ -2,7 +2,7 @@
   "name": "easel-pixel",
   "displayName": "Easel Pixel",
   "version": "1.0.0",
-  "description": "Pixel art in Aseprite through an MCP bridge (optional; Aseprite is a paid app; not affiliated with Aseprite or Igara Studio)",
+  "description": "Preview: pixel art in Aseprite through an MCP bridge (optional; Aseprite is a paid app; not affiliated with Aseprite or Igara Studio)",
   "author": {
     "name": "Sh0aib-Ja0allah"
   },

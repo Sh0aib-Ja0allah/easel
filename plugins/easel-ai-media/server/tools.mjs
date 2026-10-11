@@ -8,7 +8,7 @@ const PROVIDER_IDS = Object.keys(PROVIDERS);
 const common = {
   kind: { enum: KINDS }, provider: { enum: PROVIDER_IDS }, model: { type: 'string' },
   prompt: { type: 'string', maxLength: 8000 }, text: { type: 'string', maxLength: 20000, description: 'tts: the words to speak.' },
-  refs: { type: 'array', maxItems: 8, items: { type: 'string' }, description: 'Reference or start images (paths): the user\'s own files.' },
+  refs: { type: 'array', maxItems: 8, items: { type: 'string' }, description: 'Reference or start images: the user\'s own PNG, JPEG or WebP files inside the project folder (paths from the project folder). Nothing outside it is ever sent.' },
   size: { type: 'string', pattern: '^\\d+x\\d+$' }, aspect: { type: 'string', pattern: '^\\d+:\\d+$' }, quality: { enum: ['low', 'medium', 'high'] },
   resolution: { enum: ['1k', '2k'] }, seconds: { type: 'number', minimum: 1, maximum: 60 }, count: { type: 'integer', minimum: 1, maximum: 8 },
   voice: { type: 'string', description: 'tts: the provider voice id or name.' }, language: { type: 'string' }, instructions: { type: 'string' },
@@ -27,10 +27,10 @@ export const tools = {
   },
   generate: {
     description: 'Generate media with the user\'s own provider key: image (text or references), video (image-to-video), tts (speech, with word timings where the provider gives them), music, or voice-clone (only with a consent statement in the job folder). ' +
-      'Without confirm it is a dry run: it returns the cost estimate and the request and spends nothing. Show those to the user; call again with confirm: true only when they agree, and with approvedUsd when the estimate is above the limit. Files go to ./easel-out/<slug>/ with a provenance.json entry.',
-    inputSchema: { type: 'object', required: ['kind'], properties: { ...common, confirm: { type: 'boolean' }, approvedUsd: { type: 'number', minimum: 0 }, name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
-      voiceName: { type: 'string', description: 'voice-clone: the name for the new voice.' }, samples: { type: 'array', maxItems: 25, items: { type: 'string' }, description: 'voice-clone: recordings of the voice (the owner\'s own).' },
-      consentFile: { type: 'string', description: 'voice-clone: consent.json in the job folder (see consent_template).' } }, additionalProperties: false },
+      'Without confirm it is a dry run: it returns the cost estimate, the request and a quote, and spends nothing. Show the estimate and the request to the user; only when they agree, call again with the same arguments plus confirm: true and that quote (and approvedUsd when the estimate is above the limit). A paid call without the quote of a dry run of the same request is refused. Files go to ./easel-out/<slug>/ (a used name gets -2) with a provenance.json entry.',
+    inputSchema: { type: 'object', required: ['kind'], properties: { ...common, confirm: { type: 'boolean' }, quote: { type: 'string', pattern: '^[0-9a-f]{12}$', description: 'With confirm: the quote a dry run of this same request returned.' }, approvedUsd: { type: 'number', minimum: 0 }, name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+      voiceName: { type: 'string', description: 'voice-clone: the name for the new voice.' }, samples: { type: 'array', maxItems: 25, items: { type: 'string' }, description: 'voice-clone: recordings of the voice (the owner\'s own, never generated speech): wav, mp3, m4a, ogg or flac file names in the job folder.' },
+      consentFile: { type: 'string', description: 'voice-clone: consent.json, by its name in the job folder (see consent_template).' } }, additionalProperties: false },
     run: (args) => generate(args),
   },
   assemble: {
@@ -44,8 +44,8 @@ export const tools = {
     run: (args) => assemble(args),
   },
   consent_template: {
-    description: 'The consent statement a voice owner must give before their voice is cloned (save it as consent.json in the job folder with their recording). Voice cloning is refused without it.',
+    description: 'The consent statement a voice owner must give before their voice is cloned (save it as consent.json in the job folder with their recording of it). Voice cloning is refused without it. The checks are a procedure, not proof: the recording must be the voice owner themselves.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-    run: () => ({ template: CONSENT_TEMPLATE, rules: ['The voice owner gives the statement themselves, in their words, naming the purpose.', 'Their recording of the statement is saved in the job folder.', 'Never clone a public figure, or anyone who has not consented.', 'Every clone is logged to consent-log.jsonl in the job folder.'] }),
+    run: () => ({ template: CONSENT_TEMPLATE, rules: ['The voice owner gives the statement themselves, in their words, naming the purpose.', 'Their recording of the statement is saved in the job folder: the owner themselves reading all of it aloud (at least one second for every 3.5 words), never generated speech, never silence.', 'consentFile, the recording and the samples are names in the job folder.', 'The server\'s checks are a procedure the user must honour, not proof of consent: they cannot tell who is speaking.', 'Never clone a public figure, or anyone who has not consented.', 'Every clone is logged to consent-log.jsonl in the job folder.'] }),
   },
 };

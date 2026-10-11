@@ -19,12 +19,21 @@ const { tools } = await import(new URL('../server/tools.mjs', import.meta.url));
 const { PROVIDER_KEYS } = await import(new URL('../server/lib/keys.mjs', import.meta.url));
 const { PROVIDERS } = await import(new URL('../server/providers/index.mjs', import.meta.url));
 const mediaTools = new Set(Object.keys(tools));
+// a tool name with the exact prefix of its server: mcp__plugin_<plugin>_<server>__<tool>
 const toolExists = (t) => {
-  const [, server, name] = /^mcp__plugin_(easel-[\w-]+?)_(?:easel|media)__(\w+)$/.exec(t) ? [null, t.includes('easel-core_easel__') ? 'core' : 'media', t.split('__').pop()] : [null, null, null];
-  return server === 'core' ? coreTools.has(name) : server === 'media' ? mediaTools.has(name) : false;
+  let m;
+  if ((m = /^mcp__plugin_easel-core_easel__(\w+)$/.exec(t))) return coreTools.has(m[1]);
+  if ((m = /^mcp__plugin_easel-ai-media_media__(\w+)$/.exec(t))) return mediaTools.has(m[1]);
+  return false;
 };
 // the skill text as shipped, without the attribution comment (which must name its source)
 const body = (f) => read(f).replace(/^(---\n[\s\S]*?\n---\n)?\s*<!--[\s\S]*?-->/, '');
+
+test('tool names are checked against the exact server prefix', () => {
+  assert.equal(toolExists('mcp__plugin_easel-ai-media_media__generate'), true);
+  assert.equal(toolExists('mcp__plugin_easel-core_easel__render_still'), true);
+  for (const t of ['mcp__plugin_easel-WRONG_media__generate', 'mcp__plugin_easel-ai-media_easel__generate', 'mcp__plugin_easel-core_media__render_still', 'mcp__plugin_easel-core_easel__generate', 'mcp__plugin_easel-ai-media_media__render_still', 'mcp__plugin_easel-ai-media_media__nope']) assert.equal(toolExists(t), false, t);
+});
 
 test('four skills with matching names, routing text under the cap, real tools, links that resolve', () => {
   assert.deepEqual(readdirSync(join(PLUGIN, 'skills')).filter((d) => existsSync(join(PLUGIN, 'skills', d, 'SKILL.md'))).sort(), SKILLS);
@@ -81,6 +90,22 @@ test('the consent gate is in the voice skill and the tools; cloning is a kind th
   assert.match(voice, /Never clone a public figure/);
   assert.match(tools.generate.description, /voice-clone \(only with a consent statement/);
   assert.ok(tools.consent_template.run().rules.some((r) => /public figure/.test(r)));
+  // honest about what the gate is, and about the recording it needs
+  assert.match(voice, /procedure the user must honour, not proof of consent/);
+  assert.match(voice, /voice owner\s+themselves reading all of it aloud/);
+  assert.match(voice, /names in the job folder/);
+  assert.match(body(join(PLUGIN, 'skills', 'voice', 'reference', 'voices.md')), /procedure the user must honour, not proof of consent/);
+  assert.ok(tools.consent_template.run().rules.some((r) => /not proof of consent/.test(r)));
+});
+
+test('paid calls: every skill that generates confirms with the quote of a dry run of the same request', () => {
+  for (const s of ['image', 'ai-video', 'voice']) assert.match(body(join(PLUGIN, 'skills', s, 'SKILL.md')), /confirm: true`[^.]*`quote`|`quote`[^.]*confirm: true/, s);
+  assert.match(body(join(PLUGIN, 'skills', 'providers', 'SKILL.md')), /`quote`/);
+  assert.match(tools.generate.description, /quote/);
+  assert.ok(tools.generate.inputSchema.properties.quote);
+  const mock = JSON.parse(read(join(PLUGIN, 'evals', 'mocks', 'media', 'generate.md')));
+  assert.match(mock.quote, /^[0-9a-f]{12}$/, 'the eval mock dry run hands out a quote like the server');
+  assert.ok(mock.next.includes(mock.quote));
 });
 
 test('keys: one masked setting per provider, passed to the server as EASEL_CFG_<PROVIDER>; no literal values', () => {

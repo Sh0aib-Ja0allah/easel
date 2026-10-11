@@ -55,7 +55,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Reference or start images (paths): the user's own files."
+            "description": "Reference or start images: the user's own PNG, JPEG or WebP files inside the project folder (paths from the project folder). Nothing outside it is ever sent."
           },
           "size": {
             "type": "string",
@@ -104,7 +104,7 @@
     },
     {
       "name": "generate",
-      "description": "Generate media with the user's own provider key: image (text or references), video (image-to-video), tts (speech, with word timings where the provider gives them), music, or voice-clone (only with a consent statement in the job folder). Without confirm it is a dry run: it returns the cost estimate and the request and spends nothing. Show those to the user; call again with confirm: true only when they agree, and with approvedUsd when the estimate is above the limit. Files go to ./easel-out/<slug>/ with a provenance.json entry.",
+      "description": "Generate media with the user's own provider key: image (text or references), video (image-to-video), tts (speech, with word timings where the provider gives them), music, or voice-clone (only with a consent statement in the job folder). Without confirm it is a dry run: it returns the cost estimate, the request and a quote, and spends nothing. Show the estimate and the request to the user; only when they agree, call again with the same arguments plus confirm: true and that quote (and approvedUsd when the estimate is above the limit). A paid call without the quote of a dry run of the same request is refused. Files go to ./easel-out/<slug>/ (a used name gets -2) with a provenance.json entry.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -148,7 +148,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Reference or start images (paths): the user's own files."
+            "description": "Reference or start images: the user's own PNG, JPEG or WebP files inside the project folder (paths from the project folder). Nothing outside it is ever sent."
           },
           "size": {
             "type": "string",
@@ -194,6 +194,11 @@
           "confirm": {
             "type": "boolean"
           },
+          "quote": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{12}$",
+            "description": "With confirm: the quote a dry run of this same request returned."
+          },
           "approvedUsd": {
             "type": "number",
             "minimum": 0
@@ -217,11 +222,11 @@
             "items": {
               "type": "string"
             },
-            "description": "voice-clone: recordings of the voice (the owner's own)."
+            "description": "voice-clone: recordings of the voice (the owner's own, never generated speech): wav, mp3, m4a, ogg or flac file names in the job folder."
           },
           "consentFile": {
             "type": "string",
-            "description": "voice-clone: consent.json in the job folder (see consent_template)."
+            "description": "voice-clone: consent.json, by its name in the job folder (see consent_template)."
           }
         },
         "additionalProperties": false
@@ -331,7 +336,7 @@
     },
     {
       "name": "consent_template",
-      "description": "The consent statement a voice owner must give before their voice is cloned (save it as consent.json in the job folder with their recording). Voice cloning is refused without it.",
+      "description": "The consent statement a voice owner must give before their voice is cloned (save it as consent.json in the job folder with their recording of it). Voice cloning is refused without it. The checks are a procedure, not proof: the recording must be the voice owner themselves.",
       "inputSchema": {
         "type": "object",
         "properties": {},

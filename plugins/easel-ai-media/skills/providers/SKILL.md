@@ -52,6 +52,8 @@ print one.
 ## Cost and the limit
 
 `mcp__plugin_easel-ai-media_media__estimate` gives the USD for a request (count, size, quality, seconds, text length) and
-how it was worked out. Prices marked `verify` come from secondary notes: say so. The limit
+how it was worked out. A generation itself is always a dry run first: it returns the estimate and
+a `quote`, and the paid call must repeat the same request with `confirm: true` and that quote, so
+what is paid for is what the user saw. Prices marked `verify` come from secondary notes: say so. The limit
 (default 0.50 USD per call, set in the plugin settings) means any single call above it needs the
 user's explicit approval of that amount. A provider's bill is what counts; estimates are a guide.

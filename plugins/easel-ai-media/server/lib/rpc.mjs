@@ -40,7 +40,7 @@ export async function handle(msg, tools) {
           protocolVersion,
           capabilities: { tools: { listChanged: false } },
           serverInfo: SERVER_INFO,
-          instructions: 'Easel media providers (the user\'s own keys). Every generate call is a dry run with a cost estimate unless confirm is true; never confirm without the user\'s go-ahead.',
+          instructions: 'Easel media providers (the user\'s own keys). Every generate call is a dry run with a cost estimate and a quote unless confirm is true with the quote of a dry run of the same request; never confirm without the user\'s go-ahead.',
         });
       }
       case 'ping':

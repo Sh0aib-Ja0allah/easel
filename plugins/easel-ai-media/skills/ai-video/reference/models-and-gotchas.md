@@ -14,7 +14,7 @@ before debugging: most failures are already solved below. For the prompts themse
 |---|---|
 | See which providers have a key, their models and the prices used for estimates | `mcp__plugin_easel-ai-media_media__providers` |
 | Price a step before spending | `mcp__plugin_easel-ai-media_media__estimate` |
-| Keyframes, clips, narration, music | `mcp__plugin_easel-ai-media_media__generate` kinds `image`, `video`, `tts`, `music` (a dry run with a cost estimate unless `confirm: true`; above the spending limit it also needs `approvedUsd`) |
+| Keyframes, clips, narration, music | `mcp__plugin_easel-ai-media_media__generate` kinds `image`, `video`, `tts`, `music` (a dry run with a cost estimate and a `quote` unless `confirm: true` with the `quote` of a dry run of the same request; above the spending limit it also needs `approvedUsd`) |
 | A cloned narrator voice | the `voice` skill only (generate kind `voice-clone`, consent required; see [voices.md](../../voice/reference/voices.md)) |
 | Caption and watermark PNGs | `mcp__plugin_easel-core_easel__render_still` with `transparent: true` |
 | Join clips, overlays, narration and music | `mcp__plugin_easel-ai-media_media__assemble` |

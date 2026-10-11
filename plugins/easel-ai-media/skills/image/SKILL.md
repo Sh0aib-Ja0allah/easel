@@ -34,15 +34,18 @@ consent, other artists' characters, or brand logos the user does not own.
 Read [reference/prompt-craft.md](reference/prompt-craft.md). Build the prompt as format +
 subject + style + composition + colour (hex from `.easel/brand.md`) + typography + mood + what to
 exclude. Name a medium or a movement, never a living artist or a studio. Pass the user's own
-photos or logo as `refs` rather than describing them.
+photos or logo as `refs` (PNG, JPEG or WebP files inside the project folder; nothing else is
+sent) rather than describing them.
 
 ## 3. Price, then generate
 
-1. `mcp__plugin_easel-ai-media_media__generate` without `confirm`: a dry run with the provider, model, the estimate and the
-   request. Show the user the prompt and the price in one short message. Pass `slug` (the job
+1. `mcp__plugin_easel-ai-media_media__generate` without `confirm`: a dry run with the provider, model, the estimate, the
+   request and a `quote`. Show the user the prompt and the price in one short message. Pass `slug` (the job
    folder) and a `name` (`hero`, `hero-v2`); a used name gets `-2`, never an overwrite.
-2. When they agree, call again with `confirm: true` (and `approvedUsd` if the estimate is above
-   the limit). Pick the provider with `mcp__plugin_easel-ai-media_media__providers` or let the tool choose one with a key.
+2. When they agree, call again with the same arguments plus `confirm: true` and the `quote` (and
+   `approvedUsd` if the estimate is above the limit). If anything changes (prompt, size, count,
+   provider, references), dry-run again and show the new estimate: a paid call whose request
+   differs from the quoted one is refused. Pick the provider with `mcp__plugin_easel-ai-media_media__providers` or let the tool choose one with a key.
 3. Several sizes: generate one master at the largest aspect, then crop each size in an HTML page
    (`object-fit: cover` with a focal point) rendered with `mcp__plugin_easel-core_easel__render_still`
    `sizes`. Don't pay for one generation per size.

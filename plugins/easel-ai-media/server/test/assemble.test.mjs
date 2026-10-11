@@ -2,7 +2,8 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { assemble, duration } from '../lib/assemble.mjs';
@@ -63,4 +64,26 @@ test('assemble: clips fill the frame, short clips are slowed (never frozen) to t
   assert.throws(() => assemble({ clips: [{ file: join(root, 'nope.mp4') }], outDir: root }), /file not found/);
   assert.throws(() => assemble({ clips: [], outDir: root }), /give clips/);
   assert.throws(() => assemble({ clips: [{ file: a }], outDir: tmpdir() }), /inside the project folder/);
+});
+
+test('assemble never overwrites: a used name gets -2, an input is never the output, a failed run leaves nothing', { skip }, () => {
+  const out = join(root, 'keep'); mkdirSync(out, { recursive: true });
+  const film = lavfi('keep/film.mp4', 'testsrc=size=320x240:rate=24', ['-t', '1', '-pix_fmt', 'yuv420p']);
+  const clip = lavfi('keep/video.mp4', 'testsrc2=size=320x240:rate=24', ['-t', '1', '-pix_fmt', 'yuv420p']);
+  const hash = (f) => createHash('sha256').update(readFileSync(f)).digest('hex');
+  const before = [hash(film), hash(clip)];
+  // the default name is one of the inputs: the film goes next to it
+  const a = assemble({ clips: [{ file: film, seconds: 1 }], size: '320x240', outDir: out, preset: 'ultrafast' });
+  assert.equal(a.file, join(out, 'film-2.mp4'));
+  // the name of an earlier (paid) clip
+  const b = assemble({ clips: [{ file: film, seconds: 1 }, { file: clip, seconds: 1 }], size: '320x240', outDir: out, name: 'video', preset: 'ultrafast' });
+  assert.equal(b.file, join(out, 'video-2.mp4'));
+  assert.deepEqual([hash(film), hash(clip)], before, 'the inputs and the earlier files are untouched');
+  // each film is recorded by its content hash (the consent gate never takes it for a recording)
+  const jobs = readFileSync(join(out, 'jobs.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+  assert.deepEqual(jobs.map((j) => [j.kind, j.status, j.files[0], j.sha256[j.files[0]]]), [['assemble', 'saved', 'film-2.mp4', hash(a.file)], ['assemble', 'saved', 'video-2.mp4', hash(b.file)]]);
+  // ffmpeg fails (an overlay that is not an image): no empty file is left under the claimed name
+  writeFileSync(join(root, 'not-an-image.png'), 'text');
+  assert.throws(() => assemble({ clips: [{ file: film, seconds: 1 }], overlays: [{ file: join(root, 'not-an-image.png') }], size: '320x240', outDir: out, name: 'broken', preset: 'ultrafast' }), /ffmpeg failed/);
+  assert.ok(!existsSync(join(out, 'broken.mp4')));
 });

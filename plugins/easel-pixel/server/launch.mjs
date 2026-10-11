@@ -13,7 +13,12 @@
 // pinned with its integrity hash), with `npm ci` run by the same Node (no npx, no .cmd shims, no
 // shell) and install scripts off, one install at a time. serve only runs what setup installed, so a
 // session start never waits on the network. While serving, nothing but the MCP protocol is written
-// to stdout. Lua execution (run_lua) stays off, whatever is passed.
+// to stdout. The run_lua MCP tool stays off (ASEPRITE_AI_ALLOW_LUA=0), whatever is passed. That only
+// hides the tool from this MCP server: the package's bridge, a detached process listening on
+// 127.0.0.1 only (ports 9931 and 9932, as the pinned 0.8.0 source binds them), has no
+// authentication or Origin check and forwards any command a local program sends, lua.run and
+// exports to any path included, to the Aseprite extension while Aseprite is open. Easel does not
+// patch the package; the README tells users to run it only while drawing.
 import { spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -113,8 +118,8 @@ export function install(data) {
   });
 }
 
-// The environment for the package: Lua off, unset settings removed, prompts off (Easel's skills are
-// the workflows).
+// The environment for the package: the run_lua tool off, unset settings removed, prompts off
+// (Easel's skills are the workflows).
 export function childEnv(env = process.env) {
   const out = { ...env };
   for (const k of ['ASEPRITE_PATH', 'ASEPRITE_AI_HEADLESS', 'ASEPRITE_AI_PLUGIN_PORT', 'ASEPRITE_AI_CONTROL_PORT', 'ASEPRITE_USER_FOLDER']) if (unset(out[k])) delete out[k];
@@ -136,7 +141,7 @@ function run(cli, args, stdio) {
 export async function main(argv = process.argv.slice(2)) {
   const cmd = argv[0] && !argv[0].startsWith('--') ? argv[0] : 'serve';
   const rest = argv.slice(argv[0] === cmd ? 1 : 0);
-  // only --data is read; nothing else is passed on (no flag can turn Lua back on)
+  // only --data is read; nothing else is passed on (no flag can turn the run_lua tool back on)
   const ignored = rest.filter((a, i) => a !== '--data' && rest[i - 1] !== '--data');
   if (ignored.length) log(`ignoring ${ignored.join(' ')} (settings come from /plugin configure easel-pixel)`);
   const data = dataDir(rest);

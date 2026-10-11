@@ -3,12 +3,15 @@
 AI images, narrated video and voice through one provider layer that runs on **your own API keys**:
 Google Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud and ElevenLabs. Every generation is a dry run
 first: you see the estimated cost and a summary of the request (provider, model, prompt, size), and nothing is spent until you agree.
-Above your spending limit an approved amount is also needed. Voice cloning is refused without a
-recorded consent statement from the voice's owner.
+The paid call must carry the quote of that dry run, so a request that changed since you saw it is
+refused. Above your spending limit an approved amount is also needed. Voice cloning is refused
+without a recorded consent statement from the voice's owner; the checks are a procedure you must
+honour, not proof of consent.
 
-**Status:** v1.0.0 (see [the roadmap](../../docs/roadmap.md)). The
-provider adapters are tested against recorded responses, not live accounts: live generation has
-not been run by the Easel project yet.
+**Status:** v1.0.0 (see [the roadmap](../../docs/roadmap.md)). The provider adapters are tested
+against synthetic fixtures (hand-written responses shaped from each provider's documentation), not
+recorded from live accounts: no adapter has yet been checked against a provider's live API, and the
+owner's live smoke test is pending.
 
 **Requires:** `easel-core` (installed automatically as a dependency), at least one provider key,
 and ffmpeg for assembling videos (`winget install --id Gyan.FFmpeg -e` on Windows; easel-core's
@@ -34,8 +37,9 @@ setup skill checks it).
   source and the date it was checked, or says "verify"); your provider's bill is what counts.
 
 Files go to `./easel-out/<slug>/` (never over an earlier paid file), each with an entry in
-`provenance.json` (provider, model,
-prompt, estimate, time).
+`provenance.json` (provider, model, prompt, estimate, time) and its content hash in `jobs.jsonl`.
+Reference images must be PNG, JPEG or WebP files inside your project folder; nothing else is sent
+to a provider.
 
 ## What's here
 

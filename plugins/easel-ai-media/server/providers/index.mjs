@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { basename, extname } from 'node:path';
 import { request, requestJson, sleep } from '../lib/http.mjs';
 
-const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.m4a': 'audio/mp4', '.mp4': 'video/mp4' };
+const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.m4a': 'audio/mp4', '.ogg': 'audio/ogg', '.flac': 'audio/flac', '.mp4': 'video/mp4' };
 const dataUri = (file) => `data:${MIME[extname(file).toLowerCase()] || 'application/octet-stream'};base64,${readFileSync(file).toString('base64')}`;
 const blobOf = (file) => ({ blob: new Blob([readFileSync(file)], { type: MIME[extname(file).toLowerCase()] || 'application/octet-stream' }), name: basename(file) });
 const extFor = (ct, fallback) => ({ 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp', 'audio/mpeg': '.mp3', 'audio/wav': '.wav', 'video/mp4': '.mp4' }[String(ct).split(';')[0]] || fallback);
@@ -13,6 +13,16 @@ export const falSeconds = (s) => ((s || 5) > 5 ? 10 : 5);
 // Atlas video: whole seconds, at least the model minimum (the estimate uses the same value)
 export const atlasSeconds = (s, min = 3) => Math.max(min, Math.round(s || 5));
 const sizeToAspect = (size) => { if (!size) return undefined; const [w, h] = size.split('x').map(Number); const g = (a, b) => (b ? g(b, a % b) : a); const d = g(w, h); return `${w / d}:${h / d}`; };
+
+// count > 1 as one call per image (the estimate charges count images). When call k fails, the k-1
+// results already made (and paid for) go back with the error, to be saved before it is reported.
+async function eachCall(n, one) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    try { out.push(...(await one(i))); } catch (e) { e.requested = n; if (out.length) e.partial = out; throw e; }
+  }
+  return out;
+}
 
 async function pollUntil(get, { done, failed, interval = 3000, timeoutMs = 900000 }) {
   const t0 = Date.now();
@@ -53,14 +63,12 @@ export const PROVIDERS = {
       const parts = [{ text: a.prompt }, ...(a.refs || []).map((f) => ({ inlineData: { mimeType: MIME[extname(f).toLowerCase()] || 'image/png', data: readFileSync(f).toString('base64') } }))];
       const aspect = a.aspect || sizeToAspect(a.size);
       // one image per call: count calls (the estimate charges count images)
-      const out = [];
-      for (let i = 0; i < (a.count || 1); i++) {
+      return eachCall(a.count || 1, async () => {
         const r = await requestJson('gemini', { method: 'POST', url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, headers: { 'x-goog-api-key': key }, body: { contents: [{ parts }], generationConfig: { responseModalities: ['IMAGE'], ...(aspect ? { imageConfig: { aspectRatio: aspect } } : {}) } } });
         const got = (r.candidates || []).flatMap((c) => (c.content && c.content.parts) || []).filter((p) => p.inlineData).slice(0, 1).map((p) => ({ bytes: Buffer.from(p.inlineData.data, 'base64'), ext: extFor(p.inlineData.mimeType, '.png') }));
         if (!got.length) throw new Error(`gemini returned no image (${JSON.stringify(r.promptFeedback || r.candidates?.[0]?.finishReason || 'no reason').slice(0, 200)})`);
-        out.push(...got);
-      }
-      return out;
+        return got;
+      });
     },
   },
   fal: {
@@ -104,18 +112,21 @@ export const PROVIDERS = {
       const base = 'https://api.atlascloud.ai/api/v1', auth = { Authorization: `Bearer ${key}` };
       const upload = async (file) => { const r = await requestJson('atlas', { method: 'POST', url: `${base}/model/uploadMedia`, headers: auth, form: { file: blobOf(file) } }); return r.data.download_url || r.data.url; };
       let path = '/model/generateVideo', body;
-      if (kind === 'image') { path = '/model/generateImage'; body = { model, prompt: a.prompt, ...(a.aspect ? { aspect_ratio: a.aspect } : {}), ...(a.resolution ? { resolution: a.resolution } : {}) }; }
+      // images: the size as an aspect ratio (the model takes a ratio and a resolution tier, not
+      // pixels), and count as one prediction per image (the estimate charges count images)
+      if (kind === 'image') { const aspect = a.aspect || sizeToAspect(a.size); path = '/model/generateImage'; body = { model, prompt: a.prompt, ...(aspect ? { aspect_ratio: aspect } : {}), ...(a.resolution ? { resolution: a.resolution } : {}) }; }
       else if (kind === 'video') body = { model, prompt: a.prompt, ...(a.refs && a.refs[0] ? { image: await upload(a.refs[0]) } : {}), duration: atlasSeconds(a.seconds), ...(a.aspect ? { aspect_ratio: a.aspect } : {}) };
       else if (kind === 'tts') body = { model, text: a.text, ...(a.voice ? { voice_id: a.voice } : {}), ...(a.language ? { language: a.language } : {}) };
       else if (kind === 'music') body = { model, prompt: a.prompt, is_instrumental: true };
       else throw new Error(`atlas adapter does not do ${kind}`);
-      const sub = await requestJson('atlas', { method: 'POST', url: base + path, headers: auth, body });
-      const id = sub.data.id;
-      a.onSubmit && a.onSubmit({ id });
-      const done = await pollUntil(() => requestJson('atlas', { url: `${base}/model/prediction/${id}`, headers: auth }).then((r) => r.data || {}), { done: (d) => d.status === 'completed' || d.status === 'succeeded', failed: (d) => d.status === 'failed' });
-      const urls = [].concat(done.outputs || done.output || []);
       const ext = { image: '.png', video: '.mp4', tts: '.mp3', music: '.mp3' }[kind];
-      return urls.map((url) => ({ url, ext }));
+      return eachCall(kind === 'image' ? a.count || 1 : 1, async () => {
+        const sub = await requestJson('atlas', { method: 'POST', url: base + path, headers: auth, body });
+        const id = sub.data.id;
+        a.onSubmit && a.onSubmit({ id });
+        const done = await pollUntil(() => requestJson('atlas', { url: `${base}/model/prediction/${id}`, headers: auth }).then((r) => r.data || {}), { done: (d) => d.status === 'completed' || d.status === 'succeeded', failed: (d) => d.status === 'failed' });
+        return [].concat(done.outputs || done.output || []).map((url) => ({ url, ext }));
+      });
     },
   },
   elevenlabs: {

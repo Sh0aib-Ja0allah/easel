@@ -3,10 +3,11 @@
 // render_still with transparent: true) are laid over at their times; narration and music are mixed
 // with the music ducked under the voice. Everything runs in the user's local ffmpeg.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, statSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { basename, join, relative, resolve, sep } from 'node:path';
 import { requireBinary } from './binaries.mjs';
 import { appendAsset, jobDir, readProvenanceFiles } from './media.mjs';
+import { recordOutputs, reservePath, sha256 } from './outputs.mjs';
 
 const need = (name) => requireBinary(name);
 
@@ -57,13 +58,20 @@ export function assemble(args) {
     audioMap = ['-map', '[aout]', '-c:a', 'aac', '-b:a', '192k'];
   }
   const out = jobDir(args);
-  mkdirSync(out, { recursive: true });
-  const file = join(out, `${String(args.name || 'film').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'film'}.mp4`);
-  const r = spawnSync(need('ffmpeg'), ['-y', '-hide_banner', '-loglevel', 'error', ...inputs, '-filter_complex', filters.join(';'), '-map', `[${last}]`, ...audioMap, '-c:v', 'libx264', '-preset', args.preset || 'medium', '-crf', String(args.crf ?? 18), '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', total.toFixed(3), '-movflags', '+faststart', file], { encoding: 'utf8', windowsHide: true, maxBuffer: 1 << 26 });
-  if (r.status !== 0) throw new Error(`ffmpeg failed: ${(r.stderr || '').trim().slice(-800)}`);
+  // a name not taken yet (film, film-2, ...), claimed before ffmpeg runs: never an earlier paid file,
+  // never one of this film's own inputs (ffmpeg -y only ever replaces the empty file claimed here)
+  const ffmpeg = need('ffmpeg');
+  const file = reservePath(out, String(args.name || 'film').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'film', '.mp4');
+  const r = spawnSync(ffmpeg, ['-y', '-hide_banner', '-loglevel', 'error', ...inputs, '-filter_complex', filters.join(';'), '-map', `[${last}]`, ...audioMap, '-c:v', 'libx264', '-preset', args.preset || 'medium', '-crf', String(args.crf ?? 18), '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', total.toFixed(3), '-movflags', '+faststart', file], { encoding: 'utf8', windowsHide: true, maxBuffer: 1 << 26 });
+  if (r.status !== 0) { rmSync(file, { force: true }); throw new Error(`ffmpeg failed: ${(r.stderr || '').trim().slice(-800)}`); }
+  // the film is the server's own output: recorded by content hash (the consent gate never takes it
+  // as a recording) in jobs.jsonl and the outputs ledger
+  const hash = sha256(readFileSync(file)), name = relative(out, file).split(sep).join('/');
+  recordOutputs([{ sha256: hash }], 'assemble');
+  appendFileSync(join(out, 'jobs.jsonl'), JSON.stringify({ at: new Date().toISOString(), provider: 'local', model: 'ffmpeg', kind: 'assemble', status: 'saved', files: [name], sha256: { [name]: hash } }) + '\n');
   // provenance: the film is composited from the clips, captions, narration and music
   const known = new Set(readProvenanceFiles(out));
   const input = (f, generatedKind = 'generated') => { const rel = relative(out, resolve(f)).split(sep).join('/'); return known.has(rel) ? { kind: generatedKind, name: rel, license: 'provider-terms' } : { kind: 'user', name: rel.startsWith('..') ? basename(f) : rel, license: 'user-owned' }; };
-  appendAsset(out, { file: relative(out, file).split(sep).join('/'), tool: 'easel-ai-media:ai-video', method: 'composited', inputs: [...clips.map((c) => input(c.file)), ...(args.overlays || []).map((o) => input(o.file)), ...(args.narration ? [input(args.narration)] : []), ...(args.music ? [input(args.music)] : [])], notes: `assembled with the local ffmpeg: ${clips.length} clips, ${(args.overlays || []).length} overlays${args.narration ? ', narration' : ''}${args.music ? ', music' : ''}` });
+  appendAsset(out, { file: name, tool: 'easel-ai-media:ai-video', method: 'composited', inputs: [...clips.map((c) => input(c.file)), ...(args.overlays || []).map((o) => input(o.file)), ...(args.narration ? [input(args.narration)] : []), ...(args.music ? [input(args.music)] : [])], notes: `assembled with the local ffmpeg: ${clips.length} clips, ${(args.overlays || []).length} overlays${args.narration ? ', narration' : ''}${args.music ? ', music' : ''}` });
   return { file, seconds: +total.toFixed(3), size: `${W}x${H}`, fps, beats: clips.map((c, i) => ({ i, file: c.file, start: +c.start.toFixed(3), seconds: c.seconds })), ms: Date.now() - t0 };
 }

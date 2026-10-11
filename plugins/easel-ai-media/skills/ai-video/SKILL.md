@@ -44,9 +44,11 @@ prices, what goes wrong), and `easel-ai-media:voice` for narration.
   `key-b1-s1`, `clip-b1-s1`, `vo-b1`), so every file lands in `./easel-out/<slug>/` under a name
   you can find; a name already used gets `-2`, never an overwrite. Paid jobs are logged in
   `jobs.jsonl` there.
-- Every `mcp__plugin_easel-ai-media_media__generate` call is a dry run first. Before each batch (keyframes, clips, voice,
-  music) show the user the total estimate and get a yes; then call with `confirm: true` (and
-  `approvedUsd` for amounts above the limit). Keep a running total in `LOG.md`.
+- Every `mcp__plugin_easel-ai-media_media__generate` call is a dry run first; each dry run returns a `quote`. Before each
+  batch (keyframes, clips, voice, music) show the user the total estimate and get a yes; then
+  call each request again unchanged with `confirm: true` and its own `quote` (and `approvedUsd`
+  for amounts above the limit). A changed request needs a new dry run. Keep a running total in
+  `LOG.md`.
 - No real people's likenesses or brand logos unless the user owns them and the pictured person
   consents; never change model or prompt to get past a provider's content rules. When a
   provider refuses, change the content.
@@ -74,7 +76,7 @@ in `video-plan.json`.
    background + headline (wide shots only). Look at every one: text spelling, cut-out edges, the
    headline legible at phone size. Regenerate failures (one change at a time).
 2. **Show the keyframes and the clip estimate; wait for approval.**
-3. One image-to-video clip per shot (`kind: "video"`, `refs: [keyframe]`, `seconds` from the
+3. One image-to-video clip per shot (`kind: "video"`, `refs: [keyframe]` by its path in the project, `seconds` from the
    plan) with the video prompt from prompt-guide.md (camera move, element motion, stability
    anchors). Check each clip with `mcp__plugin_easel-core_easel__filmstrip` (`count: 6`): text stays stable, nothing
    morphs, the move is the planned one.
