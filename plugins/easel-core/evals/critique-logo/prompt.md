@@ -3,7 +3,7 @@ description: Routing - "is this logo any good" should trigger critique.
 tags: [routing, critique]
 runs: 2
 max_turns: 20
-allowed_tools: [Skill, Read, Glob, Agent]
+allowed_tools: [Skill, Read, Glob, Agent, Write]
 ---
 
 Is this logo any good? It's for a cycling repair shop.

@@ -1,6 +1,5 @@
 ---
-expect:
-  install: [true, false]
+type: fixed
 ---
 
 {

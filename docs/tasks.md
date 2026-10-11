@@ -27,8 +27,8 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 | T1.5 | ✅ Done (`ec6df72`, CI 38095553577). Schemas: `brand.md`, `brief.json`, `beats.json`, `cues.json`, `provenance.json` + validators | JSON Schema files + tests | T1.1 |
 | T1.6 | ✅ Done (`ed0323d` + `2c5878f`, CI 38096017881: 68 tests, 0 skipped on all three). Cross-OS CI smoke tests for the engine | Windows/macOS/Linux jobs green | T1.3 |
 | T1.7 | ✅ Done (`01562ee`, CI 38096376410). Craft rulebooks (anti-generic, typography, colour, a11y, motion), merged from open-design `craft/`, huashu gates and the anti-average ideas (rewritten) | Files in `craft/` with attribution headers; `craft` tool serves them | T1.1 |
-| T1.8 | Skills: `setup`, `brief`, `brand`, `critique` + `critic` agent + rubrics | Routing evals pass (≥ 3 cases each) | T1.2–T1.7 |
-| T1.9 | Release v0.1.0 (bump version, `claude plugin tag --push`) | Tag `easel-core--v0.1.0` exists | T1.8 |
+| T1.8 | ✅ Done (`62f1a53`; QA fixes `3ab529a`, `7acc756`; eval 12/12 cases, mean 0.94, run 2026-10-11T00-43-15). Skills: `setup`, `brief`, `brand`, `critique` + `critic` agent + rubrics | Routing evals pass (≥ 3 cases each) | T1.2–T1.7 |
+| T1.9 | ✅ Done (tag `easel-core--v0.1.0`). Release v0.1.0 (bump version, `claude plugin tag --push`) | Tag `easel-core--v0.1.0` exists | T1.8 |
 
 ## Phase 2: easel-motion v1
 
