@@ -7,8 +7,8 @@ by the tests. The HTML examples render with `node plugins/easel-core/engine/cli.
 
 ## easel-motion: the style catalog
 
-One frame from each style's 6-second demo (`plugins/easel-motion/styles/<style>/demo/`). Styles
-can be mixed inside one piece.
+One frame from each style's short demo (`plugins/easel-motion/styles/<style>/demo/`; 6 seconds,
+cut-paper's 8). Styles can be mixed inside one piece.
 
 | | | |
 | --- | --- | --- |

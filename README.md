@@ -2,8 +2,11 @@
 
 > **Status: v1.0.0.** Six plugins, each tagged `<plugin>--v1.0.0`. Tested on Windows, macOS and
 > Linux (CI, including a clean install of the marketplace). easel-ai-media's live provider calls
-> and easel-pixel's drawing in Aseprite run on your own keys and app; the project tests them with
-> recorded responses and a stand-in, not live.
+> and easel-pixel's drawing in Aseprite run on your own keys and app; the project tests them
+> offline, with synthetic provider fixtures and a stand-in bridge package. The ai-media adapters
+> have not yet been checked against the live APIs, and **easel-pixel is a Preview**: it has never
+> been run end to end with a real Aseprite, and its evals scored 0/5. Eval results and their gaps:
+> [docs/evals-v1.md](docs/evals-v1.md).
 
 Easel is a Claude Code plugin marketplace for visual and creative work: animation, illustration,
 drawing, video and design. It brings together and adapts the best open-source Claude Code plugins
@@ -19,8 +22,8 @@ Linux.
 | `easel-motion` | Code-drawn animation and video in every format, a style catalog, explainer grammars, style matching, UI motion | `easel-core` |
 | `easel-design` | Graphics, posters, social, ads, infographics, decks, UI, landing pages, design systems, brand identities, logos, icons | `easel-core` |
 | `easel-illustrate` | SVG for UI and charts, lit SVG illustration, concept sketches with a mascot, p5.js generative art | `easel-core` |
-| `easel-ai-media` | AI images, narrated AI video and voice through your own provider keys, with a cost estimate before anything is spent | `easel-core`, your API key(s), ffmpeg |
-| `easel-pixel` | Pixel art in your own Aseprite: draw, shade, animate, export | `easel-core`, Aseprite (paid) |
+| `easel-ai-media` | AI images, narrated AI video and voice through your own provider keys, with a cost estimate before anything is spent. The adapters are tested offline only, not yet against the live APIs | `easel-core`, your API key(s), ffmpeg |
+| `easel-pixel` | **Preview.** Pixel art in your own Aseprite: draw, shade, animate, export. Not yet run end to end with a real Aseprite | `easel-core`, Aseprite 1.3+ (paid), Node 22.6+ with npm |
 
 ## Install
 
@@ -30,8 +33,12 @@ Linux.
 /plugin install easel-motion@easel
 ```
 
-Then run `/easel-core:setup` once: it checks Node and ffmpeg and installs the render engine's
-browser into the plugin's data folder. Each plugin's README says what else it needs.
+Then run `/easel-core:setup` once: it checks Node and ffmpeg and, after asking, installs the render
+engine's browser (the Chromium headless shell) and its pinned npm packages into easel-core's data
+folder: `playwright-core` 1.64.0 (Apache-2.0), `p5` 1.11.13 (LGPL-2.1) and `gsap` 3.14.2, used to
+render pages that load GSAP or p5.js. GSAP is under GreenSock's "standard no-charge" license
+(<https://gsap.com/standard-license>), not an open-source licence; Easel does not ship it. Each
+plugin's README says what else it needs.
 
 ## Docs
 
@@ -41,8 +48,10 @@ browser into the plugin's data folder. Each plugin's README says what else it ne
   [easel-ai-media](plugins/easel-ai-media/README.md), [easel-pixel](plugins/easel-pixel/README.md).
 - [Gallery](docs/gallery.md): examples Easel made, rendered and checked by its tests.
 - [CHANGELOG](CHANGELOG.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
-- [Handoff](docs/HANDOFF.md): current state, decisions, hard rules, verified plugin facts.
-- [Vision](docs/vision.md), [Roadmap](docs/roadmap.md), [Tasks](docs/tasks.md).
+- [Handoff](docs/HANDOFF.md): the historical pre-build handoff (2026-10-11), superseded by
+  [CLAUDE.md](CLAUDE.md) (rules) and [Tasks](docs/tasks.md) (status).
+- [Vision](docs/vision.md), [Roadmap](docs/roadmap.md) (with the gaps of each release),
+  [Tasks](docs/tasks.md), [Evals for v1.0.0](docs/evals-v1.md).
 - [Architecture](docs/architecture.md): repo layout, how plugins share code, the render engine,
   the provider layer, data formats, Windows requirements.
 - [Skill catalog](docs/skill-catalog.md): every skill and agent, with its sources.

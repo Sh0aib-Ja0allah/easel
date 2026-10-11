@@ -19,9 +19,35 @@ case and arm, threshold 0.67. Commands: each plugin's `evals/README.md`. Under w
 Total cost: 20.70 USD for this run. All eval runs in the v0.2.0-v1.0.0 work cost about 38 USD (v0.2.0
 runs 8.6, re-runs 0.3, the first v0.3.0/v0.4.0 run 8.6, this run 20.7).
 
-"Mean delta" is the score with the plugin minus the score without it, averaged over cases: every
-plugin improves on plain Claude, most where the skills carry a procedure Claude does not know
-(core +0.87, ai-media +0.71, illustrate +0.50).
+"Mean delta" is the score with the plugin minus the score without it, averaged over cases. On
+average every plugin improves on plain Claude, most where the skills carry a procedure Claude does
+not know (core +0.87, ai-media +0.71, illustrate +0.50). That is true per plugin, not per case:
+plain Claude scored higher than the plugin on two design cases, `design-system-palette` (0 with the
+plugin, 0.5 without) and `ui-design-states` (0.5 with, 1.0 without).
+
+## Limits of this run
+
+Read the numbers above with these limits (added 2026-10-11 after the v1.0.0 QA review):
+
+- **11 of the 57 cases do not discriminate:** they score 1.0 in both runs with and without the
+  plugin, so they cannot show what the plugin adds. Motion: `animate-formats`,
+  `animate-not-for-ui`, `ui-motion-press`, `ui-motion-review`, `ui-motion-scroll`; design:
+  `ad-creative-sizes`, `design-mockup`, `logo-brand-copy`, `poster-print`; illustrate: `svg-chart`;
+  ai-media: `ai-video-real-person`. (Their skill-fired indicator still shows routing.)
+- **Two plugins fell against the first v0.3.0/v0.4.0 run** (job 114, D26): design from 11/14 to
+  8/14 cases at the threshold and pixel from 1/5 to 0/5, while illustrate rose from 4/7 to 5/7 and
+  ai-media from 5/7 to 6/7. With 2 runs per case, a single run decides many cases.
+- **The shipped pixel skills were never evaluated.** This run was at `a585c49`; the v1.0.0 commit
+  `b65a6c9` then changed the `pixel` and `pixel-draw` skills and the turn limits of 4 of the 5
+  pixel eval prompts. The easel-pixel numbers are for the earlier skills.
+- **The judge model is not recorded.** Sonnet is the model under test; which model judged the LLM
+  graders (and played the Aseprite mock) was not recorded for this run.
+- **Not reproducible from the repository.** Eval results go to `evals/results/` and
+  `plugins/*/evals/results/`, which are git-ignored; the tables in this file are the only record
+  in the repo.
+- **Most cases judge a reply, not files.** The engine mocks write no files, so every design,
+  illustrate, ai-media and pixel case is a skill-fired check plus an LLM judge on the plan in the
+  reply; only two easel-core cases check a written file.
 
 ## What did not reach the threshold, and why
 

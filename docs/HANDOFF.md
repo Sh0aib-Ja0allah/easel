@@ -1,5 +1,12 @@
 # Easel: handoff for the next agent
 
+> **Historical document.** This is the pre-build planning handoff of 2026-10-11, kept for history.
+> It is superseded by [CLAUDE.md](../CLAUDE.md) (the binding rules for every session) and
+> [tasks.md](tasks.md) (what is done and what is deferred). Where this file differs from them, from
+> the code or from [findings-and-decisions.md](findings-and-decisions.md), they are right.
+> Sections 6-12 describe the machine, the CLI and the next steps as they were before Phase 0; they
+> are not instructions.
+
 > **Written:** 2026-10-11, at the end of the planning sessions in Claude Code.
 > **For:** a Claude agent (Claude Desktop / Cowork) continuing the work with no memory of earlier sessions.
 > **Read this first, then the docs it links to.** Everything here was true on 2026-10-11. Re-check anything you rely on.
@@ -84,13 +91,13 @@ All of these are recorded in [findings-and-decisions.md](findings-and-decisions.
 
 | ID | Decision |
 |---|---|
-| D1 | **A marketplace with several plugins** (the six above), not one big plugin. The other plugins declare `"dependencies": ["easel-core"]`. |
+| D1 | **A marketplace with several plugins** (the six above), not one big plugin. The other plugins declare `"dependencies": ["easel-core"]`. *(Shipped form since v1.0.0: the object form `[{"name": "easel-core", "version": "^1.0.0"}]`, see D24.)* |
 | D2 | **Render engine runtime: Node + Playwright** (+ ffmpeg). |
 | D3 | **A provider layer where users bring their own key** for images, video **and** audio. No vendor lock-in, no watermark or tracking tags. Show a cost estimate before spending. |
 | D4 | **English-first.** Translate Chinese source content while porting it. |
 | D5 | More sources were collected; design, illustration and drawing are now covered. |
 | D6 | **Name: Easel. License: MIT** for our own code and docs. Apache-2.0 material keeps its license, with notices. |
-| D7 | **Test HyperFrames first** (task T0.4). If it passes on Windows, depend on it as the render engine. If not, build our own engine using its contract as a model. |
+| D7 | **Test HyperFrames first** (task T0.4). If it passes on Windows, depend on it as the render engine. If not, build our own engine using its contract as a model. *(Outcome: B, Easel's own Playwright loop, decided by Claude for the owner after the spike; the owner's confirmation is pending. See D7.)* |
 | D8 | **Ship only generic design systems.** No copies of real brands (Stripe, Apple, Linear…). |
 
 ---
@@ -155,6 +162,11 @@ The same applies to Shinkai, Kirby, Dalí and "Mario-style".
 ---
 
 ## 6. Verified Claude Code plugin facts (checked 2026-10-11)
+
+> **Historical (2026-10-11, before the build).** Sections 6-12 are kept as they were written. They
+> are superseded by [CLAUDE.md](../CLAUDE.md) (rules and the verified plugin facts) and
+> [tasks.md](tasks.md) (status): Phases 0-5 are done or deferred, ffmpeg and the newer Claude Code
+> CLI were installed during the build, and "what to do next" no longer applies.
 
 These come from the official docs at https://code.claude.com/docs. Use them instead of guessing.
 

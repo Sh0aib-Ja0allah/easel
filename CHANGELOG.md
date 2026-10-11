@@ -2,6 +2,37 @@
 
 Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
 
+## Unreleased: fixes from the v1.0.0 QA review (2026-10-11)
+
+On `main`, not yet tagged: versions are unchanged, so installed copies do not update until a
+release bumps them. Decisions D27-D34 in `docs/findings-and-decisions.md`.
+
+- **Licences and notices:** the shipped `Apache-2.0.txt` (root, core, design, illustrate) was an
+  edited copy and is now the official text, checked by hash; GSAP's non-open-source licence is
+  named at setup and in the notices; STIX Two's reserved-name and trademark lines; full huashu
+  copyright line; missing attribution headers; one grammar no longer describes a known channel's
+  mascot; "manim-style" wording replaced.
+- **easel-core:** `qa` measures each element's own text, skips visually hidden text and skip
+  links, reads every CSS colour format, fails a named check it cannot run and bounds its
+  thresholds; inline pages no longer collide or overwrite files; qa's media inputs must be local
+  files; output names cannot leave the job folder; `__ready` from external scripts is honoured and
+  `ASSETS_READY` times out; failed videos leave no partial file; page-declared lengths and sizes
+  are bounded; renders run in UTC/en-US with seeded `crypto`; CLI refuses prototype keys and keeps
+  strings as strings; new `embed_fonts` tool.
+- **easel-ai-media:** paid calls need the quote of a dry run of the same request; the voice-clone
+  gate refuses Easel's own output, silence, too-short recordings and refusing statements; refs
+  must be images inside the project; keys never follow redirects to other hosts; nothing paid is
+  overwritten or lost; fixtures are described as synthetic.
+- **easel-pixel:** marked Preview; its docs say the local bridge accepts commands from any program
+  while it runs (the "Lua off" setting only hides the MCP tool).
+- **easel-motion / design / illustrate:** wordmark and label SVGs are delivered with their fonts
+  embedded; ui-motion ends in a critique; style samples captured after their write-ons; stronger
+  brand, font and contrast lints with text-safe colours in the design systems; `svg-check`
+  accepts valid SVG it used to reject; `build.mjs` mixes multi-line kits and string `mix` values.
+- **Repository:** CI cache path fixed; the install check pins the pushed commit, checks
+  `claude mcp list` and the easel-core dependency install; a version-consistency test; docs
+  reconciled (tasks and roadmap list what is deferred or below threshold).
+
 ## 1.0.0: easel-core, easel-motion, easel-design, easel-illustrate, easel-ai-media, easel-pixel (2026-10-11)
 
 The first stable release of the whole marketplace. Every plugin is 1.0.0; the five that build on

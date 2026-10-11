@@ -12,8 +12,8 @@ on Windows. The repo contract for AI sessions is [CLAUDE.md](CLAUDE.md); the des
 | A skill | `plugins/<plugin>/skills/<skill>/SKILL.md` (+ `references/*.md` for depth) |
 | An agent | `plugins/<plugin>/agents/<name>.md` |
 | Engine code (Node) | `plugins/easel-core/engine/` |
-| Rulebooks, rubrics, schemas | `plugins/easel-core/{craft,rubrics,schemas}/` (served by the `craft` tool) |
-| Styles, grammars, design systems | data files in their plugin: `styles/<id>/`, `grammars/<id>.md`, `design-systems/<id>/DESIGN.md` |
+| Rulebooks, rubrics, schemas | `plugins/easel-core/{craft,rubrics,schemas}/` (rulebooks and rubrics served by the `craft` tool, schemas by `validate`) |
+| Styles, recipes, grammars, design systems | data files in their plugin: easel-motion `styles/<id>/`, `recipes/<id>.md`, `grammars/<id>.md`; easel-design `systems/<id>/DESIGN.md` |
 | Eval cases | `plugins/<plugin>/evals/<case>/` (`prompt.md` + `graders/*.md`; engine mocks in `evals/mocks/easel/`) |
 | Third-party credits | `THIRD_PARTY_NOTICES.md`; Apache-2.0 text in `licenses/Apache-2.0.txt` |
 
@@ -68,10 +68,22 @@ exported asset (sources, models, prompts, licenses of inputs).
 
 ## 3. Animation kits and compositions
 
-- A page is ready when it sets `window.__ready = true` after fonts and assets load.
-- Animate through **one** of: `window.renderAt(t)`, or a paused GSAP timeline at
-  `window.__timelines[<data-composition-id>]` (the HyperFrames composition format). CSS animations
-  are seeked through the Web Animations API, so keep them declarative.
+- A page is ready when it sets `window.__ready = true` after fonts and assets load (the engine
+  waits for it when a page script mentions `__ready`; it always waits for the load event, fonts and
+  decoded images).
+- Animate through **one** of these, with `t` in seconds (the engine tries them in this order):
+  - `window.renderAt(t)`;
+  - `window.renderFrame(t)`, the animate kit's canvas contract: `window.TIMELINE` (or
+    `window.__composition`) gives `width`, `height`, `fps` and `duration`; an optional
+    `window.ASSETS_READY` promise holds rendering until embedded images are decoded; an optional
+    `window.renderAudioWav()` returns the piece's score as a base64 WAV for `render_video`
+    `audio: "page"`;
+  - a paused GSAP timeline at `window.__timelines[<data-composition-id>]` (the HyperFrames
+    composition format, with `data-start`, `data-duration`, `data-width`, `data-height` on the
+    root).
+- CSS animations are seeked through the Web Animations API after that, so keep them declarative.
+- A format-aware page reads `window.__easel.aspect` (`'16:9'`, `'9:16'`, `'1:1'`, `'4:5'` or `null`)
+  and lays itself out for it.
 - **Deterministic:** no `Math.random()` without a seed, no `Date.now()`, no `requestAnimationFrame`
   loops, no timers. Same `t` -> same pixels.
 - **No network at render time:** fonts are bundled OFL files loaded with `@font-face`; libraries
@@ -118,8 +130,8 @@ NOTICE lines in `THIRD_PARTY_NOTICES.md`.
 ## 5. Windows first
 
 - Tooling is Node only: no bash-only or PowerShell-only scripts in plugins.
-- Use `path.join`; never hardcode `/tmp`, `/usr/bin`, `python3` or Mac font paths. Call `python`
-  only for optional features.
+- Use `path.join`; never hardcode `/tmp`, `/usr/bin`, `python3` or Mac font paths. Easel needs no
+  Python (D16); don't add a Python dependency.
 - Spawning `npm`/`npx` on Windows needs `shell: true` (Node refuses `.cmd` files otherwise); prefer
   `process.execPath` with a `.js` entry point.
 - First-run installs go to `${CLAUDE_PLUGIN_DATA}`, never `${CLAUDE_PLUGIN_ROOT}`.
@@ -131,12 +143,29 @@ NOTICE lines in `THIRD_PARTY_NOTICES.md`.
 claude plugin validate . --strict
 claude plugin validate plugins/<each plugin> --strict
 node --check <every changed .mjs/.js>
-npm --prefix plugins/easel-core/engine test     # once the engine has tests
+npm --prefix plugins/easel-core/engine test
+npm --prefix plugins/easel-motion test
+npm --prefix plugins/easel-design test
+npm --prefix plugins/easel-illustrate test
+npm --prefix plugins/easel-ai-media test
+npm --prefix plugins/easel-pixel test
 ```
 
-CI runs the same on every push. Each skill needs eval cases in `plugins/<plugin>/evals/` (at least
-three routing cases, plus output cases for visual skills); `claude plugin eval` makes real model calls,
-so it runs before releases, not on every push.
+The render tests need Playwright, Chromium (and p5.js for illustrate) in the data folder (`node
+plugins/easel-core/engine/cli.mjs doctor --install`); without them they are skipped, so a local run
+must show 0 skipped before a render change is committed. [CLAUDE.md](CLAUDE.md) ("Commands") has
+the details and the exceptions to `node --check`. CI (on pushes to `main` and on pull requests)
+validates the plugins on Linux and runs all six suites on Windows, macOS and Linux; pushes to
+`main` also get a clean install of the marketplace on all three. Before a release,
+`node scripts/install-check.mjs --work <empty folder>` installs the marketplace from GitHub into an
+empty config (needs network).
+
+**Eval cases** live in `plugins/<plugin>/evals/`. The target is at least three routing cases per
+skill, plus output cases (graders on the produced files) for visual skills. It is not met yet: in
+v1.0.0, 26 of the 34 skills have fewer than three cases, and only two cases (easel-core `brand`)
+check an output file; see the gaps in [docs/roadmap.md](docs/roadmap.md) and
+[docs/evals-v1.md](docs/evals-v1.md). New skills should meet the target. `claude plugin eval`
+makes real model calls, so it runs before releases, not on every push.
 
 ## 7. Releases
 

@@ -1,6 +1,6 @@
 # Vision
 
-> Status: draft · Last updated: 2026-10-11 · Project name: **Easel**
+> Status: v1.0.0 released · Last updated: 2026-10-11 · Project name: **Easel**
 
 ## What this is
 
@@ -34,7 +34,7 @@ Anyone using Claude Code who wants to produce visual or motion output (designers
 
 - [x] Project and repo name: **Easel** (decided 2026-10-11).
 - [x] License: MIT for our code (decided 2026-10-11); Apache-2.0 material keeps its own license (see [findings-and-decisions.md](findings-and-decisions.md), D6).
-- [x] External tools: Node + Playwright + ffmpeg as the base; HyperFrames to be spiked as the engine (D7); Aseprite and paid AI APIs only in optional plugins.
+- [x] External tools: Node + Playwright + ffmpeg as the base; Aseprite and paid AI APIs only in optional plugins. The render engine is Easel's own Playwright capture loop, not HyperFrames: D7 = B, decided by Claude for the owner after the HyperFrames spike ([spikes/hyperframes.md](spikes/hyperframes.md)); the owner's confirmation is still pending. Easel reads the HyperFrames composition format, so compositions stay portable.
 - [x] Distribution: own marketplace in this repo with several plugins (D1).
 
 Decisions so far are recorded in [findings-and-decisions.md](findings-and-decisions.md).

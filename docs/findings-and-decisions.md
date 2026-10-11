@@ -1,6 +1,6 @@
 # Findings and decisions
 
-> Status: draft · Last updated: 2026-10-10 · Based on the 13 sources in [sources.md](sources.md) (round 1: #1–5, round 2: #6–13)
+> Status: living record · Last updated: 2026-10-11 (after the v1.0.0 QA review, §5) · Based on the 13 sources in [sources.md](sources.md) (round 1: #1–5, round 2: #6–13)
 
 ## 1. Key findings
 
@@ -78,8 +78,8 @@ is checked. "Sweep" = a search of the whole repository on 2026-10-11.
 **Don't copy:**
 
 - [x] Character and brand assets:
-  - huashu character assets (`hero/`, `long_scroll/frames/`, `assets/角色/`, `rig_huashu.js`): not present (sweep; only the grammars and recipes were translated, 1411085). `plugins/easel-motion/test/build.test.mjs` fails on huashu names in any built piece.
-  - the Mario/Nintendo showcase and the Clawd fan work: not present (sweep); the motion, pixel and illustrate tests reject the names.
+  - huashu character assets (`hero/`, `long_scroll/frames/`, `assets/角色/`, `rig_huashu.js`): not present (sweep; only the grammars and recipes were translated, 1411085). `plugins/easel-motion/test/build.test.mjs` scans the shipped motion sources (`kit/`, `styles/`, `templates/`, `grammars/`, `recipes/`) and fails on huashu names, on the never-ship asset paths (`rig_huashu`, `_shared/hero`, `long_scroll`, `角色`) and on `clawd`, `mario` and `nintendo` (guard extended after v1.0.0 QA; at v1.0.0 it scanned only `grammars/` and `recipes/` for creator names).
+  - the Mario/Nintendo showcase and the Clawd fan work: not present (sweep). The motion guard above rejects all three names (guard extended after v1.0.0 QA); the pixel tests reject Mario and Nintendo and the illustrate tests Mario. Before that guard, no test mentioned Clawd.
   - vox's Ronaldo/CR7 examples: not present (sweep; 10e6085); `plugins/easel-ai-media/test/static.test.mjs` rejects the names and any line about getting around content filters that is not a refusal.
   - mg-styles media with unstated sources: none copied; the four mg-styles looks are Easel's own code (D17, 2a6c11e). Every image in `plugins/` is Easel-rendered (style samples, goldens, the style-match example, test fixtures).
   - the peanut and Xiaohei characters and their example images: not present; Easel's mascot is its own "card" (10e6085, 3cf1603); `plugins/easel-illustrate/test/static.test.mjs` rejects the names.
@@ -88,7 +88,7 @@ is checked. "Sweep" = a search of the whole repository on 2026-10-11.
 
 **Rename:**
 
-- [x] Styles named after trademarks or living or protected creators: Vox -> editorial collage, and the rest (1411085, 2a6c11e, 10e6085). Banned-name tests in the core craft rules, motion builds, illustrate, ai-media and pixel suites.
+- [x] Styles named after trademarks or living or protected creators: Vox -> editorial collage, and the rest (1411085, 2a6c11e, 10e6085). Banned-name tests in the core craft rules, the motion sources (grammars and recipes at v1.0.0; kit, styles and templates added after the v1.0.0 QA), illustrate, ai-media and pixel suites.
 - [x] Design systems that copy real brands. Ten generic systems only (4e686ac, D8); `plugins/easel-design/test/static.test.mjs` checks for brand names.
 
 **Safety:**
@@ -151,7 +151,7 @@ Round 2 received (#6–13). Design, illustration and drawing are now covered.
 - [x] Name: **Easel** (repo `easel`, plugins `easel-*`). ✅ Decided 2026-10-11.
 - [x] License: **MIT** for our own code. ✅ Decided 2026-10-11 (`LICENSE` added). Apache-2.0 material keeps its license, with LICENSE and NOTICE files included. Both licenses can sit in one repo.
 
-### D7. Render engine: build our own, or build on HyperFrames? ✅ (2026-10-11)
+### D7. Render engine: build our own, or build on HyperFrames? ✅ B, decided by Claude for the owner (2026-10-11); owner's confirmation pending
 
 HyperFrames does what we planned to build. It's open source under Apache-2.0, has about 60k stars, and is actively maintained by HeyGen.
 
@@ -206,6 +206,7 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 
 - **Decision:** the bundled editorial serif is Newsreader (OFL 1.1, no Reserved Font Name), replacing Source Serif 4.
 - **Reason:** Source Serif 4 reserves the name "Source"; the Latin subsets Easel ships are Modified Versions under the OFL, which may not use a Reserved Font Name. Found by QA review C-1 #18.
+- **History note (2026-10-11, after the v1.0.0 QA):** the Source Serif 4 subsets are still in git history, added in `f5de4e3` and removed in `3ab529a`. They are in no release tag (every tag points at a later commit), and history is not rewritten, by rule (CLAUDE.md, Git).
 
 ### D12. Craft rulebooks are Apache-2.0 adaptations ✅ (decided by Claude for the owner, 2026-10-11)
 
@@ -260,23 +261,25 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 
 ### D21. easel-illustrate: vector first, p5.js at run time, three open-design skills traced and deferred ✅ (decided by Claude for the owner, 2026-10-11)
 
-- **Decision:** (a) `svg`, `svg-illustration` and `concept-illustration` draw SVG by hand and check it through the engine (renders, qa with `fixedFrame`, and `tools/svg-check.mjs`, a Node replacement for linyaosky's bash `validate.sh`); upbrew's Python render loop is replaced by the engine. (b) `generative-art` uses p5.js 1.11.13 (LGPL-2.1), installed by doctor into the data folder and served offline to pages that name a CDN URL, exactly like GSAP (D10); Easel's own viewer replaces Anthropic's branded template; pieces paint each frame from t so the engine can seek them, and loops close on themselves (tested). (c) `concept-illustration` keeps both MIT notices (Aishwarya Ashok and Ian) and uses neither character: the user's mascot or Easel's own "card". (d) open-design's `shader-dev` traces to MiniMax-AI/skills (MIT, HEAD `60aaae52bb2af8162732751a4332f62a5fef518b`), `hand-drawn-diagrams` to muthuishere/hand-drawn-diagrams (licence NOASSERTION: a LICENSE file whose type GitHub cannot identify, HEAD `c8ffd6c3febbc0e745ab6691ea81c8703a9829c8`), `threejs` to CloudAI-X/threejs-skills (no licence, HEAD `b1c623076c661fc9b03dac19292e825a5d106823`). All three are **DEFERRED** to v2: shader recipes need WebGL review in the headless shell, the diagram and 3D skills are v2 in the catalog, and two of the three are not clearly licensed (the third would need its own review before porting).
+- **Decision:** (a) `svg`, `svg-illustration` and `concept-illustration` draw SVG by hand and check it through the engine (renders, qa with `fixedFrame`, and `tools/svg-check.mjs`, a Node replacement for linyaosky's bash `validate.sh`); upbrew's Python render loop is replaced by the engine. (b) `generative-art` uses p5.js 1.11.13 (LGPL-2.1), installed by doctor into the data folder and served offline to pages that name a CDN URL, exactly like GSAP (D10); Easel's own viewer replaces Anthropic's branded template; pieces paint each frame from t so the engine can seek them, and loops close on themselves (tested). (c) `concept-illustration` keeps both MIT notices (Aishwarya Ashok and Ian) and uses neither character: the user's mascot or Easel's own "card". (d) open-design's `shader-dev` traces to MiniMax-AI/skills (MIT, HEAD `60aaae52bb2af8162732751a4332f62a5fef518b`), `hand-drawn-diagrams` to muthuishere/hand-drawn-diagrams (MIT, Copyright (c) 2025 Muthukumaran Navaneethakrishnan, HEAD `c8ffd6c3febbc0e745ab6691ea81c8703a9829c8`; GitHub reports NOASSERTION only because the LICENSE file appends the MIT notices of Excalidraw and excalidraw-animate), `threejs` to CloudAI-X/threejs-skills (no licence, HEAD `b1c623076c661fc9b03dac19292e825a5d106823`). All three are **DEFERRED** to v2: shader recipes need WebGL review in the headless shell, the diagram and 3D skills are v2 in the catalog, threejs-skills has no licence, and the two MIT sources would each need their own review before porting. *(Licence of hand-drawn-diagrams corrected 2026-10-11 after the v1.0.0 QA review; it was recorded as "NOASSERTION, a LICENSE file whose type GitHub cannot identify". The deferral stands.)*
 - **Reason:** start prompt and CLAUDE.md: trace before using or defer; Windows-first and Node-only tooling; no assets of the source characters; GSAP precedent for runtime libraries.
 
 ### D22. easel-ai-media is its own zero-dependency MCP server with a dry-run gate ✅ (decided by Claude for the owner, 2026-10-11)
 
-- **Decision:** (a) The provider layer is a separate MCP server (`media`) inside easel-ai-media, not part of easel-core's engine: keys and paid calls stay out of the plugin every user installs. Node only, no npm dependencies (fetch, FormData). (b) Six adapters (Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud, ElevenLabs); every `generate` is a dry run with an estimate unless `confirm: true`, and above the spending limit (`max_spend_usd`, default 0.5 USD) or for an unpriced model it also needs `approvedUsd`. Prices live in `server/prices.json` with their source and a checked date or `verify`. (c) Keys come from the environment or masked `userConfig` fields passed as `EASEL_CFG_<PROVIDER>`; they are masked in every output, sent only to the provider's own https hosts, and never written to disk. (d) URLs a provider returns are checked (https, no local or private addresses, redirects followed by hand, size cap, media types); every paid job is logged in `jobs.jsonl` before polling so a failure after charging leaves its id; paid files are never overwritten. (e) Job folders must be inside the project. (f) Voice cloning needs `consent.json` in the speaker's words naming them, a real past date, a recording of at least 2 s that ffprobe reads as audio, and samples, all inside the job folder (real paths, so links cannot point out); every clone is logged. (g) Tests use recorded fixtures only; no live paid call has been made (owner's list: keys and budget). (h) Music generation is the Atlas `minimax/music-2.6` model only; the catalog's `music` skill stays v2.
+- **Decision:** (a) The provider layer is a separate MCP server (`media`) inside easel-ai-media, not part of easel-core's engine: keys and paid calls stay out of the plugin every user installs. Node only, no npm dependencies (fetch, FormData). (b) Six adapters (Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud, ElevenLabs); every `generate` is a dry run with an estimate unless `confirm: true`, and above the spending limit (`max_spend_usd`, default 0.5 USD) or for an unpriced model it also needs `approvedUsd`. Prices live in `server/prices.json` with their source and a checked date or `verify`. (c) Keys come from the environment or masked `userConfig` fields passed as `EASEL_CFG_<PROVIDER>`; they are masked in every output, sent only to the provider's own https hosts, and never written to disk. (d) URLs a provider returns are checked (https, no local or private addresses, redirects followed by hand, size cap, media types); every paid job is logged in `jobs.jsonl` before polling so a failure after charging leaves its id; paid files are never overwritten. (e) Job folders must be inside the project. (f) Voice cloning needs `consent.json` in the speaker's words naming them, a real past date, a recording of at least 2 s that ffprobe reads as audio, and samples, all inside the job folder (real paths, so links cannot point out); every clone is logged. (g) Tests use recorded fixtures only; no live paid call has been made (owner's list: keys and budget). *(Clarified 2026-10-11 after the v1.0.0 QA review: the fixtures are hand-written, synthetic responses shaped from each provider's documentation, not recordings of live calls; the adapters have not yet been checked against the live APIs.)* (h) Music generation is the Atlas `minimax/music-2.6` model only; the catalog's `music` skill stays v2.
 - **Reason:** CLAUDE.md safety rules (no live paid calls without keys and budget, never write or print keys, consent gate), architecture §6, QA F-1 (consent bypasses, SSRF, overwrites, untested paths).
 
 ### D23. easel-pixel runs the pinned bridge through a Node launcher, from a shipped lockfile ✅ (decided by Claude for the owner, 2026-10-11)
 
 - **Decision:** (a) architecture §5 said `npx -y @pebbly/aseprite-ai-artist@<pinned> serve`; instead `.mcp.json` runs `node server/launch.mjs serve`, because npx is a `.cmd` shim on Windows (not spawnable without a shell) and installs to the npm cache rather than `${CLAUDE_PLUGIN_DATA}`. (b) `setup` (run once by the pixel skill) installs `@pebbly/aseprite-ai-artist` 0.8.0 into the data folder with `npm ci` from `server/bridge-lock.json` (98 packages, every one with its sha512 integrity; the top package's matches npm's published hash), install scripts off, one install at a time (a lock file), then its Aseprite extension. `serve` never installs, so a session start never waits on the network. (c) Lua execution stays off whatever arguments are passed; no argument reaches the package. (d) The skills and agents are adapted from the repo at `f51fe69...`; npm 0.8.0 was published from `f3143257...`, and the 10 commits between them touch only the gallery, web app, docs and README, not `src/`, `skills/`, `agents/` or `hooks/` (checked with `gh api .../compare`). (e) Drawing end to end needs a licensed Aseprite: owner's list.
 - **Reason:** Windows-first and data-folder installs (CLAUDE.md), the pin required by the start prompt, QA F-1 (#7, #10, #12).
+- **Corrected 2026-10-11 after QA (the v1.0.0 review):** (c) is wrong as written. `ASEPRITE_AI_ALLOW_LUA=0` (set by the launcher) only stops the MCP server from registering its `run_lua` tool. The package's own bridge listens on `127.0.0.1:9932` (control) with no authentication and no Origin check, and forwards any command it receives to the Aseprite extension, including `lua.run` (arbitrary Lua) and `export.run` (writes to any path it is given); the extension does not check either. So any local process can run Lua in Aseprite while the bridge is up, whatever Easel passes. Seen in `@pebbly/aseprite-ai-artist` 0.8.0 (`dist/bridge/bridge.js`, `extension/ai-artist.lua`); our own source note already said "the bridge has no authentication" ([sources/with-pebbly-aseprite-ai-artist.md](sources/with-pebbly-aseprite-ai-artist.md)). What Easel does about it is a QA-fix decision, recorded in §5.
 
 ### D24. Dependents require easel-core >= 0.2.0; 0.2.0 is tagged after the Phase 3 engine work ✅ (decided by Claude for the owner, 2026-10-11)
 
 - **Decision:** easel-core 0.2.0 was not tagged when its CHANGELOG section was written; it is tagged at the commit that also carries p5.js serving, `render_pdf`, the CSS-length fallback for filmstrip and render_video, and the wrapper clean-up, so every plugin built on those can require it. Every other plugin declares `{ "name": "easel-core", "version": ">=0.2.0" }` (a relative-path plugin: the constraint is checked at load).
 - **Reason:** QA E-1 #5 (new plugins depended on unreleased engine features with no version).
+- **Update (v1.0.0, 2026-10-11):** at v1.0.0 the five dependent plugins switched from `>=0.2.0` to `{ "name": "easel-core", "version": "^1.0.0" }` (commit `b65a6c9`). Decided by Claude for the owner, 2026-10-11; reason: a semver range resolved against the `easel-core--v1.0.0` tag, so a dependent gets 1.x fixes but not a breaking 2.0. The text above records the 0.2.0-0.4.0 releases.
 
 ### D25. score-own-track eval: gap reported, grader kept ✅ (decided by Claude for the owner, 2026-10-11)
 
@@ -287,3 +290,64 @@ The five docs below are now written. Their links: [skill-catalog.md](skill-catal
 
 - **Decision:** the first v0.3.0/v0.4.0 eval run (job 114: design 11/14, illustrate 4/7, ai-media 5/7, pixel 1/5; $8.59) failed mostly on the test bench, not the skills: the engine mocks answer every render with a fixed 1200x630 `still.png` that is never written, so honest replies said "I could not view the render" and the judge failed them; the Aseprite mocks were fixed answers that contradicted each other (a sprite open in one tool, none in another) and ignored the prompt's open sprite. Changes: (a) every engine mock that names an output file says it is a stub and asks the model to say so and carry on; (b) every LLM grader carries a note for the judge that tools are stubbed and that saying a result could not be viewed is fine, as long as nothing unchecked is claimed (the PASS and FAIL criteria are unchanged); (c) the `aseprite` server is a `type: agent` mock that keeps one document state, with a per-case starting document where the prompt says one is open; (d) routing text: the voice, ai-video, pixel-animate, pixel-export, logo and illustrate skills now say to load them first, including for requests they must refuse or redirect. No `skill-fired` grader was loosened; both runs are reported.
 - **Reason:** start prompt (report eval gaps honestly; never weaken a test to get green); the plugin evals docs (mock substitutions, `type: agent` mocks).
+
+## 5. v1.0.0 QA review (2026-10-11)
+
+After the v1.0.0 release (`b65a6c9`) an independent QA review ran five parallel reviews and re-ran
+every gate: `claude plugin validate --strict` passed for 7 of 7 targets (the marketplace and the six
+plugins), and the test suites ran 246 tests with 0 skipped. Its findings are being fixed on `main`
+after the release. Corrections to earlier records are dated in place:
+the §1.5 name-guard lines, D7's status, D11 (history note), D21 (licence of hand-drawn-diagrams),
+D22(g) (fixtures), D23(c) (Lua) and D24 (the `^1.0.0` range). The docs were reconciled with the
+shipped code at the same time ([tasks.md](tasks.md), [roadmap.md](roadmap.md),
+[skill-catalog.md](skill-catalog.md), [architecture.md](architecture.md),
+[evals-v1.md](evals-v1.md)).
+
+Decisions from the QA fixes (commits `8f5a3fd`, `96fecbb`, `c400dcb` and the engine,
+motion/design/illustrate and docs commits that follow them):
+
+### D27. A paid call needs the quote of a dry run of the same request ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** easel-ai-media's `generate` spends only with `confirm: true` plus the `quote` its dry run returned for the identical request. The quote is a stateless hash of everything the call is priced on and makes (provider, model, kind, count, size, aspect, quality, resolution, seconds, voice, language, instructions, voice name, the resolved ref and sample files, hashes of the prompt and text) and of the estimate itself, so any change, including a price change, needs a new dry run that the user sees. It survives a server restart.
+- **Reason:** QA: `confirm: true` could be the first call, and the confirmed request could differ from the estimate the user was shown; plugin.json promises every paid call is shown and confirmed first.
+
+### D28. The voice-clone consent gate is a procedure, not proof ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** the gate refuses a recording or sample that Easel itself generated (by name in the job's `provenance.json`/`jobs.jsonl` or by sha256 in an outputs ledger, so renamed copies are caught), near-silent audio (mean below -50 dB or peak below -40 dB), a recording shorter than max(2, words / 3.5) seconds, statements that refuse, withhold or revoke consent in any normalised form (NFKC, case, invisible characters), and any check it cannot run (no ffmpeg). Consent file, recording and samples are names in the job folder. The skills and tool text say it cannot tell who is speaking: the voice owner must write and record the statement.
+- **Reason:** QA reproduced a clone with the server's own text-to-speech as the "consent recording", 3 s of silence, and "I withhold consent" passing. CLAUDE.md: never clone a voice without a recorded consent statement from the voice owner.
+
+### D29. ai-media files: project images only, keys stay with their provider, nothing paid is lost or overwritten ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** (a) `refs` must be PNG, JPEG or WebP files inside the project (checked through links and by their bytes) and job folders may not leave the project through a link; (b) a request carrying a key follows redirects only to that provider's own https hosts; (c) output names are claimed atomically before a download, so parallel calls and `assemble` never replace an earlier file or an input, and every output's sha256 is logged; (d) with `count` > 1, images made before a failure are saved and logged as `partial`; (e) Atlas makes one prediction per image and sends `size` as its aspect ratio.
+- **Reason:** QA reproduced a keystore-like file uploaded as a reference, a paid image overwritten by a parallel call, `assemble` overwriting a paid clip, and key headers following a cross-origin redirect.
+
+### D30. easel-pixel is a Preview; "Lua off" only hides the MCP tool ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** easel-pixel stays at 1.0.0 but is labelled Preview (marketplace, plugin.json, README) until the owner's end-to-end Aseprite run and an eval run of the shipped skills at threshold. Its docs say plainly that `ASEPRITE_AI_ALLOW_LUA=0` hides the `run_lua` tool only: the upstream bridge on 127.0.0.1 has no authentication and accepts Lua and exports from any local program while it runs, so close Aseprite or stop the bridge when not drawing. The upstream issue is for the owner to report.
+- **Reason:** QA: evals 0/5, the pixel skills changed after the eval run, never run with a real Aseprite; the bridge accepted `lua.run` from a client with a foreign Origin.
+
+### D31. The qa gates measure what they claim and cannot be argued away ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** contrast and clipping measure an element by its own text nodes; visually hidden text and skip links are skipped; any CSS colour (oklch, color(), lab, color-mix) is converted to sRGB in the page, and one that cannot be is reported as unmeasured, never as black. A check the caller names that cannot run fails (loudness on a video with no audio), zero checks run is a failure, and `lufsMin`/`lufsMax` are bounded to -18..-10 and `stillSeconds` to 5. Renders run in UTC with en-US and seeded `crypto`; values a page declares (duration, fps, size) obey the same bounds as arguments; inline pages are written to a unique temporary file and removed; `audio_score` is capped at 1800 s.
+- **Reason:** QA reproduced false refusals (a card with a dark badge child at 1:1, `sr-only` text), false passes (oklch text, loudness on a silent video) and a parallel race that checked the wrong page.
+
+### D32. SVG text is delivered with its bundled fonts embedded ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** a new engine tool, `embed_fonts`, writes `<stem>-embedded.svg` with the bundled OFL faces its text uses inlined as base64 WOFF2 `@font-face` rules (the OFL allows embedding in documents), and refuses a family Easel does not bundle. The logo, brand-identity, svg, svg-illustration and concept-illustration skills deliver that file; a brand's own typeface means outlining in a vector editor, or PNGs only.
+- **Reason:** QA: wordmarks looked right in every Easel render (the engine injects its fonts) but fell back to a serif on the user's site.
+
+### D33. Style goldens are captured once each style's write-ons finish ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** easel-motion's golden test has a capture time per style (cut-paper 6.5 s, hud 5.0 s, others 4.5 s). The cut-paper and hud samples and the style-match comparison frame were re-rendered (on Linux, Chromium 140) and looked at; the shared PSNR floors are unchanged. The owner may re-render them on Windows with `EASEL_UPDATE_GOLDEN=1 EASEL_GOLDEN_STYLES=cut-paper,hud` to restore the Windows-goldens convention.
+- **Reason:** QA: the default style's gallery sample showed a caption strip with one letter, the HUD sample "TARGET L", the blueprint comparison "FILAMEN".
+
+### D34. Brand and font lints are case-insensitive with an explicit allow list; colours say when they are not for text ✅ (decided by Claude for the owner, 2026-10-11)
+
+- **Decision:** easel-design's and easel-illustrate's name lints scan skills, references, systems, examples and file and folder names case-insensitively; a brand or creator named as a look ("-style", "-like", "-inspired", "look", "aesthetic") always fails; platform names appear only in a per-file allow list with a reason, which fails when it goes stale. Every design-system colour below 4.5:1 says "not for text", and every role named "... text" passes AA; systems gained text-safe variants where needed. The face lint reads every Typography line.
+- **Reason:** QA: "stripe-like", "vercel-style", "Pixar warmth" and a folder named `stripe-like` passed; "Body: Arial, 16px" passed; several text-role colours were below AA with no note.
+
+### Open for the owner (not decided)
+
+- **GSAP's licence.** GSAP is installed by `doctor` (D10) under GreenSock's "standard no-charge" license, which is not an open-source licence; setup now names it and its URL before installing. Read https://gsap.com/standard-license and decide whether Easel may keep installing it for previews or should make it opt-in.
+- **The style name `riso`.** RISO and RISOGRAPH are registered marks of Riso Kagaku; CLAUDE.md forbids naming a style after a trademark. Rename (for example `three-ink-print`) or record an exception.
+- **D7 = B** awaits the owner's confirmation (above).

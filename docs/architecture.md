@@ -1,6 +1,6 @@
 # Architecture
 
-> Status: draft · Last updated: 2026-10-11 · Plugin facts were checked against the Claude Code docs on 2026-10-11 (links inline).
+> Status: reflects v1.0.0 (2026-10-11); QA fixes after v1.0.0 in progress · Plugin facts were checked against the Claude Code docs on 2026-10-11 (links inline). Where this file and the code differ, the code is right.
 
 ## 1. Repo layout
 
@@ -14,29 +14,41 @@ easel/
 │   │   ├── skills/{setup,brief,brand,critique,score}/SKILL.md
 │   │   ├── agents/critic.md
 │   │   ├── .mcp.json             # the "easel" MCP server (render engine)
-│   │   ├── engine/               # Node: MCP server + CLI, render, audio, qa, schemas
-│   │   ├── craft/                # shared rulebooks (anti-generic, type, colour, a11y, motion)
+│   │   ├── engine/               # Node: MCP server + CLI (server.mjs, cli.mjs, tools.mjs, lib/), tests
+│   │   ├── craft/                # shared rulebooks (anti-generic, typography, colour, accessibility, motion)
 │   │   ├── rubrics/              # critique rubrics per domain
-│   │   └── schemas/              # brief.json, beats.json, cues.json, brand.md
+│   │   ├── schemas/              # brief, beats, cues, provenance (*.schema.json), brand.template.md
+│   │   ├── fonts/                # bundled OFL fonts
+│   │   └── LICENSE, NOTICE.md, licenses/
 │   ├── easel-motion/
 │   │   ├── skills/{animate,style-match,ui-motion}/
 │   │   ├── kit/                  # the animate renderer (core, morph, board, score)
 │   │   ├── styles/<id>/{STYLE.md,kit.js,sample.png,demo/}
+│   │   ├── recipes/<id>.md       # looks written down, no kit yet
 │   │   ├── templates/            # starter pieces and a starter style
-│   │   ├── tools/build.mjs       # assembles a piece's index.html (styles can mix)
-│   │   └── grammars/<id>.md
+│   │   ├── tools/{build,new-piece,new-style}.mjs   # build assembles a piece's index.html (styles can mix)
+│   │   ├── grammars/<id>.md
+│   │   └── examples/, test/
 │   ├── easel-design/
 │   │   ├── skills/…              # see skill-catalog.md
-│   │   └── design-systems/<id>/DESIGN.md   # generic styles only (D8)
-│   ├── easel-illustrate/
-│   ├── easel-ai-media/
-│   └── easel-pixel/
+│   │   ├── systems/<id>/DESIGN.md   # generic styles only (D8)
+│   │   ├── tools/palette.mjs     # OKLCH palette tool
+│   │   └── examples/, test/
+│   ├── easel-illustrate/         # skills/, tools/svg-check.mjs, examples/, test/
+│   ├── easel-ai-media/           # skills/, .mcp.json + server/ (the "media" provider server, D22), test/
+│   └── easel-pixel/              # skills/, agents/, hooks/, .mcp.json + server/launch.mjs (D23), test/
 ├── plugins/<plugin>/evals/       # claude plugin eval suites live inside each plugin (the CLI's default)
-├── docs/                         # planning docs (this folder)
+├── docs/                         # planning docs, decisions, eval report (this folder)
+├── scripts/install-check.mjs     # clean install of the marketplace into an empty Claude Code config
+├── spikes/                       # code of the HyperFrames and Windows spikes (T0.4, T0.5)
+├── licenses/Apache-2.0.txt
 ├── LICENSE                       # MIT
-├── THIRD_PARTY_NOTICES.md        # from docs/third-party-notices-draft.md
+├── THIRD_PARTY_NOTICES.md
+├── CHANGELOG.md, CONTRIBUTING.md, CLAUDE.md
 └── README.md
 ```
+
+Every plugin also carries its own `LICENSE`, and those with adapted material a `NOTICE.md` (D18).
 
 ## 2. Manifests
 
@@ -60,6 +72,7 @@ Reference: <https://code.claude.com/docs/en/plugins/marketplace-reference>
 }
 ```
 
+- Shortened: the real file also gives each plugin entry a `description`.
 - `source` paths are relative to the marketplace root, and `..` is rejected.
 - `strict` stays at its default (`true`), so each `plugin.json` is the main manifest.
 
@@ -71,17 +84,18 @@ Reference: <https://code.claude.com/docs/en/plugins/manifest-reference>
 {
   "name": "easel-motion",
   "displayName": "Easel Motion",
-  "version": "0.1.0",
-  "description": "Code-drawn animation and video, style catalog, UI motion",
+  "version": "1.0.0",
+  "description": "Code-drawn animation and video, a style catalog, explainer grammars and UI motion",
   "author": { "name": "Sh0aib-Ja0allah" },
+  "homepage": "https://github.com/Sh0aib-Ja0allah/easel",
   "repository": "https://github.com/Sh0aib-Ja0allah/easel",
   "license": "MIT",
-  "keywords": ["animation", "video", "motion-graphics"],
-  "dependencies": ["easel-core"]
+  "keywords": ["animation", "video", "motion-graphics", "gsap"],
+  "dependencies": [{ "name": "easel-core", "version": "^1.0.0" }]
 }
 ```
 
-**Versioning.** Once `version` is set, users only receive updates when it is bumped. Every release therefore bumps `version` and tags `<plugin>--v<version>` with `claude plugin tag --push`. Dependency version ranges resolve against those tags. See <https://code.claude.com/docs/en/plugins/dependencies>.
+**Versioning.** Once `version` is set, users only receive updates when it is bumped. Every release therefore bumps `version` and tags `<plugin>--v<version>` with `claude plugin tag --push`. Dependency version ranges resolve against those tags: since v1.0.0 the five plugins that build on core declare `{ "name": "easel-core", "version": "^1.0.0" }`, matched against the `easel-core--v1.0.0` tag (D24). See <https://code.claude.com/docs/en/plugins/dependencies>.
 
 ## 3. How plugins share code
 
@@ -89,11 +103,11 @@ Reference: <https://code.claude.com/docs/en/plugins/manifest-reference>
 
 **Design:**
 
-1. **`easel-core` owns all shared code.** Its `engine/` directory holds the render engine, audio, schemas and QA scripts. The AI provider layer is the exception: it is easel-ai-media's own `media` server (D22), so keys and paid calls stay out of the plugin every user installs.
-2. **The other plugins declare `"dependencies": ["easel-core"]`.** Installing `easel-motion` then pulls in core automatically.
-3. **Core exposes the engine as an MCP server** (`.mcp.json`, stdio, `node ${CLAUDE_PLUGIN_ROOT}/engine/server.mjs`). Other plugins' skills call its tools by full name, for example `mcp__plugin_easel-core_easel__render`.
+1. **`easel-core` owns all shared code.** Its `engine/` directory holds the render engine, audio, schema validation and QA code; the data it serves (`craft/`, `rubrics/`, `schemas/`, `fonts/`) sits beside it. The AI provider layer is the exception: it is easel-ai-media's own `media` server (D22), so keys and paid calls stay out of the plugin every user installs.
+2. **The other plugins declare a dependency on core**, in the object form with a semver range: `"dependencies": [{ "name": "easel-core", "version": "^1.0.0" }]` (D24). Installing `easel-motion` then pulls in core automatically.
+3. **Core exposes the engine as an MCP server** (`.mcp.json`, stdio, `node ${CLAUDE_PLUGIN_ROOT}/engine/server.mjs`). Other plugins' skills call its tools by full name, for example `mcp__plugin_easel-core_easel__render_still` (the full list is in §4).
 4. **The same engine also runs as a CLI** (`node …/engine/cli.mjs`) for long jobs and scripting.
-5. **Shared rulebooks** (`craft/`, `rubrics/`, `schemas/`) are read through an MCP resource or tool (`easel.craft(name)`), not by file path. That way they work from any plugin.
+5. **Shared data is read through tools, not by file path:** rulebooks and rubrics (`craft/`, `rubrics/`) through the `craft` tool, schemas (`schemas/`) through `validate` (`schema: true`). That way they work from any plugin.
 
 > ✅ **Verified by spike T0.3 (2026-10-11, Windows):** a skill in `easel-motion` called `mcp__plugin_easel-core_easel__ping` and got its result. Plugin MCP servers are session-wide, so the CLI-shim fallback is not needed. Plugin MCP tools are deferred, so every skill names the full tool name in its body. Details: [spikes/cross-plugin-mcp.md](spikes/cross-plugin-mcp.md).
 
@@ -110,18 +124,22 @@ Every visual artifact is a web page that can be put into an exact state at any t
   - `window.renderAt(t)` (the mg-styles-15 contract), or
   - `window.renderFrame(t)` (the animate kit's canvas contract, easel-motion), with `window.TIMELINE` (or `window.__composition`) giving `width`, `height`, `fps` and `duration`; `window.renderAudioWav()` returns the piece's score as a base64 WAV, which `render_video` uses with `audio: "page"`; `window.ASSETS_READY` (a promise) holds rendering until embedded images are decoded, or
   - the HyperFrames composition contract: a root element with `data-composition-id`, `data-start`, `data-duration`, `data-width`, `data-height` (optional `data-fps`), and a paused GSAP timeline at `window.__timelines[<composition id>]`. CSS animations and transitions on the page are seeked through the Web Animations API (`animation.currentTime`).
-- `window.__ready = true` signals that fonts and assets have loaded.
+- `window.__ready = true` signals that fonts and assets have loaded. The engine waits for it only when a page script mentions `__ready`; it always waits for the load event, `document.fonts.ready` and decoded images.
+- Time `t` is in seconds. The seek order is `renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry, then every CSS animation.
 - The engine tells a page which format it is rendering in `window.__easel.aspect` (`'16:9'`, `'9:16'`, `'1:1'`, `'4:5'`, or `null` for the page's own size), so a piece can lay itself out per format instead of being cropped.
 
 ### Implementation (decision D7 = B, 2026-10-11)
 
-**Our own capture loop.** Playwright launches Chromium's headless shell from `${CLAUDE_PLUGIN_DATA}`, opens the page, waits for `__ready` and `document.fonts.ready`, and for each frame `n` seeks to `t = n / fps` (`renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry with `seek(t, false)`, then every Web Animation's `currentTime`). It screenshots each frame and pipes the frames to ffmpeg. Motion blur, if wanted, comes from sub-frame sampling. HyperFrames was evaluated and not adopted; see [spikes/hyperframes.md](spikes/hyperframes.md). Its composition format is supported so compositions stay portable.
+**Our own capture loop.** Playwright launches Chromium's headless shell from `${CLAUDE_PLUGIN_DATA}`, opens the page, waits for `__ready` and `document.fonts.ready`, and for each frame `n` seeks to `t = n / fps` (`renderAt(t)`, else `renderFrame(t)`, else every `__timelines` entry with `seek(t, false)`, then every Web Animation's `currentTime`). It screenshots each frame and pipes the frames to ffmpeg. The engine itself does no motion blur; the animate kit's `renderFrame(t, canvas, sub)` can draw sub-frame times for it. HyperFrames was evaluated and not adopted; see [spikes/hyperframes.md](spikes/hyperframes.md). Its composition format is supported so compositions stay portable.
 
-### MCP tools (draft)
+### MCP tools (v1.0.0)
+
+Fourteen tools in v1.0.0, defined in `plugins/easel-core/engine/tools.mjs`, each named `mcp__plugin_easel-core_easel__<tool>`:
 
 | Tool | Purpose |
 | --- | --- |
-| `doctor` | Check Node, Chromium, ffmpeg and optional tools; report Windows fixes |
+| `ping` | Health check: engine version, Node version, platform |
+| `doctor` | Check Node, Playwright and Chromium, ffmpeg and ffprobe, and optional tools (Python, Aseprite, provider keys by name); with `install: true`, install the pinned npm packages and Chromium into the data folder |
 | `render_still` | HTML/SVG/canvas → PNG at given sizes; light/dark |
 | `contact_sheet` | Many renders or sizes on one sheet (logo 16–512 px, storyboard panels) |
 | `render_video` | Page + duration + fps + aspect ratios → MP4 (and ProRes with alpha, v2) |
@@ -133,13 +151,14 @@ Every visual artifact is a web page that can be put into an exact state at any t
 | `compare_images` | A reference and our frame side by side on a 10% proportion grid, with both palettes |
 | `craft` | Return a craft rulebook or rubric by name |
 | `render_pdf` | A page or SVG → print PDF at its `@page` size, a paper format or explicit sizes |
-| `ping`, `doctor`, `validate` | Health check; environment check and installs into the data folder; schema validation of brand/brief/beats/cues/provenance |
+| `validate` | Schema validation of brand/brief/beats/cues/provenance files, or the schema itself (`schema: true`) |
+| `embed_fonts` | Added after v1.0.0 in the QA fixes (not in any v1.0.0 tag); its exact behaviour is in `tools.mjs` and the CHANGELOG once it lands |
 
 ### Determinism
 
-- Every page receives a seed.
-- Without a seed, `Math.random` and `Date.now` are banned in kits.
-- Fonts are local or embedded, never loaded from a CDN at render time.
+- Every page receives a seed: the engine replaces `Math.random` with a seeded generator (`seed`, default 1).
+- `Date`, `Date.now()` and `performance.now()` return the render time `t`, not the clock.
+- Fonts are local or embedded, never loaded from a CDN at render time. The headless browser is offline: names do not resolve and other requests are blocked; GSAP and p5.js URLs are answered from the copies `doctor` installed.
 
 ### Audio
 
@@ -148,14 +167,14 @@ Every visual artifact is a web page that can be put into an exact state at any t
 
 ### Setup and caching
 
-- **First run:** `doctor` installs engine `node_modules` and Playwright Chromium into `${CLAUDE_PLUGIN_DATA}`. That directory survives plugin updates; `${CLAUDE_PLUGIN_ROOT}` changes on every update.
+- **First run:** `doctor` (asked for by the `setup` skill) installs the pinned npm packages (`playwright-core` 1.64.0, `gsap` 3.14.2, `p5` 1.11.13) and the Playwright Chromium headless shell into `${CLAUDE_PLUGIN_DATA}`. That directory survives plugin updates; `${CLAUDE_PLUGIN_ROOT}` changes on every update. Easel does not ship these packages (D10); GSAP is under GreenSock's "standard no-charge" license (<https://gsap.com/standard-license>), not an open-source licence.
 - **ffmpeg:** we check for it on the system rather than bundling it. `doctor` prints install commands, including `winget install --id Gyan.FFmpeg -e` on Windows.
 
 ## 5. Optional external pieces
 
 | Piece | How | Notes |
 | --- | --- | --- |
-| Aseprite bridge | `easel-pixel/.mcp.json` → `node ${CLAUDE_PLUGIN_ROOT}/server/launch.mjs serve`, which runs the pinned `@pebbly/aseprite-ai-artist` 0.8.0 installed in the data folder (D23) | The pixel skill runs `launch.mjs setup` once: `npm ci` from the shipped lockfile, then the package's Lua extension. Their hook matchers are rewritten for our tool names. |
+| Aseprite bridge | `easel-pixel/.mcp.json` → `node ${CLAUDE_PLUGIN_ROOT}/server/launch.mjs serve`, which runs the pinned `@pebbly/aseprite-ai-artist` 0.8.0 installed in the data folder (D23) | The pixel skill runs `launch.mjs setup` once: `npm ci` from the shipped lockfile, then the package's Lua extension. Their hook matchers are rewritten for our tool names. Needs Node 22.6+. The launcher hides the package's `run_lua` tool, but the package's local bridge (127.0.0.1:9932) has no authentication, so any local process can still send it commands, including Lua (see the D23 correction). |
 | HyperFrames | Not a dependency (D7 = B). Users may install it themselves; Easel compositions follow its format | Apache-2.0; credited for the composition-format idea |
 | Image/video/voice APIs | Provider layer (§6) | Bring your own key |
 
@@ -184,7 +203,7 @@ masked `userConfig` fields (stored in the system's credential store) passed as
 `EASEL_CFG_<PROVIDER>`. Keys are never written to disk, are masked in every output, and are sent
 only to each provider's own https hosts.
 
-**Required behaviour (implemented and tested with recorded responses):**
+**Required behaviour (implemented and tested offline with synthetic fixtures):** the test fixtures are hand-written responses shaped from each provider's documentation, not recordings of live calls. No live call has been made, so the adapters are not yet checked against the live APIs.
 
 - Every generation is a dry run with a cost estimate until the user confirms; above the limit
   (`max_spend_usd`, default 0.5 USD) or for an unpriced model an approved amount is also needed.
@@ -193,8 +212,8 @@ only to each provider's own https hosts.
   overwritten; every file gets a `provenance.json` entry; job folders stay inside the project.
 - **Voice cloning requires the voice owner's consent statement and a recording of it**, in the
   job folder, checked before any call; every clone is logged in `consent-log.jsonl`.
-- No watermarks or tracking parameters. Live calls have not been run by the project (owner's keys
-  and budget).
+- No watermarks or tracking parameters. Live calls have not been run by the project (they need the
+  owner's keys and budget).
 
 ## 7. Shared data formats (`easel-core/schemas`)
 
@@ -228,15 +247,14 @@ Every visual skill ends with the same loop:
 - **Node scripts only.** No bash-only or PowerShell-only scripts in the plugins.
 - **Paths:** use `path.join` and never hardcode `/tmp`, `/usr/bin` or Mac font paths.
 - **Fonts:** ship OFL fonts inside the plugin, so we don't depend on system fonts.
-- **Python:** call it as `python` rather than `python3`, and only for optional features.
-- **CI:** run engine smoke tests on `windows-latest`, `ubuntu-latest` and `macos-latest` (task T1.6).
+- **Python:** not needed by any Easel feature (D16: audio is synthesized in the engine). `doctor` still reports it as optional, for the user's own scripts.
+- **CI:** every plugin's test suite runs on `windows-latest`, `ubuntu-latest` and `macos-latest` (task T1.6 started it with the engine), plus a clean install of the marketplace on all three on pushes to `main` (T5.5).
 
 ## 10. Testing
 
 - **`claude plugin validate . --strict`:** run in CI on every push. See <https://code.claude.com/docs/en/plugins/cli-reference>.
 - **`claude plugin eval`:** for each plugin, cases in `plugins/<plugin>/evals/<case>/prompt.md` with `graders/*.md`; engine tools are answered by mocks in `plugins/<plugin>/evals/mocks/easel/`. See <https://code.claude.com/docs/en/plugin-evals>.
-  - Routing cases check that the right skill triggers, using the `tool_used` grader.
-  - Output cases check `file_exists`, plus a regex or llm judge.
-  - A baseline run without the plugin shows what the plugin adds.
+  - In v1.0.0 nearly every case is a routing case: a `tool_used` grader checks that the right skill triggered, plus an LLM judge on the reply (57 cases; 63 `tool_used`, 47 `llm`, 6 `regex` and 2 `file_exists` graders). The engine mocks write no files, so only two easel-core `brand` cases check an output file (`.easel/brand.md`); design, illustrate, ai-media and pixel cases judge the plan in the reply. Rendered output is checked by each plugin's tests instead.
+  - A baseline run without the plugin shows what the plugin adds ([evals-v1.md](evals-v1.md)).
   - Evals are real model calls, so they run on demand and before releases, not on every push.
-- **Engine unit tests:** golden-frame image comparisons for each style kit.
+- **Plugin tests** (`npm --prefix <engine or plugin> test`, list in CLAUDE.md): golden-frame comparisons for the engine fixtures and every motion style, every design and illustrate example rendered and checked through the engine, the provider server with synthetic fixtures, the pixel launcher with a stand-in package, and the notices test.
