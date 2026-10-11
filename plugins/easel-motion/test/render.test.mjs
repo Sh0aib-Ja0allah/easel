@@ -47,7 +47,9 @@ for (const s of STYLES) {
     assert.equal(v.warnings, undefined, JSON.stringify(v.warnings));
     const p = m.probe(v.videos[0].file);
     assert.deepEqual([p.video.width, p.video.height, p.video.fps], [1080, 1920, 24]);
-    assert.equal(p.video.frames, FULL ? 144 : 24);
+    // full length is the demo's own TIMELINE duration (6 s for most, 8 s for cut-paper)
+    assert.equal(p.video.frames, Math.round(v.videos[0].duration * 24));
+    if (!FULL) assert.equal(p.video.frames, 24);
     assert.ok(p.audio, 'the score is muxed');
     const loud = m.loudness(join(out, `${s}-video`, `${s}.wav`));
     assert.ok(loud.pass, `${s} score: ${JSON.stringify(loud)}`);
