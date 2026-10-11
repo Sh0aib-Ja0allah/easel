@@ -14,7 +14,7 @@ const skip = findBinary('ffmpeg') && findBinary('ffprobe') ? false : 'needs ffmp
 // a temporary project folder (job folders must be inside the project)
 const root = realpathSync(mkdtempSync(join(tmpdir(), 'easel-assemble-')));
 process.chdir(root);
-after(() => { process.chdir(tmpdir()); rmSync(root, { recursive: true, force: true }); });
+after(() => { process.chdir(tmpdir()); rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 }); });
 const lavfi = (name, spec, extra = []) => { const f = join(root, name); const r = spawnSync(bin('ffmpeg'), ['-y', '-v', 'error', '-f', 'lavfi', '-i', spec, ...extra, f], { encoding: 'utf8', windowsHide: true }); assert.equal(r.status, 0, r.stderr); return f; };
 const probe = (f) => JSON.parse(spawnSync(bin('ffprobe'), ['-v', 'error', '-show_streams', '-show_format', '-of', 'json', f], { encoding: 'utf8', windowsHide: true }).stdout);
 

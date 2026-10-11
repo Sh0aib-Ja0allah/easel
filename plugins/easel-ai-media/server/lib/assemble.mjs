@@ -62,8 +62,17 @@ export function assemble(args) {
   // never one of this film's own inputs (ffmpeg -y only ever replaces the empty file claimed here)
   const ffmpeg = need('ffmpeg');
   const file = reservePath(out, String(args.name || 'film').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'film', '.mp4');
-  const r = spawnSync(ffmpeg, ['-y', '-hide_banner', '-loglevel', 'error', ...inputs, '-filter_complex', filters.join(';'), '-map', `[${last}]`, ...audioMap, '-c:v', 'libx264', '-preset', args.preset || 'medium', '-crf', String(args.crf ?? 18), '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', total.toFixed(3), '-movflags', '+faststart', file], { encoding: 'utf8', windowsHide: true, maxBuffer: 1 << 26 });
-  if (r.status !== 0) { rmSync(file, { force: true }); throw new Error(`ffmpeg failed: ${(r.stderr || '').trim().slice(-800)}`); }
+  // -xerror: stop at the first decode error. Without it ffmpeg loops forever on a bad looped overlay,
+  // printing an error per frame; on Windows the output buffer then fills, Node kills the package
+  // manager's ffmpeg shim, and the real ffmpeg keeps the claimed file open. The timeout is a backstop.
+  const r = spawnSync(ffmpeg, ['-y', '-hide_banner', '-loglevel', 'error', '-xerror', ...inputs, '-filter_complex', filters.join(';'), '-map', `[${last}]`, ...audioMap, '-c:v', 'libx264', '-preset', args.preset || 'medium', '-crf', String(args.crf ?? 18), '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', total.toFixed(3), '-movflags', '+faststart', file], { encoding: 'utf8', windowsHide: true, maxBuffer: 1 << 26, timeout: Math.max(300000, Math.ceil(total) * 30000) });
+  if (r.status !== 0) {
+    const why = `ffmpeg failed: ${(r.stderr || (r.error && r.error.message) || '').trim().slice(-800)}`;
+    // Windows may hold the file for a moment after ffmpeg exits: retry, and never let a clean-up
+    // error hide the real one
+    try { rmSync(file, { force: true, maxRetries: 10, retryDelay: 200 }); } catch (e) { throw new Error(`${why} (the empty ${file} could not be removed: ${e.code || e.message})`); }
+    throw new Error(why);
+  }
   // the film is the server's own output: recorded by content hash (the consent gate never takes it
   // as a recording) in jobs.jsonl and the outputs ledger
   const hash = sha256(readFileSync(file)), name = relative(out, file).split(sep).join('/');
