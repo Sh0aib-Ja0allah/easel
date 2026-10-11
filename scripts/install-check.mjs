@@ -72,7 +72,9 @@ const cli = (tool, args) => { const f = join(out, `${tool}-${Date.now()}.json`);
 step('easel-core: doctor --install into an empty data folder', () => {
   node([join(core(), 'engine', 'cli.mjs'), 'doctor', '--install', 'true'], { extraEnv: engineEnv() });
   const r = cli('doctor', {});
-  const bad = r.checks.filter((c) => !c.ok).map((c) => c.name);
+  // every required check, and the libraries doctor installs (gsap, p5); optional ones (Aseprite,
+  // provider keys) are the user's
+  const bad = r.checks.filter((c) => !c.ok && (c.required || ['gsap', 'p5'].includes(c.name))).map((c) => c.name);
   if (bad.length) throw new Error(`doctor still reports: ${bad.join(', ')}`);
   return { checks: r.checks.length };
 });
