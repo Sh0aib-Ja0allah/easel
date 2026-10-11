@@ -54,7 +54,7 @@ test('four skills with matching names, routing text under the cap, real tools, l
 test('adapted files name their source, commit, licence and changes; the rest say they are Easel\'s own', () => {
   let adapted = 0;
   for (const f of SKILLS.flatMap((s) => walk(join(PLUGIN, 'skills', s)))) {
-    const head = read(f).slice(0, 2000);
+    const head = read(f).slice(0, 3000);
     if (!/Easel: [\s\S]{0,300}?adapted from/.test(head)) { assert.match(head, /Easel's own/, `${f}: no attribution or "Easel's own" note`); continue; }
     adapted++;
     assert.match(head, /[\w.-]+\/[\w.-]+\s+@\s+[0-9a-f]{40}/, f);
@@ -139,4 +139,68 @@ test('the eval mocks describe the server as it is', () => {
   const dir = join(PLUGIN, 'evals', 'mocks', 'media');
   assert.deepEqual(JSON.parse(read(join(dir, '_tools.json'))).tools, Object.entries(tools).map(([name, t]) => ({ name, description: t.description, inputSchema: t.inputSchema })), 'regenerate evals/mocks/media/_tools.json from server/tools.mjs');
   for (const name of Object.keys(tools)) assert.ok(existsSync(join(dir, `${name}.md`)), `mocks/media/${name}.md`);
+});
+
+test('the visual skills end in easel-core:critique with a rubric that exists', () => {
+  for (const s of ['image', 'ai-video']) {
+    const b = body(join(PLUGIN, 'skills', s, 'SKILL.md'));
+    const at = b.lastIndexOf('easel-core:critique');
+    assert.ok(at >= 0, `${s}: no easel-core:critique step`);
+    const rubrics = [...b.slice(at, at + 300).matchAll(/\*\*([a-z]+)\*\* rubric/g)].map((m) => m[1]);
+    assert.ok(rubrics.length, `${s}: the critique step names no rubric`);
+    for (const r of rubrics) assert.ok(existsSync(join(CORE, 'rubrics', `${r}.md`)), `${s}: rubric ${r}`);
+    assert.ok(at > b.indexOf('## 4.'), `${s}: critique comes after the work is made and checked`);
+  }
+});
+
+test('tool examples in the ai-video skill use arguments the tools take (filmstrip on a video file, validate with a file)', () => {
+  const files = walk(join(PLUGIN, 'skills', 'ai-video')).filter((f) => f.endsWith('.md'));
+  // C2: a video input takes these; page arguments (html, aspect, theme, seed, reducedMotion, width, height) are refused
+  const VIDEO_ARGS = new Set(['file', 'count', 'times', 'name', 'slug', 'outDir', 'columns', 'cellWidth', 'title']);
+  let videoStrips = 0;
+  for (const f of files) {
+    const b = body(f).replace(/\n\s*/g, ' ');
+    for (const m of b.matchAll(/filmstrip`?[^.{]{0,120}?`(\{[^`]*\})`/g)) {
+      const keys = [...m[1].matchAll(/"(\w+)":/g)].map((k) => k[1]);
+      if (!/\.(mp4|mov|webm)"/.test(m[1])) continue;
+      videoStrips++;
+      for (const k of keys) assert.ok(VIDEO_ARGS.has(k), `${f}: filmstrip on a video with "${k}": ${m[1]}`);
+      assert.ok(keys.includes('count') || keys.includes('times'), `${f}: ${m[1]}`);
+    }
+    for (const m of b.matchAll(/validate`?\s*`(\{[^`]*\})`/g)) assert.match(m[1], /"(file|data|schema)":/, `${f}: validate needs file, data or schema: ${m[1]}`);
+  }
+  assert.ok(videoStrips >= 3, `${videoStrips} filmstrip examples on clip or film files`);
+});
+
+test('sound: assemble masters the film and takes per-beat narration; the skills say so and never ask the model to listen', () => {
+  const video = body(join(PLUGIN, 'skills', 'ai-video', 'SKILL.md')), voice = body(join(PLUGIN, 'skills', 'voice', 'SKILL.md'));
+  assert.match(tools.assemble.description, /-14 LUFS/);
+  assert.ok(tools.assemble.inputSchema.properties.lufs);
+  assert.match(video, /masters the mix to -14 LUFS/);
+  assert.match(video, /narration: \[\{"file": "[^"]+", "clip": 0\}/);
+  assert.match(voice, /assemble` masters the whole mix/);
+  assert.match(voice, /mux_audio[\s\S]{0,120}master: true/);
+  for (const f of walk(join(PLUGIN, 'skills')).filter((x) => x.endsWith('.md'))) {
+    for (const line of body(f).split('\n').filter((l) => /\blisten/i.test(l))) assert.match(line, /user/, `${f}: the model cannot hear: ${line.trim()}`);
+  }
+});
+
+test('prompts: exclusions are phrased positively everywhere, as the provider notes say', () => {
+  for (const f of walk(join(PLUGIN, 'skills')).filter((x) => x.endsWith('.md'))) {
+    const b = body(f);
+    assert.doesNotMatch(b, /\bNOT (3D|CGI|photoreal)/, f);
+    assert.doesNotMatch(b, /State what to exclude|\[NEGATIVE\]/, f);
+  }
+});
+
+test('keys: the providers skill never suggests typing a key into a terminal command', () => {
+  const b = body(join(PLUGIN, 'skills', 'providers', 'SKILL.md'));
+  assert.doesNotMatch(b, /(setx|export)\s+[A-Z_]+(\s+|=)"?</);
+  assert.match(b, /\/plugin configure easel-ai-media/);
+});
+
+test('routing tie-breaks: "a product shot" (image vs easel-design:design) and "a video" (ai-video vs easel-motion:animate)', () => {
+  const route = (s) => { const fm = /^---\n([\s\S]*?)\n---\n/.exec(read(join(PLUGIN, 'skills', s, 'SKILL.md')))[1]; return field(fm, 'when_to_use'); };
+  assert.match(route('image'), /product shot[^.]*this skill[^.]*easel-design:design/);
+  assert.match(route('ai-video'), /"a video"[^.]*this skill[^.]*easel-motion:animate/);
 });

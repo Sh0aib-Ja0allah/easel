@@ -1,6 +1,6 @@
 <!-- Easel: adapted from ArnavPuri/designskills @ c7873015add8571ca95043febad0d9e6c97ee5c6
      (github.com/ArnavPuri/designskills, skills/image-generation/SKILL.md), MIT License, Copyright (c) 2026 Arnav Puri;
-     see NOTICE.md. Modified by Easel (2026-10-11): the provider-neutral prompt structure, principles, style patterns and output checks only; the Gemini CLI, pip installs and ratio flags removed (the easel-ai-media generate tool sends the request). -->
+     see NOTICE.md. Modified by Easel (2026-10-11): the provider-neutral prompt structure, principles, style patterns and output checks only; the Gemini CLI, pip installs and ratio flags removed (the easel-ai-media generate tool sends the request); exclusions phrased positively, to match the provider notes in the ai-video prompt guide. -->
 
 # Prompt craft for image models
 
@@ -9,7 +9,7 @@
 Every prompt should follow this hierarchy:
 
 ```
-[FORMAT] + [SUBJECT] + [STYLE] + [COMPOSITION] + [COLOR] + [TYPOGRAPHY] + [MOOD] + [NEGATIVE]
+[FORMAT] + [SUBJECT] + [STYLE] + [COMPOSITION] + [COLOR] + [TYPOGRAPHY] + [MOOD] + [CLEAN-UP, phrased positively]
 ```
 
 **Example - product social post:**
@@ -18,7 +18,7 @@ Every prompt should follow this hierarchy:
 > Bold white sans-serif text "HEAR EVERYTHING" spans the top third.
 > Small coral (#ff6b6b) subtext "Available March 20" below.
 > Subtle geometric triangles in the background at 10% opacity.
-> Clean, modern, premium feel. No borders, no clip art.
+> Clean, modern, premium feel; edge-to-edge artwork with photographic and geometric elements only.
 
 ### Key Principles
 
@@ -27,13 +27,13 @@ Every prompt should follow this hierarchy:
 3. **Describe spatial layout** - "headline in upper third, product centered, CTA in lower right"
 4. **Name the style** - "flat vector", "3D render", "watercolor", "photorealistic", "minimalist Swiss design" (a medium or a movement, never a living artist, a studio or a brand)
 5. **Include typography instructions** - font style, size relationship, color, position
-6. **State what to exclude** - "no stock photo watermarks, no beveled effects, no clipart"
+6. **Say what to leave out as what to show instead** - "a clean unbranded surface, flat matte shapes, photographic elements only" rather than "no watermarks, no bevels, no clipart". The generate tool sends one prompt with no separate negative field, and Gemini, OpenAI and Flux image models take no negative prompts: naming an unwanted thing can bring it in.
 
 ### Style-Specific Prompt Patterns
 
 | Style | Prompt Additions |
 |-------|-----------------|
-| **Minimalist** | "generous whitespace, single accent color, clean sans-serif, no decorative elements" |
+| **Minimalist** | "generous whitespace, single accent color, clean sans-serif, plain undecorated surfaces" |
 | **Bold/Vibrant** | "saturated colors, large impactful typography, geometric shapes, high contrast" |
 | **Luxurious** | "dark background, gold or champagne accents, serif typography, subtle texture, elegant" |
 | **Playful** | "bright palette, rounded shapes, hand-drawn feel, casual handwriting font" |

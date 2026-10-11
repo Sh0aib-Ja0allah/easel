@@ -10,7 +10,9 @@ when_to_use: >-
   The user asks to generate an image, an AI image or photo, to edit or restyle a photo, or a design
   skill needs a photographic background. For layouts with text (posters, social posts, ads) use
   easel-design first and use this only for the picture inside; for vector illustration use
-  easel-illustrate.
+  easel-illustrate. A product shot that is a photograph (the product in a scene, from the user's
+  photos) is this skill; one that is a designed layout (a screen in a device frame, a product card
+  with text) is easel-design:design.
 argument-hint: "[what the image shows] [size or where it will be used]"
 allowed-tools: mcp__plugin_easel-ai-media_media__providers mcp__plugin_easel-ai-media_media__estimate mcp__plugin_easel-ai-media_media__generate mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet Read Write Glob
 ---
@@ -32,10 +34,15 @@ consent, other artists' characters, or brand logos the user does not own.
 ## 2. The prompt
 
 Read [reference/prompt-craft.md](reference/prompt-craft.md). Build the prompt as format +
-subject + style + composition + colour (hex from `.easel/brand.md`) + typography + mood + what to
-exclude. Name a medium or a movement, never a living artist or a studio. Pass the user's own
+subject + style + composition + colour (hex from `.easel/brand.md`) + typography + mood, with
+anything to leave out written as what to show instead (most image models take no negative
+prompt). Name a medium or a movement, never a living artist or a studio. Pass the user's own
 photos or logo as `refs` (PNG, JPEG or WebP files inside the project folder; nothing else is
 sent) rather than describing them.
+
+OpenAI makes 1024x1024, 1024x1536 and 1536x1024 only: an `aspect` goes as the nearest (9:16 as
+1024x1536, 2:3), shown under `sent`/`notes` in the dry run; for an exact 9:16 or 16:9 keyframe use
+gemini, fal-ai/nano-banana or Atlas. Atlas `google/nano-banana-2/text-to-image` takes no `refs`.
 
 ## 3. Price, then generate
 
@@ -57,7 +64,15 @@ crop at each size and artefacts (hands, edges, extra objects). Fix one thing per
 or move the text into a code overlay. Several candidates: compare them on a
 `mcp__plugin_easel-core_easel__contact_sheet`.
 
-## 5. Deliver
+## 5. Critique
+
+Run `easel-core:critique` on the image at the size it will be seen before delivering: the
+**illustration** rubric for a picture that stands on its own (a painted or photographic image),
+the **design** rubric for the picture inside a layout (a hero, a banner, a product page). Fix
+what it ranks first with one change per new generation (a new dry run and estimate), or with a
+code overlay for text.
+
+## 6. Deliver
 
 The image files, the prompt, the provider and model, what it cost (estimate), and the
 `provenance.json` entry the tool wrote. Tell the user when a provider marks its images as

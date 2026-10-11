@@ -1,6 +1,6 @@
 <!-- Easel: adapted from Alisa0808/vox-director @ 6a85a7c341610442a6a5b1885e6e0217ab82a11f
      (github.com/Alisa0808/vox-director, references/models-and-gotchas.md), MIT License, Copyright (c) 2026 Alisa Qian;
-     see NOTICE.md. Modified by Easel (2026-10-11): content-block section and the real-people model row replaced by the Easel policy; Python, curl and Pillow gotchas restated as what the Easel media and core tools do; ffmpeg notes tied to the assemble tool; host-mode recipe and catalogue URLs dropped; cost section recomputed from per-second video pricing; ASCII punctuation. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): content-block section and the real-people model row replaced by the Easel policy; Python, curl and Pillow gotchas restated as what the Easel media and core tools do; ffmpeg notes tied to the assemble tool; host-mode recipe and catalogue URLs dropped; cost section recomputed from per-second video pricing; loudness mastering, per-beat narration and filmstrip on video files added for the Easel tools; ASCII punctuation. -->
 
 # Models and gotchas
 
@@ -17,8 +17,9 @@ before debugging: most failures are already solved below. For the prompts themse
 | Keyframes, clips, narration, music | `mcp__plugin_easel-ai-media_media__generate` kinds `image`, `video`, `tts`, `music` (a dry run with a cost estimate and a `quote` unless `confirm: true` with the `quote` of a dry run of the same request; above the spending limit it also needs `approvedUsd`) |
 | A cloned narrator voice | the `voice` skill only (generate kind `voice-clone`, consent required; see [voices.md](../../voice/reference/voices.md)) |
 | Caption and watermark PNGs | `mcp__plugin_easel-core_easel__render_still` with `transparent: true` |
-| Join clips, overlays, narration and music | `mcp__plugin_easel-ai-media_media__assemble` |
-| Check the result | `mcp__plugin_easel-core_easel__filmstrip` and `mcp__plugin_easel-core_easel__qa` |
+| Join clips, overlays, narration and music, and master the loudness | `mcp__plugin_easel-ai-media_media__assemble` |
+| Check the result | `mcp__plugin_easel-core_easel__filmstrip` on the clip or film file, and `mcp__plugin_easel-core_easel__qa` |
+| Review before delivering | `easel-core:critique` with the **motion** rubric |
 
 Every generated file lands in `./easel-out/<slug>/` with a `provenance.json` entry.
 
@@ -32,7 +33,7 @@ provider's own model catalogue before a large job. The Atlas Cloud ids and price
 |---|---|---|---|
 | Keyframe / collage poster | `google/nano-banana-2/text-to-image` | about $0.08 at 1k, $0.12 at 2k, per image | strong text rendering (Latin and CJK), a clearly layered look |
 | Animate a poster | `google/gemini-omni-flash/image-to-video` | about $0.13 per second, 3 s minimum | keeps on-screen text stable, layered parallax motion |
-| Animate (alternative) | `kwaivgi/kling-video-o3-pro/image-to-video` (not in Easel's Atlas list yet; Easel reaches Kling through fal.ai) | about $0.095 per second on Atlas | accepts negative prompts; follows the input image's aspect; check fine text for drift |
+| Animate (alternative) | `kwaivgi/kling-video-o3-pro/image-to-video` (not in Easel's Atlas list yet; Easel reaches Kling through fal.ai) | about $0.095 per second on Atlas | takes a negative prompt in its own API (Easel sends the prompt alone, so phrase it positively); follows the input image's aspect; check fine text for drift |
 | Narration | `xai/tts-v1` | about $0.015 per request | clean multilingual TTS with a voice id and language (roster in [voices.md](../../voice/reference/voices.md)) |
 | Music | `minimax/music-2.6` | about $0.11 per request | instrumental; returns about 2 minutes, which assembly trims to the film |
 
@@ -106,11 +107,22 @@ The assemble tool runs the user's local ffmpeg. It is built around these lessons
 - **Ducking keeps the full length.** The narration is padded to the film's length before the
   music is ducked under it, so a music-only ending (an outro after the last line) is not cut
   off when the voice stops.
+- **One line per beat.** `narration` takes one file for the whole film, or a list of lines:
+  `[{"file": "vo-b2.mp3", "clip": 2}]` starts a line with that clip (numbered from 0), and
+  `[{"file": "vo-b2.mp3", "start": 6.5}]` at a time in seconds. A retake then replaces one line.
+  The result warns when a line runs into the next one or past the end of the film.
+- **The mix is mastered.** assemble masters the final mix to -14 LUFS integrated with a true
+  peak of -1 dBTP (it measures the mix, then applies a gain and, where the peaks need it, a
+  true-peak limiter; `lufs` between -18 and -10 sets another target), so the film lands inside
+  qa's -16 to -12 LUFS window however loud the narration came back. Its result reports the
+  measured `loudness`. `musicDb` sets the music's balance under the voice, not the film's
+  loudness.
 - **Hard cuts.** Assemble joins shots with hard cuts, so beat start times are simply the sum of
   the earlier shot lengths. If you add crossfades or whip transitions in another editor, each
   overlap shifts every later beat: recompute the caption times.
-- **Verify by looking at frames.** You cannot watch an mp4. Use `filmstrip` to grab frames
-  (one per shot at least) and open them; check that the headline letters survived the video
+- **Verify by looking at frames.** You cannot watch an mp4, but `filmstrip` reads frames from
+  it: `{"file": "film.mp4", "times": [...]}` (one time per shot at least) or `{"file":
+  "clip.mp4", "count": 6}`. Open the sheet; check that the headline letters survived the video
   step, that nothing morphed, and that captions sit where planned. Then run `qa` on the final
   file.
 

@@ -1,6 +1,6 @@
 <!-- Easel: adapted from Alisa0808/vox-director @ 6a85a7c341610442a6a5b1885e6e0217ab82a11f
      (github.com/Alisa0808/vox-director, references/prompt-guide.md), MIT License, Copyright (c) 2026 Alisa Qian;
-     see NOTICE.md. Modified by Easel (2026-10-11): style renamed to editorial collage; real-people and filter-workaround section replaced by the Easel policy; celebrity worked example replaced; script and engine references replaced by Easel tools and video-plan.json fields; typeface, studio and person names removed from the vocabulary; source URLs dropped; ASCII punctuation. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): style renamed to editorial collage; real-people and filter-workaround section replaced by the Easel policy; celebrity worked example replaced; script and engine references replaced by Easel tools and video-plan.json fields; typeface, studio and person names removed from the vocabulary; source URLs dropped; negatives rewritten as positive phrases (the generate tool sends one prompt with no negative field); clips and films checked with filmstrip on the video file; ASCII punctuation. -->
 
 # Prompt guide: the editorial collage look
 
@@ -17,7 +17,8 @@ Everything below sits on top of the **common editorial collage constraints** (ne
 
 > torn or scissor-cut paper edges, tape, halftone dots, newspaper clippings, paper-stencil
 > shapes, real paper drop shadows, bold flat colour, PRINTED or illustrated cut-outs,
-> **NOT 3D, NOT CGI, NOT photoreal**, keep print grain, headline text baked in "quotes".
+> **flat 2D printed paper with a scanned, hand-made texture** (the look must never read as 3D,
+> CGI or photoreal), keep print grain, headline text baked in "quotes".
 
 - [1. Image prompt](#1-image-prompt)
 - [2. Video prompt](#2-video-prompt)
@@ -41,8 +42,8 @@ prompt in 5 parts:
 [1 STYLE BLOCK - identical on every beat]
   Mixed-media hand-cut PAPER COLLAGE, editorial zine style. Torn and scissor-cut paper edges,
   tape corners, halftone print dots, newspaper clippings, paper-stencil shapes, real paper
-  drop shadows. Figures are PRINTED-texture cut-outs (photo, woodblock or mural print),
-  NOT CGI, NOT a 3D render; keep print grain and paper imperfections. High contrast.
+  drop shadows. Figures are PRINTED-texture cut-outs (photo, woodblock or mural print), flat 2D
+  printed paper with a scanned texture; keep print grain and paper imperfections. High contrast.
 
 [2 SCENE - describe as SEPARATE cut-out pieces]
   SCENE as layered paper cut-outs: {main subject}, {a prop}, {a text strip}, {a decorative
@@ -73,8 +74,8 @@ The `{...}` slots come from the beat's fields in the job's `video-plan.json` (`s
 - **One bold flat background colour per beat.** Busy backgrounds muddy the cut-out silhouettes
   and kill the punch. Let the palette travel across beats to carry mood (see the colour row
   below): for example aged sepia, then bold pop colours, then a gold finish.
-- **Say "NOT 3D, NOT CGI, printed texture, keep grain"** (or the positive form, see the note on
-  negatives below), or the model drifts toward smooth CGI and loses the paper feel.
+- **Say "flat 2D printed paper, scanned texture, keep print grain"** (the positive form; see the
+  note on negatives below), or the model drifts toward smooth CGI and loses the paper feel.
 - **2k** so cut-outs stay crisp when scaled or animated.
 - Keep a **consistent paper-texture language** across beats (edge roughness, halftone
   density). Colour can change; texture should not.
@@ -84,8 +85,8 @@ The `{...}` slots come from the beat's fields in the job's `video-plan.json` (`s
 ### Worked example (a history-of-money beat, clay tan)
 
 > Mixed-media hand-cut PAPER COLLAGE, editorial zine style; torn edges, tape, halftone dots,
-> newspaper clippings, paper-stencil texture, real drop shadows; PRINTED-texture cut-outs, NOT
-> 3D or CGI, keep print grain. SCENE as layered paper cut-outs: two traders in woodblock-print
+> newspaper clippings, paper-stencil texture, real drop shadows; PRINTED-texture cut-outs, flat
+> 2D printed paper with a scanned texture, keep print grain. SCENE as layered paper cut-outs: two traders in woodblock-print
 > robes facing each other, a goat, a basket of cowrie shells, a torn "BARTER" newspaper strip,
 > scattered geometric scraps; clear edges and drop shadows. Bold flat earthy clay-tan paper
 > background. Torn-paper banner headline "BEFORE MONEY" with a small subtitle and a red seal.
@@ -114,9 +115,10 @@ space], [straight-on, scanned-flat framing] + [flat even light, paper drop shado
 limited COLOUR PALETTE], [PRINT FINISH / texture], headline "EXACT WORDS" in [NAMED TYPE STYLE]
 [placement], [MOOD], [aspect]`
 
-Negatives depend on the model: Gemini image models (nano-banana family), Flux and OpenAI image
-models take **no negative prompts**, so phrase everything positively ("flat printed paper,
-scanned texture" rather than "not 3D"); SDXL-family models take a separate negative field.
+Phrase everything positively ("flat printed paper, scanned texture" rather than "not 3D"):
+Gemini image models (nano-banana family), Flux and OpenAI image models take **no negative
+prompts**, and naming an unwanted thing can bring it in. Easel's generate tool sends the prompt
+alone, with no separate negative field, for every provider.
 
 ---
 
@@ -181,9 +183,9 @@ actually control stability: they fix the loop, text-wobble and morph failures.
 | **Element motion** | what moves inside the frame | **safe paper-native verbs:** drift, sway, ripple, flutter, slide, pivot (rigid), bob, pulse, shimmer, settle, parallax between layers. **Bold (loose plus re-roll):** warp, transform, morph, vortex, explode |
 | **Speed / easing** | tempo | slow, gentle, continuous, ease-in-ease-out (risky: quick, snap, whip) |
 | **Lighting over time** | the best "safe motion" for flat art | a soft light sweep across the surface, gentle shadow drift, subtle flicker or glow pulse |
-| **Dimensional lock** [key] | keeps it flat | "flat 2D, camera parallel to the poster, no 3D rotation, no perspective change; paper layers parallax only, elements slide and pivot as rigid flat paper, never bending or morphing" |
-| **Stability anchors** [stability] | protects text and layout | "the printed headline and layout stay sharp, legible and perfectly stable; the lettering is never redrawn, distorted or moved" |
-| **Shot structure** | cuts and loops | "single continuous shot, no cuts, no scene changes"; for a one-way move add a **motion endpoint** ("...then settles into place"); for a seamless loop say "looping video" where the model supports it |
+| **Dimensional lock** [key] | keeps it flat | "flat 2D, camera parallel to the poster, the poster plane stays square-on with a fixed perspective; paper layers parallax only, elements slide and pivot as rigid flat paper and keep their shape" |
+| **Stability anchors** [stability] | protects text and layout | "the printed headline and layout stay sharp, legible and perfectly stable; every letter keeps its exact shape and place" |
+| **Shot structure** | cuts and loops | "one single continuous shot in one unchanging scene"; for a one-way move add a **motion endpoint** ("...then settles into place"); for a seamless loop say "looping video" where the model supports it |
 
 ### Best-practice rules (from the published video-model prompting guides)
 
@@ -193,9 +195,10 @@ actually control stability: they fix the loop, text-wobble and morph failures.
    and morphing.
 3. **Keep amplitude small and motion physically plausible.** Slow, gentle, coherent movement;
    avoid high-burst, large dynamic actions.
-4. **Know whether your model takes negatives.** Gemini Omni Flash, Veo and Runway work best with
-   positive phrasing only ("no" and "don't" can backfire). Kling and Seedance do support negative
-   prompts. Rewrite the CONSTRAINTS block positively for models that take no negatives.
+4. **Phrase constraints positively.** Gemini Omni Flash, Veo and Runway work best with positive
+   phrasing only ("no" and "don't" can backfire). Kling and Seedance take a separate negative
+   prompt in their own APIs, but Easel's generate tool sends the prompt alone, so write the
+   CONSTRAINTS block positively for every model.
 5. **Text:** do not ask the video model to render text; anchor it as stable; keep motion away
    from the text region; for critical text, overlay it in assembly.
 6. **Anti-loop:** give a one-way move a settle endpoint, or say "single continuous shot"; do not
@@ -271,8 +274,9 @@ image-to-video step can quietly re-letter it (observed: "PARFUM" became "PAREUM"
 face. Every photo-anchored video prompt therefore carries a freeze line: "the photographic
 sticker (and every letter of its label) is a frozen layer, pixel-identical to the still for the
 entire duration". Store it once as the plan's `anchorFreeze` field in `video-plan.json` and add
-it to every video prompt. Then grab a frame per clip with
-`mcp__plugin_easel-core_easel__filmstrip` and re-check the letters anyway.
+it to every video prompt. Then look at each clip's frames with
+`mcp__plugin_easel-core_easel__filmstrip` (`{"file": "<clip>.mp4", "count": 6}`) and re-check
+the letters anyway.
 
 Photo-anchored posters carry no baked headline; their text belongs to caption overlays.
 

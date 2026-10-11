@@ -45,7 +45,7 @@ to a provider.
 
 | Folder | What it is |
 |---|---|
-| `server/` | The `media` MCP server (Node, no dependencies): `providers`, `estimate`, `generate`, `assemble`, `consent_template` |
+| `server/` | The `media` MCP server (Node, no dependencies): `providers`, `estimate`, `generate`, `assemble` (clips, captions, narration as one file or one line per beat, and music into one film, mastered to -14 LUFS with the local ffmpeg), `consent_template` |
 | `skills/<name>/` | Each skill's procedure and references |
 | `evals/` | Routing and safety evals (see its README) |
 

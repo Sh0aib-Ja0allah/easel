@@ -104,7 +104,7 @@
     },
     {
       "name": "generate",
-      "description": "Generate media with the user's own provider key: image (text or references), video (image-to-video), tts (speech, with word timings where the provider gives them), music, or voice-clone (only with a consent statement in the job folder). Without confirm it is a dry run: it returns the cost estimate, the request and a quote, and spends nothing. Show the estimate and the request to the user; only when they agree, call again with the same arguments plus confirm: true and that quote (and approvedUsd when the estimate is above the limit). A paid call without the quote of a dry run of the same request is refused. Files go to ./easel-out/<slug>/ (a used name gets -2) with a provenance.json entry.",
+      "description": "Generate media with the user's own provider key: image (text or references), video (image-to-video), tts (speech, with word timings where the provider gives them), music, or voice-clone (only with a consent statement in the job folder). Without confirm it is a dry run: it returns the cost estimate, the request and a quote, and spends nothing. Show the estimate and the request to the user; only when they agree, call again with the same arguments plus confirm: true and that quote (and approvedUsd when the estimate is above the limit). A paid call without the quote of a dry run of the same request is refused. Files go to ./easel-out/<slug>/ (a used name gets -2) with a provenance.json entry. An argument the chosen model does not use (refs for a text-to-image model, aspect for an image-to-video clip, language for OpenAI or ElevenLabs speech) is refused before any spend; values sent in another form are listed in the dry run's request under sent, with notes (e.g. an aspect sent to OpenAI as the nearest of its three sizes, which is what is priced).",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -234,7 +234,7 @@
     },
     {
       "name": "assemble",
-      "description": "Join generated clips into one film with the local ffmpeg: each clip scaled to fill the frame and cut or slowed (never frozen) to its beat length, caption or watermark PNGs overlaid at their times (render them with easel-core render_still, transparent: true), narration and music mixed with the music ducked under the voice.",
+      "description": "Join generated clips into one film with the local ffmpeg: each clip scaled to fill the frame and cut or slowed (never frozen) to its beat length, caption or watermark PNGs overlaid at their times (render them with easel-core render_still, transparent: true), narration (one file, or one line per beat placed at its clip or time) and music mixed with the music ducked under the voice, and the mix mastered to -14 LUFS integrated with a true peak of -1 dBTP (lufs sets another target), so the film passes easel-core qa loudness whatever the narration's own level. Reports the film's measured loudness, and warns when narration lines overlap or run past the end.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -273,7 +273,37 @@
             "maximum": 60
           },
           "narration": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 60,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "file"
+                  ],
+                  "properties": {
+                    "file": {
+                      "type": "string"
+                    },
+                    "clip": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "start": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            ],
+            "description": "One audio file for the whole film (it starts at 0 s), or a list of lines, one per beat: [{ file, clip }] starts the line with that clip (numbered from 0, as in clips), [{ file, start }] at that many seconds into the film; give clip or start, not both."
           },
           "music": {
             "type": "string"
@@ -281,7 +311,14 @@
           "musicDb": {
             "type": "number",
             "minimum": -40,
-            "maximum": 0
+            "maximum": 0,
+            "description": "Music level under the voice before mastering (default -16)."
+          },
+          "lufs": {
+            "type": "number",
+            "minimum": -18,
+            "maximum": -10,
+            "description": "Integrated loudness the mix is mastered to (default -14; true peak -1 dBTP)."
           },
           "overlays": {
             "type": "array",

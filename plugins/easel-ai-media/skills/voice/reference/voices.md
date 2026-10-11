@@ -1,6 +1,6 @@
 <!-- Easel: adapted from Alisa0808/vox-director @ 6a85a7c341610442a6a5b1885e6e0217ab82a11f
      (github.com/Alisa0808/vox-director, references/voices.md), MIT License, Copyright (c) 2026 Alisa Qian;
-     see NOTICE.md. Modified by Easel (2026-10-11): beats.json voice settings replaced by generate tool arguments; voice cloning rewritten around the voice skill's consent statement and recording (consent_template, kind voice-clone) with the public-figure ban; persona and audio-scene clone recipe removed; ASCII punctuation. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): beats.json voice settings replaced by generate tool arguments; voice cloning rewritten around the voice skill's consent statement and recording (consent_template, kind voice-clone) with the public-figure ban; persona and audio-scene clone recipe removed; "listen before assembling" replaced by checks the model can run; ASCII punctuation. -->
 
 # Narrator voices
 
@@ -8,7 +8,8 @@ How to pick the narrator for a film, the voice roster for Atlas Cloud's `xai/tts
 only way Easel clones a voice.
 
 Narration is generated with `mcp__plugin_easel-ai-media_media__generate` kind `tts`: pass the
-words in `text`, the voice id in `voice` and the language in `language` (a dry run with a cost
+words in `text`, the voice id in `voice` and the language in `language` (Atlas `xai/tts-v1`
+only; OpenAI and ElevenLabs take the language from the text and refuse `language`) (a dry run with a cost
 estimate and a `quote` first; call again with the same arguments, `confirm: true` and that `quote`
 once the user agrees). The ids below are for
 `xai/tts-v1` on Atlas Cloud; other providers (OpenAI, ElevenLabs) have their own voice
@@ -28,9 +29,13 @@ provider's current list before a long job.
    film.
 4. **Do not just keep the default.** The default (`leo`, male, multilingual, documentary
    tone) is a fallback, not a choice. Say which voice you picked and why.
-5. **Listen before assembling.** Narration is cheap; regenerate a line that lands wrong rather
-   than fixing it in the edit. Final beat timing comes from the generated audio (word timings
-   where the provider gives them), never from the script.
+5. **Check before assembling.** You cannot hear the audio, so check what can be measured: the
+   words in the line's `.words.json` (where the provider returns word timings) against the
+   script (a missing, doubled or misread word), its length against the beat, and its loudness
+   with `qa` (see the voice skill's check step). Narration is cheap; regenerate a
+   line that comes back wrong rather than fixing it in the edit, and tell the user to listen to
+   the lines too. Final beat timing comes from the generated audio (word timings where the
+   provider gives them), never from the script.
 
 - **Multilingual** voices (`ara`, `eve`, `leo`, `rex`, `sal`) speak any language, so they are
   safe for English, Chinese or mixed-language films.
@@ -83,6 +88,7 @@ their consent:
 
 1. Get the statement with `mcp__plugin_easel-ai-media_media__consent_template`.
 2. The voice owner gives the statement themselves, in their own words, naming the purpose.
+   Write it in English (the check reads English only; a speaker of another language reads and agrees to an English translation), with the consent in its own sentence: "I, <full name>, consent to my voice being cloned for …", with no "not", "no" or "without" in that sentence; put limits in a sentence of their own.
    Save it as `consent.json` in the job folder `./easel-out/<slug>/`, together with their
    recording of the statement: the owner themselves reading all of it aloud, never generated
    speech (Easel refuses its own output, silence, and a clip shorter than the statement takes

@@ -35,8 +35,10 @@ print one.
 - **Plugin settings (recommended):** `/plugin configure easel-ai-media` in Claude Code; the key
   fields are masked and stored in the system's secure credential store.
 - **Environment variable:** `GEMINI_API_KEY` (or `GOOGLE_API_KEY`), `OPENAI_API_KEY`,
-  `FAL_KEY`, `REPLICATE_API_TOKEN`, `ATLASCLOUD_API_KEY`, `ELEVENLABS_API_KEY`. On Windows:
-  `setx OPENAI_API_KEY "<key>"` in a terminal, then restart Claude Code.
+  `FAL_KEY`, `REPLICATE_API_TOKEN`, `ATLASCLOUD_API_KEY`, `ELEVENLABS_API_KEY`. On Windows, add
+  it in the Environment Variables dialog (Start, "Edit environment variables for your account"),
+  then restart Claude Code. A key typed into a terminal command (`setx`, `export`) is kept in
+  plain text in the shell's history file, so prefer the plugin settings or that dialog.
 - Keys come from each provider's own console; Easel is not affiliated with any of them.
 
 ## Choosing
