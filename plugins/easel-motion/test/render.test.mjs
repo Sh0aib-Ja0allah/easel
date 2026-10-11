@@ -1,9 +1,10 @@
 // T2.1: every style renders through the easel-core engine (the renderFrame contract), page audio
 // lands in the loudness range, a frozen golden frame per style matches, and mixed styles switch
 // per era. Needs the engine's Playwright + Chromium and ffmpeg (doctor --install); skips otherwise.
-// Golden frames: each style's styles/<style>/sample.png (rendered on Windows, reviewed by eye, frozen)
-// is the golden on every OS, compared at a cross-OS PSNR floor (canvas pixels match closely across
-// operating systems; only text antialiasing differs). An OS whose renders drift further gets its own
+// Golden frames: each style's styles/<style>/sample.png (rendered on Windows, reviewed by eye, frozen;
+// cut-paper and hud re-rendered on Linux at their later times, where Linux matched the Windows
+// renders at about 60 dB) is the golden on every OS, compared at a cross-OS PSNR floor (canvas pixels
+// match closely across operating systems; only text antialiasing differs). An OS whose renders drift further gets its own
 // test/golden/<style>-<os>.png, compared at the same-OS floor. Regenerate only on purpose:
 // EASEL_UPDATE_GOLDEN=1 rewrites the golden in use; look at every new PNG before committing.
 // EASEL_MOTION_FULL=1 renders every demo at full length (CI); otherwise a 1 s clip per style.
@@ -22,7 +23,12 @@ const { doctorReport } = await eng('doctor.mjs');
 const ready = ['playwright-core', 'chromium', 'ffmpeg', 'ffprobe'].every((n) => doctorReport().checks.find((c) => c.name === n)?.ok);
 const skip = ready ? false : 'needs the easel-core engine installed (doctor --install) and ffmpeg';
 const STYLES = ['aurora-glass', 'crosshatch', 'cut-paper', 'hud', 'isometric', 'liquid', 'math', 'pixel', 'riso', 'sketchbook', 'synthwave'];
-const GOLDEN_T = 4.5;   // after each demo's morph: the second world, with its caption written on
+// The golden frame (and so the style's sample.png) is taken after each demo's morph, in the second
+// world, once its write-ons have finished: 4.5 s, or later where text is still typing at 4.5 s
+// (cut-paper's caption and flowers end at 6.25 s; hud's TARGET LOCKED and its readout at 4.7 s, and
+// at 5 s the cursor is off). A sample caught mid write-on shows half a word.
+const GOLDEN_TIMES = { 'cut-paper': 6.5, hud: 5.0 };
+const goldenT = (s) => GOLDEN_TIMES[s] ?? 4.5;
 const GOLDEN_PSNR = Number(process.env.EASEL_GOLDEN_PSNR || 40);          // same OS
 const SHARED_PSNR = Number(process.env.EASEL_GOLDEN_SHARED_PSNR || 36);   // the Windows sample on another OS
 const FULL = process.env.EASEL_MOTION_FULL === '1';
@@ -55,8 +61,8 @@ for (const s of STYLES) {
     assert.ok(loud.pass, `${s} score: ${JSON.stringify(loud)}`);
   });
 
-  test(`${s}: golden frame at t=${GOLDEN_T}s matches`, { skip }, async (t) => {
-    const r = await m.renderStill({ file: demos[s], outDir: join(out, `${s}-still`), name: s, width: 1080, height: 1920, scale: 0.5, t: GOLDEN_T }, { browser });
+  test(`${s}: golden frame at t=${goldenT(s)}s matches`, { skip }, async (t) => {
+    const r = await m.renderStill({ file: demos[s], outDir: join(out, `${s}-still`), name: s, width: 1080, height: 1920, scale: 0.5, t: goldenT(s) }, { browser });
     assert.equal(r.warnings, undefined, JSON.stringify(r.warnings));
     const f = r.files[0].file, { file: g, floor } = golden(s);
     // EASEL_GOLDEN_STYLES=a,b limits a rewrite to those styles (new ones), leaving the reviewed goldens alone
@@ -151,7 +157,9 @@ test('the style-match example: the blueprint style is found beside the piece, re
     const q = await m.qa({ file, aspect, checks: ['canvas_text', 'beat_grid'], every: 3, outDir: join(d, 'qa') });
     assert.equal(q.pass, true, `${aspect}: ${JSON.stringify(q.checks)}`);
   }
-  const still = await m.renderStill({ file, outDir: join(d, 'shots'), name: 'idea', aspect: '9:16', scale: 0.5, t: 2.25 }, { browser });
+  // the idea sheet once both labels are typed (FILAMENT ends at 2.28 s) and before the morph's shrink (2.4 s);
+  // compare/ours-idea.png and compare-idea.png are this frame and this compareSheet call
+  const still = await m.renderStill({ file, outDir: join(d, 'shots'), name: 'idea', aspect: '9:16', scale: 0.5, t: 2.375 }, { browser });
   assert.equal(still.warnings, undefined, JSON.stringify(still.warnings));
   const refs = await eng('refs.mjs');
   const cmp = await refs.compareSheet({ reference: join(d, 'references', 'bulb.png'), ours: still.files[0].file, outDir: join(d, 'cmp'), name: 'idea', height: 675 });

@@ -1,6 +1,6 @@
 <!-- Easel: adapted from ArnavPuri/designskills @ c7873015add8571ca95043febad0d9e6c97ee5c6
      (github.com/ArnavPuri/designskills, skills/infographic/SKILL.md), MIT License, Copyright (c) 2026 Arnav Puri;
-     see NOTICE.md. Modified by Easel (2026-10-11): frontmatter dropped; code is the default, Gemini CLI steps reduced to an optional AI raster path; brand file, render and QA tools swapped in. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): frontmatter dropped; code is the default, Gemini CLI steps reduced to an optional AI raster path; brand file, render and QA tools swapped in; formats described without platform styles. -->
 
 # Infographic Design
 
@@ -218,7 +218,7 @@ Key pattern for all SVG charts:
 ## Step 10: Infographic Layout Templates
 
 ### Formats
-2:3 or 9:16 for vertical (Pinterest-style), 1:4 for long-form scroll, 4:5 or 1:1 for feeds, 16:9 for slides.
+2:3 or 9:16 for vertical (pin and story formats), 1:4 for long-form scroll, 4:5 or 1:1 for feeds, 16:9 for slides.
 
 ### Long-Form Vertical
 Width: 800px (web) or 1000px (print). Structure: Header > Section 1 > Divider > Section 2 > Divider > Section 3 > Takeaway > Footer. Use 60px spacing between sections.

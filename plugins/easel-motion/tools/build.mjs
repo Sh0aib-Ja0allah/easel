@@ -6,7 +6,8 @@
 // plugin root); styles can mix: piece.json "mix" adds more styles, each wrapped in its own scope as
 // KITS.<name> (upstream put every kit's names in one global scope, so two kits collided), and an era
 // picks its style with a 4th ERA_LIST item; the build is a function (build(dir)) that throws, so it
-// can be tested, with the same command line as before.
+// can be tested, with the same command line as before; a kit's top-level names are read from
+// declarations that run over several lines too, and "mix" may be one style name.
 //
 // Assemble <piece>/index.html from the piece's src/ parts, this plugin's kit/ and the piece's style kit, then check it.
 //   usage: node <easel-motion>/tools/build.mjs <piece dir>
@@ -40,24 +41,43 @@ const DEFAULT = ['src/head.html', 'kit/core.js', 'style', 'src/scenes.js', 'src/
 
 // Top-level names a kit declares (column 0: function, class, const, let, var, including
 // `let a = 1, b = 2` and destructuring on the first declarator), exported from a wrapped kit.
+// A declaration may run over several lines (`const INK = '#123',\n  PAPER = '#fff';` or an object
+// followed by `, NEXT = ...`): it goes on while a bracket, a template literal or a block comment is
+// open or the line ends in ',' or '=', on lines that are indented or close a bracket (a line that
+// starts at column 0 with anything else is a new statement).
 export function topLevelNames(code) {
   const names = new Set();
-  for (const line of code.split('\n')) {
+  const lines = code.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     let m = line.match(/^(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)/) || line.match(/^class\s+([A-Za-z_$][\w$]*)/);
     if (m) { names.add(m[1]); continue; }
     m = line.match(/^(?:const|let|var)\s+(.*)$/);
     if (!m) continue;
-    // split the declarators at depth 0, up to the first ';' at depth 0
-    let depth = 0, cur = '', q = null;
+    // split the declarators at depth 0, up to the first ';' at depth 0 (comments and strings skipped)
+    let depth = 0, cur = '', q = null, block = false, done = false, last = '', text = m[1];
     const decl = [];
-    for (const ch of m[1]) {
-      if (q) { cur += ch; if (ch === q) q = null; continue; }
-      if (ch === '"' || ch === "'" || ch === '`') { q = ch; cur += ch; continue; }
-      if ('([{'.includes(ch)) depth++;
-      if (')]}'.includes(ch)) depth--;
-      if (depth === 0 && ch === ',') { decl.push(cur); cur = ''; continue; }
-      if (depth === 0 && ch === ';') break;
-      cur += ch;
+    for (let j = i; ; ) {
+      for (let k = 0; k < text.length; k++) {
+        const ch = text[k];
+        if (block) { if (ch === '*' && text[k + 1] === '/') { block = false; k++; } continue; }
+        if (q) { cur += ch; if (ch === '\\') cur += text[++k] ?? ''; else if (ch === q) q = null; continue; }
+        if (ch === '/' && text[k + 1] === '/') break;
+        if (ch === '/' && text[k + 1] === '*') { block = true; k++; continue; }
+        if (ch === '"' || ch === "'" || ch === '`') { q = ch; cur += ch; last = ch; continue; }
+        if ('([{'.includes(ch)) depth++;
+        if (')]}'.includes(ch)) depth--;
+        if (depth === 0 && ch === ',') { decl.push(cur); cur = ''; last = ','; continue; }
+        if (depth === 0 && ch === ';') { done = true; break; }
+        cur += ch;
+        if (!/\s/.test(ch)) last = ch;
+      }
+      if (q === '"' || q === "'") q = null;   // a quote cannot run past its line (it was in a regex literal)
+      if (done) break;
+      const next = lines[j + 1], inside = q === '`' || block;
+      if (next === undefined || !(inside || depth > 0 || last === ',' || last === '=')) break;
+      if (!inside && /^[^\s)\]}]/.test(next)) break;
+      text = next; cur += '\n'; j++;
     }
     decl.push(cur);
     for (const [i, d] of decl.entries()) {
@@ -86,7 +106,10 @@ export function build(dir) {
   const ROOT = path.resolve(dir);
   const meta = fs.existsSync(path.join(ROOT, 'piece.json')) ? JSON.parse(fs.readFileSync(path.join(ROOT, 'piece.json'), 'utf8')) : {};
   const styleName = meta.style || 'cut-paper';
-  const mix = [...new Set((meta.mix || []).filter((n) => n !== styleName))];
+  // "mix": ["riso", "hud"], or one name as a string ("riso", also "riso, hud")
+  const mixList = meta.mix == null ? [] : typeof meta.mix === 'string' ? meta.mix.split(',').map((n) => n.trim()).filter(Boolean) : meta.mix;
+  if (!Array.isArray(mixList) || mixList.some((n) => typeof n !== 'string')) throw new Error(`piece.json "mix" must be a style name or a list of style names, e.g. "mix": ["riso"] (got ${JSON.stringify(meta.mix)})`);
+  const mix = [...new Set(mixList.filter((n) => n !== styleName))];
   for (const n of [styleName, ...mix]) if (!/^[a-z0-9][a-z0-9-]*$/.test(n)) throw new Error(`bad style name: ${n}`);
   const warnings = [];
   // a style's folder: the piece's own tree first (walking up), then the plugin

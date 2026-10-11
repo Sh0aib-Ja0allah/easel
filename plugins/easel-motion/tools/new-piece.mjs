@@ -1,4 +1,11 @@
 #!/usr/bin/env node
+// Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
+// (github.com/cth9191/animate, plugins/animate/skills/animate/templates/piece/src/head.html).
+// MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
+// Modified by Easel (2026-10-11): only the FORMATS and SAFE tables and the canvas CSS below come from
+// that file, written into a head by this tool (the format also comes from window.__easel.aspect);
+// the rest of this file is Easel's.
+//
 // Start a new animate piece: copy a style's demo (or a starter template) into a job folder, set
 // piece.json, and make its head format-aware so one piece renders in every format it lists.
 //   usage: node <easel-motion>/tools/new-piece.mjs <dest dir> [--style riso] [--from demo|blank|piece|beat-cut]

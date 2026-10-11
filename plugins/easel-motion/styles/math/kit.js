@@ -4,7 +4,7 @@
 // Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts; the pi-shaped
 // hero is replaced by an original round hero (dotHero).
 // =====================================================================
-//  styles/math/kit.js — a manim-style math explainer look: a near-black stage, manim's palette, serif
+//  styles/math/kit.js — a math-animation style explainer look: a near-black stage, manim's palette, serif
 //  LaTeX-like type that is Written on (outline, then fill, lagged per glyph), manim's `smooth` sigmoid,
 //  ShowCreation sweeps, Transform between equations and shapes, axes / number planes / graphs, a tracking
 //  dot with a live decimal readout, Flash, braces and arrows, and a round hero with eyes (an Easel original).

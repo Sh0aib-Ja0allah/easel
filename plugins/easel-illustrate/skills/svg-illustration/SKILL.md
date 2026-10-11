@@ -18,12 +18,12 @@ when_to_use: >-
   easel-illustrate:generative-art; for a data infographic use easel-design:infographic; for
   video use easel-motion:animate.
 argument-hint: "[subject] [style or mood] [size]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__embed_fonts Bash(node:*) Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: adapted from upbrew-tech/svg-creator-skill @ 1eb83d602a992b69a1771c4e0116a9f7de6ffaa2
      (github.com/upbrew-tech/svg-creator-skill, SKILL.md), Apache License 2.0, Copyright 2025 SVG Creator Skill Contributors;
-     license text in licenses/Apache-2.0.txt, see NOTICE.md. Modified by Easel (2026-10-11): Easel frontmatter and routing; the svg_loop.py render/finish loop replaced by Easel engine renders and svg-check.mjs; heredocs, fixed paths and present_files removed; animated characters use an inline forward-kinematics script rendered by the engine instead of a React artifact; logos, icons and charts routed to sibling skills; bundled fonts. -->
+     license text in licenses/Apache-2.0.txt, see NOTICE.md. Modified by Easel (2026-10-11): Easel frontmatter and routing; the svg_loop.py render/finish loop replaced by Easel engine renders and svg-check.mjs; heredocs, fixed paths and present_files removed; animated characters use an inline forward-kinematics script rendered by the engine instead of a React artifact; logos, icons and charts routed to sibling skills; bundled fonts, embedded in delivered files with text. -->
 
 # SVG illustration
 
@@ -143,7 +143,9 @@ Apply at 5-15% opacity on surfaces and backgrounds.
 - Animated elements: `transform-box: fill-box; transform-origin: center;`
 - Text: `font-family="Inter, sans-serif"` or another bundled face (Space Grotesk,
   Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math); no web-font links, no
-  external URLs
+  external URLs. Deliver a file with `<text>` as the `-embedded.svg` that
+  `mcp__plugin_easel-core_easel__embed_fonts` writes: the user's site does not have the bundled
+  fonts, so bare `<text>` falls back to a default font there
 
 ---
 

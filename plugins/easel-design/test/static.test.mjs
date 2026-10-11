@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { PLUGIN } from './paths.mjs';
 
@@ -14,10 +14,6 @@ const read = (f) => readFileSync(f, 'utf8');
 const frontmatter = (s) => { const m = /^---\n([\s\S]*?)\n---\n/.exec(s); assert.ok(m, 'frontmatter'); return m[1]; };
 const field = (fm, k) => { const m = new RegExp(`^${k}: (?:>-\\n((?:  .*\\n?)+)|(.*))`, 'm').exec(fm + '\n'); return m ? (m[1] ? m[1].split('\n').map((l) => l.trim()).join(' ').trim() : m[2].trim()) : null; };
 const engineTools = new Set([...read(join(CORE, 'engine', 'tools.mjs')).matchAll(/^ {2}(\w+): \{$/gm)].map((m) => m[1]));
-
-// Real companies and products whose styles must not be copied or named (D8). Platform guidance
-// (iOS, Android, Material) is allowed in references; systems, skills and examples stay generic.
-const BRANDS = /\b(Stripe|Vercel|Airbnb|Notion|Spotify|Dropbox|Mailchimp|Shopify|Netflix|Uber|Slack|Figma|GitHub|Google|Apple|Microsoft|Amazon|Facebook|Instagram|Twitter|Nike|Coca-Cola|Tesla|IBM|Adobe|Atlassian|Discord|Duolingo|Twitch|Substack|Bloomberg|Economist|Linear)\b/;
 
 test('thirteen skills, each with a matching name, routing text under the 1,536-character cap and real engine tools', () => {
   assert.deepEqual(readdirSync(join(PLUGIN, 'skills')).filter((d) => existsSync(join(PLUGIN, 'skills', d, 'SKILL.md'))).sort(), SKILLS);
@@ -82,17 +78,102 @@ test('no external URLs, CDN fonts, image-model CLIs or Python in the skills and 
   }
 });
 
-// the platforms a piece is made for (sizes and safe zones) may be named in skills and examples, never in the systems
-const PLATFORMS = /^(Instagram|Twitter|Facebook|Google|Apple|Amazon|Microsoft)$/;
-test('no brand names in the skills, the design systems or the examples (D8)', () => {
-  const files = [...SKILLS.map((s) => join(PLUGIN, 'skills', s, 'SKILL.md')), ...walk(join(PLUGIN, 'systems')), ...walk(join(PLUGIN, 'examples'))].filter((f) => /\.(md|html|css|svg|json)$/.test(f));
-  for (const f of files) {
-    const text = read(f).replace(/^<!--[\s\S]*?-->/, '').replace(/xmlns(:\w+)?="[^"]*"/g, '');
-    const skill = !f.includes(`${join(PLUGIN, 'systems')}`);
-    const m = [...text.matchAll(new RegExp(BRANDS.source, 'g'))].find((x) => !(skill && PLATFORMS.test(x[1])));
-    assert.ok(!m, `${f}: "${m && m[0]}"`);
+// Real companies, products and creators whose look must not be copied or named (D8, CLAUDE.md
+// naming rule). Matched case-insensitively.
+const NEVER = ['Stripe', 'Vercel', 'Airbnb', 'Notion', 'Spotify', 'Revolut', 'Dropbox', 'Mailchimp', 'Shopify', 'Netflix', 'Uber', 'Nike', 'Coca-Cola', 'Tesla', 'IBM', 'Atlassian', 'Discord', 'Duolingo', 'Twitch', 'Substack', 'Bloomberg', 'Economist', 'Linear',
+  'Pixar', 'Disney', 'Ghibli', 'Miyazaki', 'Kusama', 'Haring', 'Shinkai', 'Wes Anderson', 'Banksy'];
+// Platforms and tools: named only where a file needs them (PLATFORM_OK), never in a system.
+const PLATFORMS = ['Google', 'Apple', 'Microsoft', 'Amazon', 'Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'YouTube', 'Pinterest', 'TikTok', 'GitHub', 'Slack', 'Figma', 'Adobe'];
+const NAMES = new RegExp(`\\b(${[...NEVER, ...PLATFORMS].map((n) => n.replace(/[-\s]/g, (c) => (c === '-' ? '-' : '\\s+'))).join('|')})\\b`, 'gi');
+const canon = (w) => [...NEVER, ...PLATFORMS].find((n) => n.toLowerCase() === w.toLowerCase().replace(/\s+/g, ' '));
+// Ordinary words: these lowercase spellings are the common word (a linear scale, a stripe pattern,
+// an apple, a notion), unless a style suffix or a possessive turns them into the name.
+const ORDINARY = new Set(['linear', 'apple', 'notion', 'stripe', 'slack', 'discord', 'tesla', 'twitch', 'economist']);
+const ORDINARY_PHRASES = /\b(?:repeating-)?linear-gradients?\b|\bLinear gradients?\b|-apple-system\b|\bapple-touch-icon\b/g;
+// "X-style", "X-like", "X-inspired", "X-esque", "X-ish", "X look", "X's aesthetic": a name used as a look fails everywhere
+const AS_A_LOOK = /^(?:[- ](?:style|like|inspired|esque|ish)\b|(?:'s)? (?:look|aesthetic|vibe)\b)/i;
+// Where a platform or tool may be named, and why: the sizes, safe zones and rules of the place a
+// piece is published, or the tool the user hands their design over in. Paths are plugin-relative.
+const PLATFORM_OK = {
+  'skills/ad-creative/reference/ad-creative.md': [['Google', 'Facebook', 'Instagram', 'LinkedIn', 'Twitter'], 'ad platforms: sizes, text and file rules'],
+  'skills/brand-identity/reference/brand-identity.md': [['Apple', 'Twitter', 'LinkedIn', 'Instagram', 'GitHub', 'Slack'], 'touch-icon and avatar sizes per platform'],
+  'skills/design/reference/product-mockup.md': [['Amazon'], "a marketplace's main-image rule"],
+  'skills/design-system/reference/design-system.md': [['Figma'], 'exporting tokens to the design tool'],
+  'skills/design-system/reference/typography.md': [['Google'], 'where open fonts are published and their licences'],
+  'skills/icons/reference/icon-design.md': [['Apple'], 'platform touch-target guidance'],
+  'skills/landing-page/reference/hero.md': [['Figma'], "reading the user's design file"],
+  'skills/landing-page/reference/landing-page.md': [['Figma'], "reading the user's design file"],
+  'skills/logo/reference/ip-and-licensing.md': [['Adobe'], "an AI image vendor's indemnity terms"],
+  'skills/poster/reference/poster.md': [['Instagram'], 'the social poster size'],
+  'skills/social-graphic/SKILL.md': [['Instagram', 'LinkedIn', 'Facebook', 'Pinterest', 'TikTok', 'YouTube'], 'the platforms it sizes for'],
+  'skills/social-graphic/reference/banners.md': [['Apple'], 'which email clients render web fonts'],
+  'skills/social-graphic/reference/social-media.md': [['Instagram', 'Twitter', 'LinkedIn', 'Facebook', 'Pinterest', 'TikTok', 'YouTube'], 'platform sizes, safe zones and calls to action'],
+  'skills/social-graphic/reference/thumbnails.md': [['YouTube', 'LinkedIn', 'Slack', 'Apple', 'Twitter'], 'thumbnail and link-preview sizes'],
+  'skills/ui-design/reference/cards.md': [['Figma'], "reading the user's design file"],
+  'skills/ui-design/reference/dark-mode.md': [['Figma'], "reading the user's design file"],
+  'skills/ui-design/reference/dashboards.md': [['Figma'], "reading the user's design file"],
+  'skills/ui-design/reference/mobile.md': [['Figma', 'Apple'], "reading the user's design file; platform touch-target guidance"],
+  'skills/ui-design/reference/ui-design.md': [['Figma', 'Apple'], "reading the user's design file; platform touch-target guidance"],
+  'examples/social-graphic/README.md': [['Instagram'], 'the platform the example is sized for'],
+  'examples/social-graphic/feed-post-1080x1080.html': [['Instagram'], 'the platform the example is sized for'],
+  'examples/social-graphic/story-1080x1920.html': [['Instagram'], 'the platform the example is sized for'],
+};
+// The brand and creator names in a text, after its attribution comments and XML namespaces.
+export function brandFindings(text, rel) {
+  const allowed = new Set((PLATFORM_OK[rel.split(sep).join('/')] || [[]])[0]);
+  const body = text.replace(/<!--\s*Easel[\s\S]*?-->/g, '').replace(/xmlns(:\w+)?="[^"]*"/g, '').replace(ORDINARY_PHRASES, ' ');
+  const found = [];
+  for (const m of body.matchAll(NAMES)) {
+    const after = body.slice(m.index + m[0].length, m.index + m[0].length + 24), name = canon(m[0]);
+    if (AS_A_LOOK.test(after)) { found.push(m[0] + after.match(AS_A_LOOK)[0]); continue; }
+    if (ORDINARY.has(m[0]) && !/^'s\b/.test(after)) continue;
+    if (PLATFORMS.includes(name) && allowed.has(name)) continue;
+    found.push(m[0]);
+  }
+  return found;
+}
+// A file or folder named after one, whatever the case or separator ("stripe-like", "Pixar_warm")
+const nameFindings = (name) => [...name.toLowerCase().matchAll(new RegExp(`(?<![a-z0-9])(${[...NEVER, ...PLATFORMS].map((n) => n.toLowerCase().replace(/[-\s]/g, '[-_ ]?')).join('|')})(?![a-z0-9])`, 'g'))].map((m) => m[1]);
+
+test('no brand or creator names in the skills, references, design systems or examples, nor in file names (D8)', () => {
+  const walkAll = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? [join(d, e.name), ...walkAll(join(d, e.name))] : [join(d, e.name)]));
+  const entries = ['skills', 'systems', 'examples'].flatMap((d) => walkAll(join(PLUGIN, d)));
+  for (const f of entries) assert.deepEqual(nameFindings(basename(f)), [], relative(PLUGIN, f));
+  const files = entries.filter((f) => /\.(md|html|css|svg|json)$/.test(f));
+  assert.ok(files.filter((f) => f.includes(`${sep}reference${sep}`)).length >= 25, 'the references are scanned');
+  for (const f of files) assert.deepEqual(brandFindings(read(f), relative(PLUGIN, f)), [], relative(PLUGIN, f));
+  // every allow-list entry is a real file that still needs it (a stale entry is a hole)
+  for (const [rel, [names]] of Object.entries(PLATFORM_OK)) {
+    assert.ok(existsSync(join(PLUGIN, rel)), rel);
+    const text = read(join(PLUGIN, rel)).replace(/<!--\s*Easel[\s\S]*?-->/g, '');
+    for (const n of names) assert.match(text, new RegExp(`\\b${n}\\b`, 'i'), `${rel} no longer names ${n}`);
   }
 });
+
+test('the brand lint is not vacuous: looks named after brands or creators fail, platform sizes and ordinary words pass', () => {
+  const ref = join('skills', 'design', 'reference', 'graphic-design.md'), social = join('skills', 'social-graphic', 'reference', 'social-media.md');
+  for (const s of ['a stripe-like fintech look', 'vercel-style dark', 'Pixar warmth', 'like Notion', 'a Wes Anderson palette', "stripe's checkout", 'a Revolut card', 'Linear-ish', 'a BANKSY wall']) assert.notDeepEqual(brandFindings(s, ref), [], s);
+  for (const s of ['an Instagram-style grid', 'the YouTube look', 'Spotify Wrapped colours']) assert.notDeepEqual(brandFindings(s, social), [], s);
+  assert.notDeepEqual(brandFindings('Instagram feed 1080x1080', ref), [], 'a platform outside its allowed files');
+  assert.notDeepEqual(brandFindings('Instagram feed 1080x1080', join('systems', 'calm-care', 'DESIGN.md')), [], 'a platform in a system');
+  assert.deepEqual(brandFindings("Instagram feed 1080x1080; YouTube's duration badge", social), []);
+  assert.deepEqual(brandFindings('background: linear-gradient(90deg, #000, #fff); Linear gradient at 200%; animation: spin 1s linear infinite; a stripe pattern; diagonal stripes; font: -apple-system; an apple on the table; the notion of scale; slack in the line', ref), []);
+  for (const n of ['stripe-like', 'vercel_dark', 'pixar', 'Wes-Anderson', 'notion.md']) assert.notDeepEqual(nameFindings(n), [], n);
+  for (const n of ['social-graphic', 'linearity', 'warm-minimal', 'clean-product', 'stripes.svg']) assert.deepEqual(nameFindings(n), [], n);
+});
+
+// The bundled faces, and the face a Typography line names: the text after "- Role:" up to the first
+// comma, weight or size ("- Display: Space Grotesk 700, 40-64px" is Space Grotesk; "- Mono: Menlo"
+// is Menlo). Scale and rhythm lines name no face (undefined); a line that is not "- Role: ..." is null.
+const FACES = /^(Inter|Space Grotesk|Newsreader|JetBrains Mono|Caveat|STIX Two Text|Noto Sans Math)$/;
+const SYSTEM_FACES = /Ink Free|Segoe|Arial|Helvetica|Georgia|Times New Roman|Consolas|Menlo|Monaco|Comic Sans|DejaVu|Roboto|Open Sans|Montserrat|Poppins|Lato\b|SF Pro|San Francisco|system-ui|-apple-system/i;
+const WEIGHT = /\s+(?=\d|(?:thin|hairline|extra[- ]?light|ultra[- ]?light|light|regular|normal|book|medium|semi[- ]?bold|demi[- ]?bold|bold|extra[- ]?bold|ultra[- ]?bold|black|heavy|italic|oblique)\b)/i;
+const faceOf = (line) => {
+  const m = /^\s*[-*] ([^:]+):\s*(.*)$/.exec(line);
+  if (!m) return null;
+  if (/^(scale|ratio|line height|leading|measure|rhythm|tracking)$/i.test(m[1].trim())) return undefined;
+  return m[2].split(',')[0].split(WEIGHT)[0].trim();
+};
 
 test('the generic design systems: ten or more, valid DESIGN.md brand files, AA text, bundled faces only', async () => {
   const { validateData } = await import(pathToFileURL(join(CORE, 'engine', 'lib', 'schemas.mjs')).href);
@@ -100,7 +181,6 @@ test('the generic design systems: ten or more, valid DESIGN.md brand files, AA t
   const systems = readdirSync(join(PLUGIN, 'systems')).filter((d) => statSync(join(PLUGIN, 'systems', d)).isDirectory());
   assert.ok(systems.length >= 8, systems.join(', '));
   const index = read(join(PLUGIN, 'systems', 'README.md'));
-  const FACES = /^(Inter|Space Grotesk|Newsreader|JetBrains Mono|Caveat|STIX Two Text|Noto Sans Math)\b/;
   for (const s of systems) {
     const text = read(join(PLUGIN, 'systems', s, 'DESIGN.md'));
     assert.deepEqual(validateData('brand', text), [], s);
@@ -111,9 +191,56 @@ test('the generic design systems: ten or more, valid DESIGN.md brand files, AA t
     for (const [name, c] of [['Text', fg], ['Muted text', colour('Muted text')]].filter(([, c]) => c)) {
       for (const ground of [bg, colour('Surface')].filter(Boolean)) assert.ok(contrast(c, ground) >= 4.5, `${s}: ${name} ${c} on ${ground} is ${contrast(c, ground).toFixed(2)}:1`);
     }
-    const typo = text.split('## 3. Typography')[1].split('## 4.')[0];
-    for (const [, face] of typo.matchAll(/^- [\w ]+: ([^,\n]+?) \d/gm)) assert.match(face, FACES, `${s}: ${face}`);
+    // every colour but a ground: a text role ("Text", "... text") passes AA on the grounds; any other
+    // colour below AA there says "not for text" (and the system may give its "<role> text" variant)
+    const grounds = [bg, colour('Surface')].filter(Boolean);
+    for (const [, role, hex, note] of text.split('## 2. Color')[1].split('## 3.')[0].matchAll(/^- ([\w ]+): (#[0-9A-Fa-f]{6})\b(.*)$/gm)) {
+      if (/^(Background|Surface|Raised|Border)$/.test(role)) continue;
+      const worst = Math.min(...grounds.map((g) => contrast(hex, g)));
+      if (/(^|\s)text$/i.test(role)) assert.ok(worst >= 4.5, `${s}: ${role} ${hex} is ${worst.toFixed(2)}:1 on its grounds`);
+      else if (worst < 4.5) assert.match(note, /\bnot for (?:body |small )?text\b/i, `${s}: ${role} ${hex} is ${worst.toFixed(2)}:1 on its grounds: say "not for text" or add a "${role} text" colour that passes AA`);
+    }
+    // every line of the Typography section: the face each role names is a bundled one
+    const typo = text.split('## 3. Typography')[1].split('## 4.')[0].split('\n').filter((l) => l.trim());
+    assert.ok(typo.length >= 2, `${s}: Typography lines`);
+    for (const line of typo) {
+      const face = faceOf(line);
+      if (face === null) assert.doesNotMatch(line, SYSTEM_FACES, `${s}: ${line}`);
+      else if (face !== undefined) assert.match(face, FACES, `${s}: "${line}" names ${face}`);
+    }
   }
+});
+
+// QA: the font lint only saw lines with a numeric weight
+test('the font lint reads every Typography line: a face with no weight, before a comma or with a weight word', () => {
+  for (const [line, face] of [['- Body: Arial, 16px / 1.5', 'Arial'], ['- Display: Helvetica Neue Bold, 40px', 'Helvetica Neue'], ['- Mono: Menlo', 'Menlo'], ['- Display: Space Grotesk 700, 40-64px', 'Space Grotesk'], ['- Hand notes: Caveat 400', 'Caveat'], ['- Body: Newsreader Italic, 19px', 'Newsreader'], ['- Data and code: JetBrains Mono', 'JetBrains Mono']]) assert.equal(faceOf(line), face, line);
+  for (const line of ['- Body: Arial, 16px / 1.5', '- Display: Helvetica Neue Bold, 40px', '- Mono: Menlo', '- Body: Inter Tight 400']) assert.doesNotMatch(faceOf(line), FACES, line);
+  assert.equal(faceOf('- Scale: 1.25 (12, 14, 16, 20)'), undefined);
+  assert.match('Headlines in Helvetica, body in Inter.', SYSTEM_FACES, 'prose lines are checked too');
+});
+
+// QA: the specimen said 10.9:1 and 4.9:1 for pairs that measure 10.79:1 and 4.71:1
+test('every contrast ratio an example states is the measured one (palette.mjs contrast, within 0.05)', async () => {
+  const { contrast } = await import(pathToFileURL(join(PLUGIN, 'tools', 'palette.mjs')).href);
+  const NAMED = { white: '#ffffff', black: '#000000' };
+  let n = 0;
+  for (const f of walk(join(PLUGIN, 'examples')).filter((x) => /\.(html|css|svg|md)$/.test(x))) {
+    const t = read(f), rel = relative(PLUGIN, f);
+    // "#FG / #BG · 10.8:1" (a specimen pair) and "#FG is 4.3:1 on white" (a token comment)
+    const claims = [...[...t.matchAll(/(#[0-9A-Fa-f]{6})\s*\/\s*(#[0-9A-Fa-f]{6})\s*(?:&middot;|\u00b7)\s*(\d+(?:\.\d+)?):1/g)].map((m) => [m[1], m[2], m[3]]),
+      ...[...t.matchAll(/(#[0-9A-Fa-f]{6}) is (\d+(?:\.\d+)?):1 on (white|black|#[0-9A-Fa-f]{6})/g)].map((m) => [m[1], NAMED[m[3]] || m[3], m[2]])];
+    for (const [fg, bg, said] of claims) {
+      n++;
+      const real = contrast(fg, bg);
+      assert.ok(Math.abs(real - Number(said)) <= 0.05, `${rel}: ${fg} on ${bg} is ${real.toFixed(2)}:1, the page says ${said}:1`);
+    }
+  }
+  assert.ok(n >= 7, `${n} claims`);
+  // the specimen's swatches: the number under each step is its contrast on white, to two decimals
+  const spec = read(join(PLUGIN, 'examples', 'design-system', 'specimen.html'));
+  const sw = [...spec.matchAll(/background:(#[0-9a-f]{6})"><b>\d+<\/b><span>\1<br>(\d+\.\d\d)<\/span>/gi)];
+  assert.equal(sw.length, 33);
+  for (const [, hex, said] of sw) assert.ok(Math.abs(contrast(hex, '#ffffff') - Number(said)) <= 0.006, `${hex}: ${contrast(hex, '#ffffff').toFixed(2)}, the swatch says ${said}`);
 });
 
 test('palette.mjs matches the scale it was ported from, and its command line refuses bad input', async () => {

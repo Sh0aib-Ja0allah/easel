@@ -9,8 +9,10 @@ the end of this file, so the notices travel with the installed plugin. The repos
 
 The animate kit (`kit/`), seven of the styles (crosshatch, cut-paper, isometric, math, pixel, riso,
 sketchbook), the starter templates (`templates/`), the
-story grammars (`grammars/formats.md`, `frame.md`, `story.md`), `tools/build.mjs` and the format
-table, safe areas and canvas CSS in `tools/new-piece.mjs` are adapted
+story grammars (`grammars/formats.md`, `frame.md`, `story.md`), `tools/build.mjs`, the format
+table, safe areas and canvas CSS in `tools/new-piece.mjs`, and the pad and sweep lines in the
+example scores (`examples/water-cycle/src/score.js`, `examples/style-match/piece/src/score.js`)
+are adapted
 from [cth9191/animate](https://github.com/cth9191/animate) at commit
 `7e5eb56feb2dd573f890e1b7b34748af43d58263` (`plugins/animate/skills/animate/`).
 

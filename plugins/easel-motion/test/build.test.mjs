@@ -41,6 +41,19 @@ test('topLevelNames: functions, classes, const/let lists, destructuring; not nes
   assert.deepEqual(topLevelNames(code).sort(), ['HANDF', 'K', 'OUT', 'PAL', 'RL', 'SHEET_BOX', 'a', 'b', 'g', 'other', 'p', 'pick', 'q'].sort());
 });
 
+// QA: only a declaration's first line was read, so `const INK = '#123',\n  PAPER = '#fff';` lost PAPER when mixed
+test('topLevelNames: declarations over several lines keep every name; a mixed kit exports them', () => {
+  const code = [
+    "const INK = '#123',", "  PAPER = '#fff';", 'const PAL = {', "  a: 1,   // the hero's colour, not a name", '  b: [1, 2],', "}, HANDF = 'x';",
+    'let x = 1 /* a, b */,', '  y = 2;', 'const T = `a,', '${T0}, b`, U = 2;', 'const LONG =', '  3;', 'const draw = (s) => {', '  const inner = s;', '  return inner;', '};',
+    'function later() {}', '  const indented = 1;', 'const lone = 1', 'other = 2;',
+  ].join('\n');
+  assert.deepEqual(topLevelNames(code).sort(), ['HANDF', 'INK', 'LONG', 'PAL', 'PAPER', 'T', 'U', 'draw', 'later', 'lone', 'x', 'y'].sort());
+  const ctx = { KITS: {} };
+  new vm.Script(wrapKit('mine', "const INK = '#123',\n  PAPER = '#fff';\nconst STYLE = { name: 'mine' };\n")).runInNewContext(ctx);
+  assert.deepEqual([ctx.KITS.mine.INK, ctx.KITS.mine.PAPER], ['#123', '#fff']);
+});
+
 test('upstream collision: two kits concatenated as globals do not compile, mixed they do', () => {
   const kit = (s) => readFileSync(join(PLUGIN, 'styles', s, 'kit.js'), 'utf8');
   const shared = STYLES.map((s) => new Set(topLevelNames(kit(s))));
@@ -70,6 +83,20 @@ test('mix: an unknown style or a bad name fails the build with a clear message',
     assert.throws(() => build(d), /unknown style "no-such-style"/);
     writeFileSync(join(d, 'piece.json'), JSON.stringify({ ...meta, mix: ['../escape'] }));
     assert.throws(() => build(d), /bad style name/);
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
+
+// QA: "mix": "riso" (a string) crashed with "(meta.mix || []).filter is not a function"
+test('mix: one style name as a string builds; a mix that is not a name or a list is refused clearly', () => {
+  const d = copy('templates/piece');
+  try {
+    const meta = JSON.parse(readFileSync(join(d, 'piece.json'), 'utf8'));
+    const withMix = (mix) => writeFileSync(join(d, 'piece.json'), JSON.stringify({ ...meta, mix }));
+    withMix('riso');
+    assert.deepEqual(build(d).mix, ['riso']);
+    withMix('riso, hud');
+    assert.deepEqual(build(d).mix, ['riso', 'hud']);
+    for (const bad of [5, { riso: true }, [['riso']]]) { withMix(bad); assert.throws(() => build(d), /"mix" must be a style name or a list of style names/, JSON.stringify(bad)); }
   } finally { rmSync(d, { recursive: true, force: true }); }
 });
 
@@ -140,6 +167,18 @@ test('the skills name only engine tools and plugin files that exist', () => {
   }
 });
 
+// QA: ui-motion delivered without a cold read. Every skill ends in easel-core:critique with the
+// motion rubric; style-match ends by handing its piece to animate, which runs it.
+test('every skill ends in a critique by easel-core:critique with the motion rubric (style-match through animate)', () => {
+  const skills = readdirSync(join(PLUGIN, 'skills')).filter((d) => existsSync(join(PLUGIN, 'skills', d, 'SKILL.md'))).sort();
+  assert.deepEqual(skills, ['animate', 'style-match', 'ui-motion']);
+  const text = (s) => readFileSync(join(PLUGIN, 'skills', s, 'SKILL.md'), 'utf8');
+  for (const s of skills) {
+    if (s === 'style-match') assert.match(text(s), /continue in `easel-motion:animate` \([^)]*review\)\.\s*(`<easel-motion>[\s\S]*)?$/, s);
+    else assert.match(text(s), /easel-core:critique[\s\S]{0,80}\*\*motion\*\* rubric/, s);
+  }
+});
+
 test('new-style: a blank or shipped starting kit, a STYLE.md skeleton, only under styles/, never overwriting', async () => {
   const { newStyle } = await import('../tools/new-style.mjs');
   const root = mkdtempSync(join(tmpdir(), 'easel-newstyle-'));
@@ -162,17 +201,66 @@ test('new-style: a blank or shipped starting kit, a STYLE.md skeleton, only unde
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
+// Creator and channel names, the never-ship huashu assets (CLAUDE.md "Never copy or ship") and the
+// fan-work and game names: none may appear in a file name or a body, nor in a built piece.
+const NEVER_NAMES = /3blue1brown|3b1b|kurzgesagt|\bvox\b|rsa animate|minute physics|ghibli|kusama|\bharing\b|shinkai|kirby|dal[ií]\b|mario|nintendo|clawd|monet|van gogh|mucha|picasso|braque|leonardo|da vinci|klimt|munch|seurat|matisse|rembrandt|hopper|huashu|xiaohei|peanut|rig_huashu|_shared\/hero|long_scroll|角色/i;
+// A well-known science channel's bird mascot is an egg-shaped body with big white eyes, pupils set
+// toward the front and a triangular beak; a critter described with that combination copies it,
+// whatever it is called. A paragraph fails when it names an egg body with a triangular beak, nose or
+// horn, or any three of the five traits.
+const MASCOT = {
+  egg: /\begg[- ]?(?:shaped|like)\b|\begg (?:body|bodies)\b|\boval body\b/i,
+  eyes: /\b(?:big|large|huge) white eyes\b/i,
+  pupils: /\bpupils?\b[^.\n]{0,40}\b(?:toward|towards|to) the front\b|\bforward[- ](?:set|facing) pupils?\b/i,
+  beak: /\btriangular\b[^.\n]{0,40}\b(?:beak|bill|nose|horn)s?\b|\b(?:beak|bill)s?\b[^.\n]{0,40}\btriangular\b/i,
+  leaves: /\bleaf[- ]shaped\b[^.\n]{0,30}\b(?:limbs?|wings?|arms?|legs?)\b|\b(?:limbs?|wings?|arms?|legs?)\b[^.\n]{0,40}\bleaf[- ]?shapes?\b/i,
+};
+const mascotTraits = (text) => text.split(/\n\s*\n/).map((p) => Object.keys(MASCOT).filter((k) => MASCOT[k].test(p))).filter((hit) => (hit.includes('egg') && hit.includes('beak')) || hit.length >= 3);
+// text files under a plugin folder; a body is the text after the attribution comment (which may name
+// the source file it came from)
+const textFiles = (dir) => readdirSync(join(PLUGIN, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? textFiles(join(dir, e.name)) : [join(dir, e.name)])).filter((f) => /\.(md|js|mjs|html|json|svg|css|txt)$/.test(f));
+const bodyOf = (f) => { const text = readFileSync(join(PLUGIN, f), 'utf8').replaceAll('alchaincyf/huashu-art-motion', 'SOURCE'); return text.startsWith('<!--') ? text.slice(text.indexOf('-->') + 3) : text; };
+
 test('translated grammars and recipes: English bodies, attribution headers, no creator names in names or text', () => {
-  const names = /3blue1brown|3b1b|kurzgesagt|\bvox\b|rsa animate|minute physics|ghibli|kusama|\bharing\b|shinkai|kirby|dal[ií]\b|mario|monet|van gogh|mucha|picasso|braque|leonardo|da vinci|klimt|munch|seurat|matisse|rembrandt|hopper|huashu|xiaohei|peanut/i;
+  const names = NEVER_NAMES;
   const files = [...readdirSync(join(PLUGIN, 'grammars')).map((f) => join('grammars', f)), ...readdirSync(join(PLUGIN, 'recipes')).map((f) => join('recipes', f))].filter((f) => f.endsWith('.md'));
   const huashu = files.filter((f) => readFileSync(join(PLUGIN, f), 'utf8').includes('alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35'));
   assert.equal(huashu.length, 19, huashu.join(', '));   // 9 grammars + 10 recipes
   for (const f of files) {
     assert.doesNotMatch(f, names, f);
     // the source repository's own name is the attribution, not a style name
-    const text = readFileSync(join(PLUGIN, f), 'utf8').replaceAll('alchaincyf/huashu-art-motion', 'SOURCE'), body = text.startsWith('<!--') ? text.slice(text.indexOf('-->') + 3) : text;
-    assert.doesNotMatch(body, /[\u3000-\u9fff\uff00-\uffef]/, `${f}: Chinese text outside the header`);
+    const body = bodyOf(f);
+    assert.doesNotMatch(body, /[　-鿿＀-￯]/, `${f}: Chinese text outside the header`);
     assert.doesNotMatch(body, names, f);
+  }
+  // the same names in the kit, the styles, the templates and the examples (everything a piece is
+  // built from), and no description of a known channel's mascot anywhere
+  const parts = ['kit', 'styles', 'templates', 'examples'].flatMap(textFiles);
+  assert.ok(parts.length > 80, `${parts.length} files`);
+  for (const f of [...files, ...parts]) {
+    assert.doesNotMatch(f, names, f);
+    const m = names.exec(bodyOf(f));
+    assert.ok(!m, `${f}: "${m && m[0]}"`);
+    assert.deepEqual(mascotTraits(bodyOf(f)), [], `${f}: describes a known channel's mascot (egg body, big white eyes, forward pupils, triangular beak)`);
+  }
+});
+
+test('the name scan is not vacuous: asset paths, fan-work names and the mascot recipe are caught', () => {
+  for (const s of ['import "lib/rig_huashu.js"', 'demos/_shared/hero/walk.png', 'long_scroll/frames/001.png', 'assets/角色/a.png', 'a Clawd cameo', 'MARIO-style coins', 'a Nintendo look']) assert.match(s, NEVER_NAMES, s);
+  assert.deepEqual(mascotTraits('A critter: egg-shaped body, big white eyes, one simple triangular feature (a beak, a nose or a horn).'), [['egg', 'eyes', 'beak']]);
+  assert.equal(mascotTraits('An oval body with big white eyes, small black pupils set toward the front.').length, 1);
+  assert.equal(mascotTraits('Wings are leaf shapes one step darker; huge white eyes; a triangular nose.').length, 1);
+  assert.deepEqual(mascotTraits('A round robot.\n\nIts beak is triangular.\n\nAn egg-shaped stone.'), [], 'traits in separate paragraphs');
+});
+
+test('a built piece carries none of the never-ship names (every demo, template and example, built)', () => {
+  const pieces = [...STYLES.map((s) => [`styles/${s}/demo`]), ['templates/piece'], ['templates/beat-cut'], ['templates/blank'], ['examples/water-cycle'], ['examples/style-match', 'piece']];
+  for (const [rel, sub] of pieces) {
+    const d = copy(rel);
+    try {
+      const { file, board } = build(sub ? join(d, sub) : d);
+      for (const f of [file, board]) { const m = NEVER_NAMES.exec(readFileSync(f, 'utf8')); assert.ok(!m, `${rel}: "${m && m[0]}"`); }
+    } finally { rmSync(d, { recursive: true, force: true }); }
   }
 });
 

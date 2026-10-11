@@ -12,7 +12,7 @@ when_to_use: >-
   inside easel-motion:animate's look check; for a look a shipped style already covers, go straight
   to animate.
 argument-hint: "[reference images or folder] [style name]"
-allowed-tools: mcp__plugin_easel-core_easel__measure_image mcp__plugin_easel-core_easel__compare_images mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__measure_image mcp__plugin_easel-core_easel__compare_images mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__doctor Bash(node:*) Bash(ffmpeg:*) Read Write Edit Glob Grep
 ---
 
 <!-- Easel: the procedure is adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
@@ -48,7 +48,8 @@ kind of image (medium, palette, proportions), never their characters or frames. 
 ## Steps
 
 1. **Gather** 3-6 references that show the range (a wide, a close-up, text, a character) into
-   `./easel-out/<slug>/references/`. Look at them together with `contact_sheet`.
+   `./easel-out/<slug>/references/` (stills from a video: with the ffmpeg `doctor` reports, see
+   new-style.md → Gather). Look at them together with `contact_sheet`.
 2. **Measure** with `mcp__plugin_easel-core_easel__measure_image` (`images: ["<job>/references"]`,
    `accent: true` for inks on dark grounds, `points` for flat areas, `outDir` in the job folder).
    Write what each colour *means*. Note line weight relative to the subject, texture, type,

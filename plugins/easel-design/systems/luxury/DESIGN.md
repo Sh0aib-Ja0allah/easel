@@ -13,7 +13,7 @@ Quiet and expensive: high-contrast serif display, lots of space, a deep ground, 
 
 ## 2. Color
 - Primary: #14110F (text, deep grounds)
-- Accent: #B08D57 (hairlines, small marks only)
+- Accent: #B08D57 (hairlines, small marks only; not for text)
 - Background: #F7F4EF (page)
 - Surface: #EFEAE2 (panels)
 - Text: #14110F (body)

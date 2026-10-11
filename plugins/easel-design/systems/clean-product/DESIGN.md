@@ -18,7 +18,8 @@ A calm, trustworthy software product: lots of white, one blue accent, crisp type
 - Text: #14171F (body and headings)
 - Muted text: #5B6472 (secondary text, captions)
 - Border: #DFE3EA (dividers, inputs)
-- Success: #1F8A5B
+- Success: #1F8A5B (icons, badges and fills; not for text)
+- Success text: #1A7550 (success messages)
 - Error: #C8372D
 - Contrast: body text on background and on surface meets WCAG AA (4.5:1)
 

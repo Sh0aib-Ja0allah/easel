@@ -1,7 +1,8 @@
 <!-- Easel: adapted from ArnavPuri/designskills @ c7873015add8571ca95043febad0d9e6c97ee5c6
      (github.com/ArnavPuri/designskills, skills/brand-identity/SKILL.md), MIT License, Copyright (c) 2026 Arnav Puri;
      see NOTICE.md. Modified by Easel (2026-10-11): dropped frontmatter/triggers; brand context -> .easel/brand.md;
-     image-generator note -> optional AI raster path; skill names remapped; screenshots -> render_still/render_pdf. -->
+     image-generator note -> optional AI raster path; skill names remapped; screenshots -> render_still/render_pdf;
+     logo text: bundled faces embedded with embed_fonts instead of text converted to paths. -->
 
 # Brand Identity
 
@@ -31,7 +32,7 @@ Before building a brand identity, check for existing brand context:
 
 Use simple geometric SVG marks (48x48 viewBox, rounded rect + inner shape). For CSS-only marks: `display: grid; place-items: center` on a colored rounded square, `::after` pseudo-element for the inner shape.
 
-Ship final logos as SVG with text converted to paths (or drawn as shapes) -- never depend on a web font or `<text>` inside a logo file. Code is the default for every mark.
+Ship final logos as SVG files that carry their own letters: shapes and paths, or `<text>` set in a bundled face (Inter, Space Grotesk, Newsreader, JetBrains Mono, Caveat, STIX Two Text) and run through `embed_fonts` (`mcp__plugin_easel-core_easel__embed_fonts`), which writes a `-embedded.svg` with those faces inlined as base64 WOFF2. Deliver that file (or PNGs), never a logo whose `<text>` relies on a web font or an installed font: the user's site and tools don't have Easel's bundled fonts, so the lettering falls back to another font and the mark changes. `embed_fonts` refuses a face that is not bundled. Code is the default for every mark.
 
 ### AI raster path (optional)
 

@@ -12,7 +12,7 @@ copy it to .easel/brand.md and change it with easel-design:design-system. -->
 Objective and structured: a strict modular grid, a grotesque sans in a few weights, flush-left ragged-right text, primary red as the only colour.
 
 ## 2. Color
-- Primary: #E3001B (one shape or rule per layout)
+- Primary: #E3001B (one shape or rule per layout; red text only on Background, not for text on Surface)
 - Background: #FFFFFF (page)
 - Surface: #F0F0F0 (blocks)
 - Text: #111111 (everything)

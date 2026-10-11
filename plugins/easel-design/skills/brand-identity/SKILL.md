@@ -11,7 +11,7 @@ when_to_use: >-
   logo alone use easel-design:logo; for colours or type alone use easel-design:design-system; to
   record an existing brand use easel-core:brand.
 argument-hint: "[company or product] [what it stands for]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__validate Read Write Edit Glob Grep Bash(node:*)
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__embed_fonts Read Write Edit Glob Grep Bash(node:*)
 ---
 
 # Brand identity
@@ -37,7 +37,9 @@ icons, avatars, applications, the checklist).
    favicons and app icons (`mcp__plugin_easel-core_easel__render_still` `sizes`), one hero or poster in the brand. Lay them
    out with `mcp__plugin_easel-core_easel__contact_sheet` and check them with `mcp__plugin_easel-core_easel__qa`.
 6. **Kit:** `brand-kit/` with the logo files, colour and type tokens, the application renders and
-   a guidelines page (HTML and PDF). Then write `.easel/brand.md` with `easel-core:brand` and
+   a guidelines page (HTML and PDF). Every SVG in the kit with `<text>` (a wordmark, a lock-up) goes
+   in as the `-embedded.svg` that `mcp__plugin_easel-core_easel__embed_fonts` writes, so it keeps
+   its bundled face on the user's site and in their tools. Then write `.easel/brand.md` with `easel-core:brand` and
    validate it (`mcp__plugin_easel-core_easel__validate` `{"kind": "brand", ...}`).
 7. **Critique** the kit with `easel-core:critique` (**design** rubric) before calling it done.
 

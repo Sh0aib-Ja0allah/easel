@@ -1,7 +1,7 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/y1_kurzgesagt.md).
      MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
-     Modified by Easel (2026-10-11): translated to English; replaced channel, course and composer names with neutral descriptions; removed source-project paths, scripts, function names and demo-film references (useful demo values kept, tagged [tested]); replaced named characters with generic ones; rewrote the implementation notes engine-neutrally; condensed the review and QA sections into tool-independent lessons; dropped reference links. -->
+     Modified by Easel (2026-10-11): translated to English; replaced channel, course and composer names with neutral descriptions; removed source-project paths, scripts, function names and demo-film references (useful demo values kept, tagged [tested]); replaced named characters with generic ones; rewrote the implementation notes engine-neutrally; condensed the review and QA sections into tool-independent lessons; dropped reference links; replaced the source's critter recipe with principles for an original character. -->
 
 # Science-cartoon explainer
 
@@ -59,7 +59,7 @@ Tags used below:
 - **Dual-tone facets [tested]:** inside each shape, offset the shape twice. Leave a shadow band at the lower right and a thin highlight edge at the upper left. Offset about (10,12)px, width about (4,5)px. Pass every part of every character through the same step, so characters and scene are drawn the same way and do not look pasted on.
 - **Layout:** put the subject on the lower-third line, a little below centre. Leave sky above for stars and callouts. Split the scene into 5-6 parallax layers [tested]: starfield d=0.05, moon 0.12, far hills 0.3, near slope 0.65, subject 1.0, foreground leaves 1.5 (the near layer blurred and dark). The channel has not published its layer count; the samples show 2-5 [inferred].
 - **Characters:**
-  - A small critter of your own: egg-shaped body, big white eyes, small black pupils set toward the front, one simple triangular feature (a beak, a nose or a horn). Limbs or wings are leaf shapes one step darker than the body. Give each critter in a cast a different body colour. Do not reproduce any channel's mascots.
+  - A small critter of your own, designed for this film. Start from its job and its subject (a seed for a botany film, a bolt-shaped spark for an electricity one), then keep the silhouette simple: one main body shape and at most two features that break its outline, so it still reads as a thumbnail and as a black fill. Choose the body shape, the eyes and the one signature feature on purpose so the critter does not resemble any channel's, show's or brand's mascot; if a sketch reminds you of a known character, change the body shape and the signature feature until it doesn't. Shade it with the same dual-tone step as the scene. Give each critter in a cast its own silhouette and body colour, not recolours of one design. Do not reproduce any channel's mascots.
   - [tested] An animal character: teardrop body with a round head, triangular ears with magenta inner ears, big white eyes. A robot: rounded shell, dark screen face, one glowing lens eye. The hero: every part goes through the dual-tone facet step.
 
 ## 3. Motion

@@ -13,7 +13,8 @@ Reassuring and accessible: soft green-blue tones, large readable type, high cont
 
 ## 2. Color
 - Primary: #20706B (buttons, links)
-- Secondary: #5E8FD0 (information)
+- Secondary: #5E8FD0 (information: icons, fills and borders; not for text)
+- Secondary text: #2F5E9B (information text and links in the secondary hue)
 - Background: #F7FAF9 (page)
 - Surface: #FFFFFF (cards)
 - Text: #16302E (body)

@@ -13,7 +13,7 @@ when_to_use: >-
   illustration use easel-illustrate:svg-illustration; for icons, charts or UI graphics use
   easel-illustrate:svg; for an infographic with data use easel-design:infographic.
 argument-hint: "[the idea in one sentence] [the mascot, if any]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__embed_fonts Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: the method (compose first, one idea per image, structure types, fresh metaphors, the
@@ -75,7 +75,13 @@ below 7, re-render.
 
 ## 5. Deliver
 
-The SVG and the PNG (and a 1200 x 675 PNG with `sizes` if it is for social), named
+First give the SVG its font: the labels are `<text>` in Caveat, which Easel's renders have but the
+user's site, slides or editor do not (there the labels fall back to a default font and the
+handwriting is gone). Run `mcp__plugin_easel-core_easel__embed_fonts` `{"file": ".../01-<slug>.svg"}`
+and deliver the `-embedded.svg` it writes (Caveat inlined as base64 WOFF2), not the bare SVG. Keep
+every `<text>` in a bundled face (Caveat, Inter, ...): embed_fonts refuses any other.
+
+Deliver that SVG and the PNG (and a 1200 x 675 PNG with `sizes` if it is for social), named
 `01-<slug>.png`, `02-...` in order when there are several. Report what each image shows in one
 line. Several ideas: one image each, the same mascot, a different metaphor each time; show them
 together with `mcp__plugin_easel-core_easel__contact_sheet`.

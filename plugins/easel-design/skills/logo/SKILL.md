@@ -12,7 +12,7 @@ when_to_use: >-
   mark (this skill turns that into an original mark with the qualities they admire). For a whole identity (colours, type, guidelines) use
   easel-design:brand-identity; for a set of UI icons use easel-design:icons.
 argument-hint: "[name] [what it stands for] [smallest use size]"
-allowed-tools: mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__embed_fonts mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
 ---
 
 <!-- Easel: the method (route by asset class, brief fields, distinct SVG concepts, the contact sheet
@@ -36,7 +36,7 @@ judged at the smallest size it will be used. Work in `./easel-out/<slug>/`.
 | **Smallest use size** | The binding constraint: a 16 px favicon and a 512 px app icon are different designs |
 | One-colour requirement | Stamps, embroidery, dark mode: the mark must survive as one flat colour |
 | Palette | Exact hex values (from `.easel/brand.md` if there is one) |
-| Type | Families and weights for a wordmark, and their licence for logo use |
+| Type | Families and weights for a wordmark (bundled faces only, see below) |
 | Style reference | Specific and described ("geometric, monoline, rounded terminals"), never "modern" or "clean" |
 | Set membership | Existing assets it must match, or none |
 | Avoid | What it must not look like; competitors' marks to stay clear of |
@@ -55,9 +55,12 @@ that is one concept. For each:
 - no gradients, filters or shadows in a first mark unless the brief asks;
 - text only if it stays legible at the smallest size; below that it is an icon, not a wordmark.
 
-**Wordmarks start from a real typeface** (font-first): set the name in a licensed face (a
-bundled OFL face, or the brand's font file with its licence checked for logo use), then adjust
-spacing, cut or join letters deliberately. Don't hand-draw letters from scratch.
+**Wordmarks start from a real typeface** (font-first): set the name as `<text>` in a bundled OFL
+face (Inter, Space Grotesk, Newsreader, JetBrains Mono, Caveat or STIX Two Text), then adjust
+spacing, cut or join letters deliberately. Don't hand-draw letters from scratch. Only bundled faces,
+because only they can be embedded in the delivered file (section 5). If the brand has its own
+font, design in the closest bundled face and tell the user the final lettering needs that font
+outlined in a vector editor, under a licence that allows logo use.
 
 ## 3. Contact sheet, then look
 
@@ -85,6 +88,12 @@ In `export/`:
 
 - `logo.svg` (full colour), `logo-mono.svg` (one colour, `currentColor`), `logo-reversed.svg`
   (for dark grounds), and the wordmark lock-up if there is one;
+- **every SVG with `<text>` gets its font inside it:** run
+  `mcp__plugin_easel-core_easel__embed_fonts` `{"file": ".../logo.svg"}` on each and deliver the
+  `-embedded.svg` it writes (the bundled faces inlined as base64 WOFF2), never the bare file. Easel's
+  renders have the bundled fonts; the user's site, app or design tool does not, so a bare `<text>`
+  falls back to a default font there and the wordmark changes shape. It refuses a face that is not
+  bundled: change the face, or deliver PNGs only;
 - PNGs from one HTML page per variant with `mcp__plugin_easel-core_easel__render_still`
   (`sizes` for 16, 32, 48, 64, 128, 256, 512, 1024; `transparent: true`);
 - favicon set (16, 32, 48 PNG, plus `favicon.svg`), iOS home-screen icon 180 x 180, Android 192
@@ -102,4 +111,5 @@ about trademark searches before they register the mark. Easel cannot give legal 
 ## 7. Critique
 
 Run `easel-core:critique` with the **design** rubric on the final sheet before delivering. Deliver
-the export folder, the final contact sheet and the provenance file.
+the export folder (its SVGs with `<text>` as `-embedded.svg` files), the final contact sheet and
+the provenance file.

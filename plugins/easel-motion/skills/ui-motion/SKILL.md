@@ -47,8 +47,11 @@ with easel-core's engine, and checks it. `<easel-motion>` means `${CLAUDE_PLUGIN
 | Vue, Svelte, Nuxt and other frameworks | [gsap/frameworks.md](gsap/frameworks.md) |
 | jank, layout thrash, will-change | [gsap/performance.md](gsap/performance.md) |
 
-GSAP is installed by the user from npm (`npm install gsap`) under its own license; Easel never
-ships it (decision D10).
+Easel does not ship GSAP. Its setup (`/easel-core:setup`) installs GSAP from npm into Easel's data
+folder only so the engine can render previews offline. GSAP is GreenSock's, under its own no-charge
+"Standard" license (https://gsap.com/standard-license), not an open-source license: to use it in
+their own site or app the user installs it there (`npm install gsap`) and accepts that license
+(decision D10).
 
 ## 3. Write it
 
@@ -88,7 +91,13 @@ Report each problem with where it happens (element, time) and the fix:
 - no reduced-motion path; timelines or ScrollTriggers never killed;
 - several things starting at once with no stagger, or a stagger so long the last item lags.
 
-## 6. Deliver
+## 6. Critique
 
-The changed files in the user's project, the preview filmstrip, the `qa` result, and one line on
-how reduced motion behaves.
+Get a cold read before delivering: run the `easel-core:critique` procedure on the filmstrip with
+the **motion** rubric (it starts the read-only critic agent). Fix what it scores below 7 when the
+fix is in reach, then re-run the filmstrip and `qa`.
+
+## 7. Deliver
+
+The changed files in the user's project, the preview filmstrip, the `qa` result, the critique
+score, and one line on how reduced motion behaves.

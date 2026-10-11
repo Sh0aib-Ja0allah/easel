@@ -15,7 +15,7 @@ Look at every style at once: easel-core's `contact_sheet` with each style's `sam
 | [crosshatch](crosshatch/STYLE.md) | sketchy ink that boils, hatch / pencil shading, warm paper and navy "inside the machine" | on 2s | several short explainers |
 | [riso](riso/STYLE.md) | a three-ink risograph print: halftone screens, overprints, misregistration | on 2s | a 6s frame-matched study |
 | [sketchbook](sketchbook/STYLE.md) | graphite and one accent colour on a sketchbook page, hand lettering | on 2s | a 15s explainer |
-| [math](math/STYLE.md) | a manim-style math explainer: black stage, axes and graphs, colour-coded variables, smooth easing | on 1s | two short math explainers |
+| [math](math/STYLE.md) | a math-animation style explainer: black stage, axes and graphs, colour-coded variables, smooth easing | on 1s | two short math explainers |
 | [isometric](isometric/STYLE.md) | isometric product line art: constant hairlines, white faces, rounded slabs, one dark accent; light or dark ground | on 1s, spring settles | this demo (the first style made with new-style.md) |
 | [pixel](pixel/STYLE.md) | low-resolution eras: draw at the true resolution, upscale nearest-neighbour | on 1s or 2s | a fixed-stage history of AI video |
 | [synthwave](synthwave/STYLE.md) | an 80s night drive: neon grid, striped sun, chrome type, VHS pass (Easel original) | on 1s | its demo |

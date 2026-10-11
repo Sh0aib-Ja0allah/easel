@@ -1,6 +1,6 @@
 <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
      (github.com/linyaosky/svg-skill, reference.md), MIT License, Copyright (c) 2026 svg-skill contributors;
-     see NOTICE.md. Modified by Easel (2026-10-11): renamed syntax.md; xmllint replaced by svg-check.mjs; chart math centres bars and pins them to the baseline; contrast and bundled-font notes added; legacy-browser row removed. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): renamed syntax.md; xmllint replaced by svg-check.mjs; chart math centres bars and pins them to the baseline; contrast and bundled-font notes added; legacy-browser row removed; non-ASCII declaration is a convention (svg-check warns); text delivered with embedded faces. -->
 
 # SVG syntax reference
 
@@ -8,14 +8,15 @@ Indexed from [../SKILL.md](../SKILL.md). Steps per scenario in [scenarios.md](sc
 
 ## Encoding and text
 
-Standalone files with non-ASCII characters: save as UTF-8 with
-`<?xml version="1.0" encoding="UTF-8"?>` as the first line; `svg-check.mjs` fails a file that
-has non-ASCII text without it.
+Standalone files with non-ASCII characters: save as UTF-8, with
+`<?xml version="1.0" encoding="UTF-8"?>` as the first line (XML reads a file without it as
+UTF-8, so it is a convention for older tools; `svg-check.mjs` warns when it is missing).
 
-Pure icons may omit the XML declaration. Formal logos: use paths, not `<text>`, to avoid a font
-dependency. Text that stays text: `font-family="Inter, sans-serif"` (or Space Grotesk,
-Newsreader, JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math, the faces the Easel engine
-bundles); never a web-font link.
+Pure icons may omit the XML declaration. Formal logos are made with easel-design:logo. Text that
+stays text: `font-family="Inter, sans-serif"` (or Space Grotesk, Newsreader, JetBrains Mono,
+Caveat, STIX Two Text, Noto Sans Math, the faces the Easel engine bundles); never a web-font link.
+A standalone file with `<text>` is delivered with its face embedded (`embed_fonts`, see
+[../SKILL.md](../SKILL.md)), because the user's site does not have the bundled fonts.
 
 ## Coordinate system
 

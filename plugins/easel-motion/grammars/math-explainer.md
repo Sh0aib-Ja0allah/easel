@@ -1,7 +1,7 @@
 <!-- Easel: translated and adapted from alchaincyf/huashu-art-motion @ 9ff59339f934e08483ba0a5b1db20f4c2c421b35
      (github.com/alchaincyf/huashu-art-motion, references/动画语法/t1_3b1b.md).
      MIT License, Copyright (c) 2026 alchaincyf (花叔 · 花生); full text in NOTICE.md.
-     Modified by Easel (2026-10-11): translated to English; replaced the channel, creator and source-repo names and URLs with neutral descriptions; removed the source engine's paths, scripts, function names and demo-render lines; restated the implementation notes without the source's library; renamed the demo shots to Shot 1-3; replaced the network's animal example class with "the target class"; generalised the CJK font notes; wrote the review severity icons as words; pointed cross-references at other grammars by description. -->
+     Modified by Easel (2026-10-11): translated to English; replaced the channel, creator and source-repo names and URLs with neutral descriptions; removed the source engine's paths, scripts, function names and demo-render lines; restated the implementation notes without the source's library; renamed the demo shots to Shot 1-3; replaced the network's animal example class with "the target class"; generalised the CJK font notes; wrote the review severity icons as words; pointed cross-references at other grammars by description; paraphrased the creator's quoted words. -->
 
 # Math explainer
 
@@ -59,9 +59,9 @@
 ## 5. Rhythm and text
 
 - **Shot length**: the original is made of continuous scenes. A single animation is 1-3 s followed by a 1 s wait. One "shot" (one concept) is often 8-20 s. The 8-second, 3-shot reference piece (2.6/2.8/2.6 s) is a **compressed version**; in real voice-over work, stretch it 2-3x.
-- **Sync with the voice-over**: the creator **lays out the animations first and records the voice-over after** ("I start by laying out all of the animations... then once I record the voiceover, the actual editing is like a day"). So the sync rule is "one sentence = one animation": the animation starts when the sentence says the action verb, and after the sentence lands, wait about 1 s so the viewer can look.
+- **Sync with the voice-over**: in this grammar **the animations are laid out first and the voice-over is recorded after**, which leaves only a short editing pass. So the sync rule is "one sentence = one animation": the animation starts when the sentence says the action verb, and after the sentence lands, wait about 1 s so the viewer can look.
 - **Text**: the title or question is Written before the action (ask first, then show). Formulas appear together with the picture, in the same colours. Numbers (0.95) count along with the fill and never appear ahead of the picture. On screen at most one title line plus one note line.
-- **FAQ principle**: "Every movement on the screen should be deliberate, with an identifiable purpose." Delete any movement that has no explanatory purpose.
+- **Purpose principle**: every movement on screen is there on purpose and you can say what it explains. Delete any movement that has no explanatory purpose.
 
 ## 6. Implementation notes
 

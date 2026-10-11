@@ -13,8 +13,9 @@ Friendly and bright: rounded shapes, a cheerful primary with two supporting colo
 
 ## 2. Color
 - Primary: #5B3FD6 (buttons, links, key shapes)
-- Secondary: #FFB020 (highlights, stickers)
-- Tertiary: #1FB58F (success, illustrations)
+- Secondary: #FFB020 (highlights, stickers; not for text)
+- Tertiary: #1FB58F (success marks, illustrations; not for text)
+- Success text: #016E55 (success messages)
 - Background: #FFFBF3 (page)
 - Surface: #FFFFFF (cards)
 - Text: #231942 (body)

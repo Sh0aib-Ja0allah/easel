@@ -7,7 +7,7 @@
 
 ![sample](sample.png)
 
-A manim-style math explainer look. Coloured math on a near-black stage:
+A math-animation style explainer look. Coloured math on a near-black stage:
 - serif type that is **Written** on
 - axes, number planes and graphs that **ShowCreation** sweeps draw
 - equations and shapes that **Transform** into each other

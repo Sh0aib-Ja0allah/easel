@@ -12,9 +12,9 @@ copy it to .easel/brand.md and change it with easel-design:design-system. -->
 Printed by hand: risograph-style overlapping inks (pink, teal, yellow) on cream paper, grain, slightly misregistered shapes, chunky type.
 
 ## 2. Color
-- Ink 1: #E8457C (fluorescent pink)
-- Ink 2: #1E8C93 (teal)
-- Ink 3: #F6C543 (yellow)
+- Ink 1: #E8457C (fluorescent pink: shapes, overprints and display type of 24px and up; not for body text)
+- Ink 2: #1E8C93 (teal: shapes, overprints and display type of 24px and up; not for body text)
+- Ink 3: #F6C543 (yellow: shapes and overprints only; not for text)
 - Background: #F3ECDD (cream paper)
 - Text: #1E2A3A (body (dark ink))
 - Muted text: #4F5868 (captions)

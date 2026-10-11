@@ -3,7 +3,7 @@
      MIT License, Copyright (c) 2026 cth9191; full text in NOTICE.md.
      Modified by Easel (2026-10-11): measuring and comparing are easel-core tools (measure_image,
      compare_images, render_still); new-style.mjs and new-piece.mjs start the style and its piece;
-     references stay in the job folder. -->
+     references stay in the job folder; video stills use the ffmpeg that doctor finds. -->
 # Making a new style from references
 
 Use this when the user names or shows a look that no style in `<easel-motion>/styles/` covers. The output is a reusable style folder, made the same way the shipped ones were. Budget: a measure pass, the piece's 2–4 style frames matched against the references, **one** check-in (the animate skill's look check), then save after the piece.
@@ -14,7 +14,7 @@ Use this when the user names or shows a look that no style in `<easel-motion>/st
 
 ## 1. Gather
 
-- **Video:** ask for a file the user has. Extract stills with ffmpeg (`ffmpeg -i ref.mp4 -vf fps=2,scale=540:-1 <job>/references/f%03d.png`; easel-core's `doctor` checks that ffmpeg is installed), and look at them on a `contact_sheet`.
+- **Video:** ask for a file the user has. Extract stills with the ffmpeg that easel-core's `doctor` finds: run `mcp__plugin_easel-core_easel__doctor` first. If its ffmpeg line says `found at <path>, not on PATH` (Windows right after a winget install, until Claude Code restarts), a bare `ffmpeg` fails in this session, so run that path in quotes: `"<path>" -i ref.mp4 -vf fps=2,scale=540:-1 <job>/references/f%03d.png`; otherwise `ffmpeg -i ref.mp4 -vf fps=2,scale=540:-1 <job>/references/f%03d.png`. If ffmpeg is missing, follow doctor's fix (or `/easel-core:setup`). Look at the stills on a `contact_sheet`.
 - **A web page or an SVG/canvas demo the user points to:** render it with `render_still` (or have the user screenshot it) and look at the drawings large — at a portrait (9:16) viewport if you can, so a crop has the same shape as our frame. If the drawing is SVG, read its computed styles (stroke colours and widths, fills, the viewBox): **those numbers beat any screenshot**, because thin lines get downsampled lighter in screenshots.
 - **Stills:** use them as they are. Ask for 3–6 that show the range (a wide, a close-up, text, a character).
 

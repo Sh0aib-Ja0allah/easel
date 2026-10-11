@@ -13,7 +13,8 @@ Quiet and warm: off-white paper, deep ink blue, a single terracotta accent, lots
 
 ## 2. Color
 - Primary: #1D3557 (text and key shapes)
-- Accent: #C8553D (one accent per layout)
+- Accent: #C8553D (one accent per layout: shapes and rules; not for text, nor as a fill behind white text)
+- Accent text: #A1311A (accent words and links; the fill behind white button text)
 - Background: #F4EFE6 (paper)
 - Surface: #EBE4D8 (panels)
 - Text: #1D3557 (body)

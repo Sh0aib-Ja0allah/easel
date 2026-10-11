@@ -17,12 +17,12 @@ when_to_use: >-
   easel-illustrate:concept-illustration; for p5.js or algorithmic art use
   easel-illustrate:generative-art; for a data infographic use easel-design:infographic.
 argument-hint: "[what to draw] [where it goes: file, React, Vue, CSS, email]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__embed_fonts Bash(node:*) Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
      (github.com/linyaosky/svg-skill, SKILL.md), MIT License, Copyright (c) 2026 svg-skill contributors;
-     see NOTICE.md. Modified by Easel (2026-10-11): Easel frontmatter and routing; validate.sh and xmllint replaced by svg-check.mjs and engine renders; render-and-look step added; logos and icon families routed to easel-design; output to ./easel-out/<slug>/. -->
+     see NOTICE.md. Modified by Easel (2026-10-11): Easel frontmatter and routing; validate.sh and xmllint replaced by svg-check.mjs and engine renders; render-and-look step added; logos and icon families routed to easel-design; output to ./easel-out/<slug>/; standalone files with text delivered with their bundled faces embedded. -->
 
 # SVG for UI and code
 
@@ -114,7 +114,11 @@ easel-illustrate:svg-illustration.
 7. **Flat by default**: gradients and shadows only when needed
 8. **Text**: `font-family="Inter"` or another bundled face (Space Grotesk, Newsreader,
    JetBrains Mono, Caveat, STIX Two Text, Noto Sans Math), with a generic fallback
-   (`Inter, sans-serif`); no web-font links. Text on a fill needs 4.5:1 contrast
+   (`Inter, sans-serif`); no web-font links. Text on a fill needs 4.5:1 contrast. A standalone
+   `.svg` file with `<text>` is delivered as the `-embedded.svg` that
+   `mcp__plugin_easel-core_easel__embed_fonts` writes (the face inlined), because the user's site
+   or tool does not have Easel's bundled fonts; SVG inlined in the user's own page or component uses
+   that page's font instead
 
 ### Quality checklist
 
@@ -135,14 +139,18 @@ node "${CLAUDE_PLUGIN_ROOT}/tools/svg-check.mjs" ./easel-out/<slug>/
 node "${CLAUDE_PLUGIN_ROOT}/tools/svg-check.mjs" ./easel-out/<slug>/badge.svg --email
 ```
 
-It takes files or folders and fails a file for: tags that do not close in order; a root `<svg>`
-without `xmlns="http://www.w3.org/2000/svg"` or without `viewBox`; non-ASCII text without the
-`<?xml ... encoding="UTF-8"?>` declaration first; an empty `<path>`; a TODO, FIXME or
-"placeholder" left in the markup; duplicate ids; `href="#id"` or `url(#id)` pointing at an id
-that does not exist; no accessible name (a `<title>` or root `aria-label`) and no root
-`aria-hidden="true"`; `<script>` or `on...=` handlers; external `href`/`src`, `@import` or
-`url(http...)`. It warns on editor metadata and on `<image>` bitmaps. `--email` also fails
-`<style>`, animation and filters. `--json` prints machine-readable results. Fix every FAIL.
+It takes files or folders and fails a file for: tags that do not close in order, or a `<` that
+is not a well-formed tag (write `&lt;` in text); a root `<svg>` without
+`xmlns="http://www.w3.org/2000/svg"`, or without a `viewBox` of four numbers with a positive width
+and height; an empty `<path>`; a TODO, FIXME or "placeholder" left in the text, a comment or an
+`aria-label` (ids and classes may say anything); duplicate ids; `href="#id"` or `url(#id)`
+pointing at an id that does not exist; no accessible name (a `<title>` or root `aria-label`) and
+no root `aria-hidden="true"`; `<script>` or `on...=` handlers; external `href`/`src`,
+`@import` or `url(http...)`. It warns on non-ASCII text without the
+`<?xml ... encoding="UTF-8"?>` declaration (save the file as UTF-8), on editor metadata and on
+`<image>` bitmaps. `--email` also fails `<style>`, animation, filters, `<defs>`, gradients and
+other `#id` references, and warns when the root has no `width` and `height`. `--json` prints
+machine-readable results. Fix every FAIL.
 
 **2. Render and look.** An SVG file is wrapped in a page and scaled for you.
 

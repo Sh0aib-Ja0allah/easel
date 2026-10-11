@@ -14,7 +14,11 @@ const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.is
 const read = (f) => readFileSync(f, 'utf8');
 const field = (fm, k) => { const m = new RegExp(`^${k}: (?:>-\\n((?:  .*\\n?)+)|(.*))`, 'm').exec(fm + '\n'); return m ? (m[1] ? m[1].split('\n').map((l) => l.trim()).join(' ').trim() : m[2].trim()) : null; };
 const engineTools = new Set([...read(join(CORE, 'engine', 'tools.mjs')).matchAll(/^ {2}(\w+): \{$/gm)].map((m) => m[1]));
-const NAMES = /\b(xiaohei|小黑|peanut|ghibli|kusama|haring|shinkai|kirby|mario|pixar|disney|studio ghibli|kurzgesagt|anthropic branding|Poppins|Lora)\b/i;
+// Source characters, creators, studios and brands whose look must not be named or copied, and the
+// fonts the sources used (case-insensitive). 小黑 sits outside \b, which needs a word character.
+const NAMES = /\b(xiaohei|peanut|ghibli|kusama|haring|shinkai|kirby|mario|nintendo|pixar|disney|miyazaki|wes anderson|banksy|studio ghibli|kurzgesagt|vercel|airbnb|spotify|revolut|anthropic branding|Poppins|Lora)\b|小黑/i;
+// a brand or platform used as a look ("stripe-like", "Instagram-style"), even where the word is ordinary
+const AS_A_LOOK = /\b(stripe|notion|linear|apple|figma|instagram|google|slack|github)[- ](?:style|like|inspired|esque|ish)\b/i;
 
 test('five skills with matching names, routing text under the cap, real engine tools, links that resolve', () => {
   assert.deepEqual(readdirSync(join(PLUGIN, 'skills')).filter((d) => existsSync(join(PLUGIN, 'skills', d, 'SKILL.md'))).sort(), SKILLS);
@@ -56,10 +60,21 @@ test('no source characters, branded styling, external URLs, Python or shell-only
     // only the attribution comment is skipped (it must name its source); the frontmatter is scanned too
     const body = read(f).replace(/<!--\s*Easel[\s\S]*?-->/, '');
     assert.doesNotMatch(body, NAMES, f);
+    assert.doesNotMatch(body, AS_A_LOOK, f);
     for (const m of body.match(/https?:\/\/[^\s"'<>)]+/g) || []) assert.match(m, /^http:\/\/www\.w3\.org\/|^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/p5\.js\/1\.11\.13\/p5\.min\.js$|example\.com/, `${f}: ${m}`);
     assert.doesNotMatch(body, /python3? |pip install|svg_loop\.py|validate\.sh|xmllint|\/tmp\/|\/usr\/bin|\/home\/claude|\/mnt\/user-data/, f);
   }
   assert.doesNotMatch(read(join(PLUGIN, 'skills', 'concept-illustration', 'reference', 'mascot.md')), /peanut|xiaohei/i);
+  // file and folder names too, whatever the separator
+  const all = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? [e.name, ...all(join(d, e.name))] : [e.name]));
+  for (const n of [...all(join(PLUGIN, 'skills')), ...all(join(PLUGIN, 'examples'))]) { assert.doesNotMatch(n.replace(/[-_]/g, ' '), NAMES, n); assert.doesNotMatch(n.replace(/_/g, '-'), AS_A_LOOK, n); }
+});
+
+test('the name lint is not vacuous: creators, studios, brands and brand looks fail in any case', () => {
+  for (const s of ['a Miyazaki forest', 'a BANKSY stencil', 'Wes Anderson symmetry', 'pixar warmth', 'like the xiaohei cat', '小黑 style', 'a Vercel card']) assert.match(s, NAMES, s);
+  for (const s of ['a stripe-like card', 'Instagram-style grid', 'notion-ish', 'Figma-inspired']) assert.match(s, AS_A_LOOK, s);
+  for (const s of ['feFuncR type="linear"', 'animation: spin 1s linear infinite', 'a striped stripe pattern', 'material simulation']) { assert.doesNotMatch(s, NAMES, s); assert.doesNotMatch(s, AS_A_LOOK, s); }
+  assert.match('pixar-look'.replace(/[-_]/g, ' '), NAMES);
 });
 
 test('every skill ends in a critique by easel-core:critique with a named rubric', () => {
@@ -89,7 +104,6 @@ test('svg-check: good files pass, broken ones fail with the reason, and the comm
     ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect/></svg>', /accessible name/],
     ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" aria-hidden="true"><g id="a"/><g id="a"/></svg>', /duplicate ids: a/],
     ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" aria-hidden="true"><use href="#nope"/></svg>', /#nope/],
-    ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" aria-hidden="true"><text>Café</text></svg>', /UTF-8/],
     ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" aria-hidden="true"><image href="https://x.example/a.png"/></svg>', /external reference/],
     ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" aria-hidden="true"><script>1</script></svg>', /scripts/],
     ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" aria-hidden="true"><g></svg>', /closes|unclosed/],
@@ -111,6 +125,45 @@ test('svg-check: good files pass, broken ones fail with the reason, and the comm
     assert.equal(run(dir, '--nope').status, 2);
     assert.equal(run(join(dir, 'missing.svg')).status, 2);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+// QA: svg-check refused valid SVG (single quotes, a ">" in an attribute, an exponent in the viewBox,
+// an id with "placeholder" in it, non-ASCII without a declaration) and let --email keep <defs>
+test('svg-check: valid SVG it used to refuse passes; non-ASCII is a warning; --email refuses defs and gradients', async () => {
+  const { checkSvg } = await import(pathToFileURL(join(PLUGIN, 'tools', 'svg-check.mjs')).href);
+  const NS = 'xmlns="http://www.w3.org/2000/svg"';
+  const valid = [
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' aria-hidden='true'><path d='M2 2h20'/></svg>",
+    `<svg ${NS} viewBox="0 0 48 48" aria-hidden="true"><circle id="avatar-placeholder" cx="24" cy="24" r="20" class="placeholder-ring"/></svg>`,
+    `<svg ${NS} viewBox="0 0 24 24" role="img" aria-label="a > b"><g transform="scale(1)"><path d="M2 2h20"/></g></svg>`,
+    `<svg ${NS} viewBox="0 0 1e3 1e3" aria-hidden="true"><rect width="1e3" height="5E2"/></svg>`,
+    `<svg ${NS} viewBox="-.5 -0.5 24.5,24.5" aria-hidden="true"><path d="M2 2h20"/></svg>`,
+  ];
+  for (const svg of valid) assert.deepEqual(checkSvg(svg).problems, [], svg);
+  const cafe = checkSvg(`<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><text>Café</text></svg>`);
+  assert.equal(cafe.pass, true);
+  assert.match(cafe.warnings.join(), /UTF-8/);
+  assert.deepEqual(checkSvg(`<?xml version="1.0" encoding="UTF-8"?>\n<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><text>Café</text></svg>`).warnings, []);
+  const fails = [
+    [`<svg ${NS} viewBox="0 0 24" aria-hidden="true"></svg>`, /viewBox "0 0 24"/],
+    [`<svg ${NS} viewBox="0 0 -1 5" aria-hidden="true"></svg>`, /positive width and height/],
+    [`<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><text>TODO: real copy</text></svg>`, /TODO or placeholder/],
+    [`<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><!-- placeholder: swap in the logo --><rect width="9" height="9"/></svg>`, /TODO or placeholder/],
+    [`<svg ${NS} viewBox="0 0 9 9" role="img" aria-label="Placeholder"><rect width="9" height="9"/></svg>`, /TODO or placeholder/],
+    [`<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><text>a < b</text></svg>`, /not a well-formed tag/],
+    [`<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><rect width=9 height="9"/></svg>`, /not a well-formed tag/],
+    ["<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' aria-hidden='true'><use href='#nope'/></svg>", /#nope/],
+    [`<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><image href='https://x.example/a.png'/></svg>`, /external reference/],
+  ];
+  for (const [svg, re] of fails) { const r = checkSvg(svg); assert.equal(r.pass, false, svg); assert.match(r.problems.join(' | '), re, svg); }
+  // email: <defs>, gradients and #id references are dropped by desktop mail clients (scenarios.md, Email inline)
+  const grad = `<svg ${NS} viewBox="0 0 9 9" width="9" height="9" aria-hidden="true"><defs><linearGradient id="g"><stop offset="0" stop-color="#000"/></linearGradient></defs><rect width="9" height="9" fill="url(#g)"/></svg>`;
+  assert.deepEqual(checkSvg(grad).problems, []);
+  assert.match(checkSvg(grad, { email: true }).problems.join(), /email: <defs>, <linearGradient>/);
+  assert.match(checkSvg(`<svg ${NS} viewBox="0 0 9 9" width="9" height="9" aria-hidden="true"><radialGradient id="r"/><circle r="4" fill="url(#r)"/></svg>`, { email: true }).problems.join(), /email: <radialGradient>/);
+  const flat = checkSvg(`<svg ${NS} viewBox="0 0 9 9" width="9" height="9" aria-hidden="true"><rect width="9" height="9" fill="#123456"/></svg>`, { email: true });
+  assert.deepEqual([flat.problems, flat.warnings], [[], []]);
+  assert.match(checkSvg(`<svg ${NS} viewBox="0 0 9 9" aria-hidden="true"><rect width="9" height="9"/></svg>`, { email: true }).warnings.join(), /width and height/);
 });
 
 test('examples: every skill but the entry has one; every SVG passes svg-check; only bundled faces, no URLs', async () => {

@@ -13,7 +13,7 @@ Raw and direct: visible structure, monospace, hard black borders, default-lookin
 
 ## 2. Color
 - Primary: #1A1A1A (borders, text, buttons)
-- Accent: #D4FF3A (highlights, hover, one block per page)
+- Accent: #D4FF3A (highlights, hover, one block per page: a fill behind black text; not for text)
 - Background: #F2F2EE (page)
 - Surface: #FFFFFF (boxes)
 - Text: #1A1A1A (everything)
