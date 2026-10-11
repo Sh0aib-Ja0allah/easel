@@ -6,9 +6,14 @@
 // easel-illustrate render their examples, easel-ai-media gives a dry run (no keys, nothing spent),
 // easel-pixel's launcher reports its pinned bridge (Aseprite is not needed or run).
 //
-//   node scripts/install-check.mjs --source <marketplace> --work <empty folder>
-//     --source  Sh0aib-Ja0allah/easel (default; what users add) or a git URL or path
-//     --work    a scratch folder: config/, data/ and out/ are created inside it
+// Claude Code itself then starts the MCP servers through each plugin's .mcp.json (`claude mcp
+// list`), and installing easel-motion alone into a second empty config pulls in easel-core.
+//
+//   node scripts/install-check.mjs --source <marketplace> --work <empty folder> [--expect-sha <sha>]
+//     --source      Sh0aib-Ja0allah/easel (default; what users add) or a git URL or path
+//     --work        a scratch folder: config/, config-dep/, data/ and out/ are created inside it
+//     --expect-sha  the commit the installed copies must come from (CI passes the pushed commit, so
+//                   the check fails instead of silently testing a newer or older main)
 // Node only, no dependencies; Windows, macOS and Linux. Needs the claude CLI, Node 22 and ffmpeg.
 // Easel's own (MIT).
 import { spawnSync } from 'node:child_process';
@@ -18,10 +23,11 @@ import { join, resolve } from 'node:path';
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
 const source = arg('--source', 'Sh0aib-Ja0allah/easel');
 const work = resolve(arg('--work', ''));
-if (!arg('--work')) { console.error('usage: node scripts/install-check.mjs --work <empty folder> [--source <marketplace>]'); process.exit(2); }
-const config = join(work, 'config'), dataRoot = join(work, 'data'), out = join(work, 'out');
-for (const d of [config, dataRoot, out]) mkdirSync(d, { recursive: true });
-if (readdirSync(config).length) { console.error(`${config} is not empty: use a fresh --work folder`); process.exit(2); }
+const expectSha = arg('--expect-sha', '');
+if (!arg('--work')) { console.error('usage: node scripts/install-check.mjs --work <empty folder> [--source <marketplace>] [--expect-sha <sha>]'); process.exit(2); }
+const config = join(work, 'config'), configDep = join(work, 'config-dep'), dataRoot = join(work, 'data'), out = join(work, 'out');
+for (const d of [config, configDep, dataRoot, out]) mkdirSync(d, { recursive: true });
+if (readdirSync(config).length || readdirSync(configDep).length) { console.error(`${work} is not empty: use a fresh --work folder`); process.exit(2); }
 
 const env = { ...process.env, CLAUDE_CONFIG_DIR: config };
 const results = [];
@@ -31,12 +37,14 @@ const step = (name, fn) => {
   catch (e) { results.push({ step: name, ok: false, ms: Date.now() - t0, error: String(e.message || e).slice(0, 1500) }); console.log(`FAIL ${name}\n     ${String(e.message || e).split('\n').join('\n     ')}`); }
 };
 // the claude CLI is a .cmd shim on Windows: run it through the shell there (fixed arguments only)
-const claude = (...a) => {
-  const r = spawnSync('claude', a, { env, encoding: 'utf8', windowsHide: true, timeout: 300000, shell: process.platform === 'win32' });
+const claudeIn = (configDir, cwd, ...a) => {
+  const r = spawnSync('claude', a, { env: { ...env, CLAUDE_CONFIG_DIR: configDir }, cwd, encoding: 'utf8', windowsHide: true, timeout: 300000, shell: process.platform === 'win32' });
   if (r.status !== 0) throw new Error(`claude ${a.join(' ')} -> exit ${r.status}: ${(r.stderr || r.stdout || String(r.error || '')).trim().slice(-800)}`);
   return r.stdout;
 };
-const node = (args, { extraEnv = {}, input, cwd } = {}) => {
+const claude = (...a) => claudeIn(config, undefined, ...a);
+const installedRecords = (configDir) => JSON.parse(readFileSync(join(configDir, 'plugins', 'installed_plugins.json'), 'utf8')).plugins;
+const node =(args, { extraEnv = {}, input, cwd } = {}) => {
   const r = spawnSync(process.execPath, args, { env: { ...env, ...extraEnv }, input, cwd, encoding: 'utf8', windowsHide: true, timeout: 900000, maxBuffer: 1 << 26 });
   if (r.status !== 0) throw new Error(`node ${args.map((x) => String(x).slice(-60)).join(' ')} -> exit ${r.status}: ${(r.stderr || r.stdout || '').trim().slice(-800)}`);
   return r.stdout;
@@ -62,6 +70,21 @@ step('list: every plugin installed, enabled, copied into the plugin cache', () =
     installed[p] = e.installPath;
   }
   return Object.fromEntries(list.map((x) => [x.id, x.version]));
+});
+if (expectSha) step(`installed copies come from ${expectSha.slice(0, 12)}`, () => {
+  const recs = installedRecords(config);
+  for (const p of PLUGINS) {
+    const sha = ((recs[`${p}@easel`] || [])[0] || {}).gitCommitSha;
+    if (sha !== expectSha) throw new Error(`${p} was installed from ${sha}, not ${expectSha} (main moved on? the newer push's CI checks that commit)`);
+  }
+});
+step('claude mcp list: Claude Code starts the engine and media servers from .mcp.json', () => {
+  const text = claudeIn(config, out, 'mcp', 'list');
+  // easel-pixel's server needs its one-time setup (the bridge install), so it is not expected here
+  for (const s of ['plugin:easel-core:easel', 'plugin:easel-ai-media:media']) {
+    const line = text.split('\n').find((l) => l.startsWith(`${s}:`));
+    if (!line || !/Connected/.test(line)) throw new Error(`${s}: ${line || 'not listed'}`);
+  }
 });
 
 const core = () => installed['easel-core'];
@@ -118,6 +141,14 @@ step('easel-pixel: launcher reports the pinned bridge (not installed; Aseprite n
   const v = JSON.parse(node([join(installed['easel-pixel'], 'server', 'launch.mjs'), 'version', '--data', data('easel-pixel')]));
   if (v.pinned !== '0.8.0' || v.installed !== null) throw new Error(JSON.stringify(v));
   return v;
+});
+step('dependency: installing easel-motion alone into another empty config pulls in easel-core', () => {
+  claudeIn(configDep, undefined, 'plugin', 'marketplace', 'add', source);
+  claudeIn(configDep, undefined, 'plugin', 'install', 'easel-motion@easel');
+  const core = (installedRecords(configDep)['easel-core@easel'] || [])[0];
+  if (!core || !existsSync(join(core.installPath, '.claude-plugin', 'plugin.json'))) throw new Error('easel-core was not installed as a dependency');
+  // a dependency resolves against the release tags (easel-core--v<version>), not the marketplace head
+  return { easelCore: core.resolvedVersion || core.version, from: String(core.gitCommitSha).slice(0, 12) };
 });
 
 const failed = results.filter((r) => !r.ok);

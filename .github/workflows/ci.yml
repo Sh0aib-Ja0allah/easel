@@ -44,8 +44,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    env:
-      EASEL_DATA: ${{ github.workspace }}/../easel data
     defaults:
       run:
         shell: bash
@@ -54,6 +52,10 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
+      # The data folder lives under runner.temp (a path with a space): actions/cache rejects paths
+      # with '..', and the runner context is not available in job-level env.
+      - name: Data folder (with a space in its path)
+        run: echo "EASEL_DATA=$RUNNER_TEMP/easel data" >> "$GITHUB_ENV"
       - name: Install ffmpeg
         run: |
           case "$RUNNER_OS" in
@@ -65,7 +67,7 @@ jobs:
       - name: Cache engine data (npm packages + Chromium)
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ github.workspace }}/../easel data
+          path: ${{ runner.temp }}/easel data
           key: easel-data-${{ runner.os }}-${{ hashFiles('plugins/easel-core/engine/package.json') }}
       - name: doctor --install (into a data folder with a space)
         run: node plugins/easel-core/engine/cli.mjs doctor --install
@@ -152,8 +154,16 @@ jobs:
           esac
       - name: Install Claude Code CLI (pinned)
         run: npm install -g @anthropic-ai/claude-code@2.1.296
+      # The marketplace installs whatever main is now. If a newer push already moved main, that
+      # push's own run checks it; this run says so instead of testing a different commit.
+      - name: Is this commit still the head of main?
+        id: head
+        run: |
+          head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$head" = "$GITHUB_SHA" ]; then echo "current=true" >> "$GITHUB_OUTPUT"; else echo "current=false" >> "$GITHUB_OUTPUT"; echo "::notice::main is now $head; the clean install of that commit runs in its own CI run"; fi
       - name: Install every plugin into an empty config and use each installed copy
-        run: node scripts/install-check.mjs --source "${{ github.repository }}" --work "$RUNNER_TEMP/easel install check"
+        if: steps.head.outputs.current == 'true'
+        run: node scripts/install-check.mjs --source "${{ github.repository }}" --work "$RUNNER_TEMP/easel install check" --expect-sha "$GITHUB_SHA"
       - name: Upload the install report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

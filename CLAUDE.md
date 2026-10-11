@@ -141,8 +141,9 @@ Gates - run before every commit, never commit red:
 - `npm --prefix plugins/easel-illustrate test` (since T3.5): the skills and attribution, the SVG
   checker, every example in `examples/manifest.json` through the engine, and the p5.js loop
   (seekable, seamless, MP4). Needs p5.js in the data dir (doctor installs it). Same 0-skipped rule.
-- `npm --prefix plugins/easel-ai-media test` (since T4.1): the `media` server with recorded
-  provider responses (no network, fake keys that must never appear in output), the spending
+- `npm --prefix plugins/easel-ai-media test` (since T4.1): the `media` server with synthetic
+  provider fixtures shaped from each provider's docs (no network, fake keys that must never appear
+  in output; the adapters are not yet checked against live APIs), the spending
   limit, the voice-clone consent gate and its refusals, assembly with ffmpeg, and the skills,
   attribution and settings. Never run live paid calls from the tests.
 - `npm --prefix plugins/easel-pixel test` (since T4.5): the launcher for the pinned
@@ -150,12 +151,17 @@ Gates - run before every commit, never commit red:
   agents, settings and attribution. Drawing with a real Aseprite is the owner's end-to-end check.
 - The engine tests include `notices.test.mjs` (since T5.1): every adapted file's source and commit
   must be in `THIRD_PARTY_NOTICES.md` and its plugin's `NOTICE.md`; Apache files say "Modified by
-  Easel" and their plugin ships the licence text.
-- `node scripts/install-check.mjs --work <empty folder>` (since T5.5): installs the marketplace from
-  GitHub into an empty Claude Code config and uses every plugin from its installed copy (needs
-  network; run before a release, not per commit).
-- CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos, and on
-  pushes to main `clean install` (install-check) on all three.
+  Easel" and their plugin ships the official licence text (checked by hash). `versions.test.mjs`
+  (since the v1.0.0 QA): plugin versions are semver and agree with the engine and media servers,
+  and every dependency on easel-core is `{name, version: ^x.y.z}` that core satisfies.
+- `node scripts/install-check.mjs --work <empty folder> [--expect-sha <commit>]` (since T5.5):
+  installs the marketplace from GitHub (what is on `main` now, not the working tree) into an empty
+  Claude Code config, uses every plugin from its installed copy, checks `claude mcp list`
+  connects the engine and media servers, and installs easel-motion alone into a second config to
+  check easel-core arrives as a dependency (needs network; run before a release, not per commit).
+- CI (`.github/workflows/ci.yml`): `validate plugins` (ubuntu), `engine` (every plugin's tests) on
+  ubuntu, windows and macos, and on pushes to main `clean install` (install-check with
+  `--expect-sha`) on all three.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`
 until green. A green local run is not enough once CI exists.
