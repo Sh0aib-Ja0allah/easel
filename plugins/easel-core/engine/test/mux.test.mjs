@@ -34,6 +34,9 @@ test('mux_audio: a silent video gets the track, cut to the shorter stream; the i
   assert.ok(Math.abs(p.duration - 2) < 0.15, `cut to the video: ${p.duration}`);
   assert.equal(p.video.codec, src.video.codec);
   assert.ok(!m.probe(video).audio, 'the input video is not changed');
+  assert.equal(typeof r.loudness.lufs, 'number');
+  assert.equal(r.loudness.inRange, r.loudness.lufs >= -16 && r.loudness.lufs <= -12);
+  if (!r.loudness.inRange) assert.match(r.loudness.fix, /master: true/);
   const longer = m.muxAudio({ video, audio, outDir: join(out, 'a'), name: 'long', shortest: false });
   assert.ok(m.probe(longer.file).duration > 2.8, 'shortest: false keeps the longer track');
 });
@@ -43,6 +46,7 @@ test('mux_audio: master: true brings a quiet track to -14 LUFS; bad input is ref
   const quiet = lavfi('quiet.wav', 'sine=frequency=330:sample_rate=48000', ['-t', '3', '-ac', '2', '-af', 'volume=-30dB']);
   const r = m.muxAudio({ video, audio: quiet, master: true, outDir: join(out, 'b'), name: 'mastered' });
   assert.ok(Math.abs(m.loudness(r.file).value + 14) <= 1.5, JSON.stringify(m.loudness(r.file)));
+  assert.equal(r.loudness.inRange, true, JSON.stringify(r.loudness));
   assert.ok(!existsSync(join(out, 'b', 'mastered.master.wav')), 'the temporary master is removed');
   assert.throws(() => m.muxAudio({ video, outDir: out }), /Give video/);
   assert.throws(() => m.muxAudio({ video, audio: join(out, 'nope.wav'), outDir: out }), /not found/);

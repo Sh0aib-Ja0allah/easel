@@ -1,0 +1,13 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.13/p5.min.js"></script>
+<style>html,body{margin:0}canvas{display:block}</style></head>
+<body>
+<script>
+// p5.js from a CDN URL: the engine serves its offline copy. A pure function of t (renderAt).
+window.__ready = false;
+function setup() { createCanvas(120, 60); noLoop(); window.__ready = true; document.title = 'p5 ' + p5.prototype.VERSION; }
+function draw() { paint(0); }
+function paint(t) { background(42, 157, 143); noStroke(); fill(244, 162, 97); rect(10 + 80 * (t % 1), 20, 20, 20); }
+window.renderAt = (t) => paint(t);
+</script></body></html>

@@ -24,7 +24,19 @@ test('eval case frontmatter is plain YAML: quoted when a value holds ": ", requi
         if (!/^["'[{]/.test(k[2])) assert.doesNotMatch(k[2], /: |#/, `${p}/${c.name}: quote the ${k[1]} value`);
       }
       for (const k of ['description', 'runs', 'max_turns', 'allowed_tools']) assert.ok(k in keys, `${p}/${c.name}: ${k}`);
-      assert.ok(readdirSync(join(PLUGINS, p, 'evals', c.name, 'graders')).some((g) => g.endsWith('.md')), `${p}/${c.name}: graders`);
+      const graders = readdirSync(join(PLUGINS, p, 'evals', c.name, 'graders')).filter((g) => g.endsWith('.md'));
+      assert.ok(graders.length, `${p}/${c.name}: graders`);
+      for (const g of graders) {
+        const gm = /^---\n([\s\S]*?)\n---\n/.exec(readFileSync(join(PLUGINS, p, 'evals', c.name, 'graders', g), 'utf8'));
+        assert.ok(gm, `${p}/${c.name}/${g}: frontmatter`);
+        for (const line of gm[1].split('\n')) {
+          const k = /^([a-z_]+): (.*)$/.exec(line);
+          assert.ok(k, `${p}/${c.name}/${g}: "${line}"`);
+          const v = k[2];
+          if (v.startsWith("'")) assert.ok(v.endsWith("'") && !/'/.test(v.slice(1, -1).replace(/''/g, '')), `${p}/${c.name}/${g}: a single-quoted YAML value escapes ' as '' (not \\'): ${v}`);
+          else if (!/^["[{]/.test(v)) assert.doesNotMatch(v, /: |#/, `${p}/${c.name}/${g}: quote the ${k[1]} value`);
+        }
+      }
       cases++;
     }
   }

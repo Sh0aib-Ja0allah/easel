@@ -2,7 +2,7 @@
   "name": "easel-engine",
   "version": "0.2.0",
   "private": true,
-  "description": "Easel render engine: MCP server and CLI (zero-dependency core; Playwright and GSAP are installed by doctor into the plugin data folder)",
+  "description": "Easel render engine: MCP server and CLI (zero-dependency core; Playwright, GSAP and p5.js are installed by doctor into the plugin data folder)",
   "license": "MIT",
   "type": "module",
   "engines": { "node": ">=20" },
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "gsap": "3.14.2",
+    "p5": "1.11.13",
     "playwright-core": "1.64.0"
   }
 }

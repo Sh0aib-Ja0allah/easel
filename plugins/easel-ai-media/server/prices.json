@@ -1,0 +1,22 @@
+{
+  "note": "Estimates for the confirm gate, not quotes. 'checked' entries were read from the provider's own pricing page on that date; 'verify' entries come from secondary notes and must be checked by the user before a large job. Prices change; the provider's bill is what counts.",
+  "currency": "USD",
+  "models": {
+    "openai/gpt-image-1": { "kind": "image", "unit": "image", "tiers": { "low": { "1024x1024": 0.011, "1024x1536": 0.016, "1536x1024": 0.016 }, "medium": { "1024x1024": 0.042, "1024x1536": 0.063, "1536x1024": 0.063 }, "high": { "1024x1024": 0.167, "1024x1536": 0.25, "1536x1024": 0.25 } }, "default_tier": "medium", "source": "developers.openai.com/api/docs/models/gpt-image-1", "checked": "2026-10-11" },
+    "openai/gpt-4o-mini-tts": { "kind": "tts", "unit": "minute", "usd": 0.015, "source": "platform.openai.com pricing (gpt-4o-mini-tts, estimated per audio minute)", "verify": true },
+    "gemini/gemini-2.5-flash-image": { "kind": "image", "unit": "image", "usd": 0.039, "source": "ai.google.dev/gemini-api/docs/pricing (1,290 output tokens per image at USD 30 per 1M)", "verify": true },
+    "fal/fal-ai/nano-banana": { "kind": "image", "unit": "image", "usd": 0.0398, "source": "fal.ai/pricing", "checked": "2026-10-11" },
+    "fal/fal-ai/nano-banana-2": { "kind": "image", "unit": "image", "usd": 0.08, "source": "fal.ai/pricing", "checked": "2026-10-11" },
+    "fal/fal-ai/z-image/turbo": { "kind": "image", "unit": "megapixel", "usd": 0.005, "source": "fal.ai/pricing", "checked": "2026-10-11" },
+    "fal/fal-ai/kling-video/v2.5-turbo/pro/image-to-video": { "kind": "video", "unit": "second", "usd": 0.07, "source": "fal.ai/pricing", "checked": "2026-10-11" },
+    "fal/fal-ai/kling-video/v3/pro/image-to-video": { "kind": "video", "unit": "second", "usd": 0.14, "source": "fal.ai/pricing", "checked": "2026-10-11" },
+    "replicate/black-forest-labs/flux-schnell": { "kind": "image", "unit": "image", "usd": 0.003, "source": "replicate.com/black-forest-labs/flux-schnell", "verify": true },
+    "atlas/google/nano-banana-2/text-to-image": { "kind": "image", "unit": "image", "usd": 0.08, "per_resolution": { "1k": 0.08, "2k": 0.12 }, "source": "Alisa0808/vox-director references/models-and-gotchas.md", "verify": true },
+    "atlas/google/gemini-omni-flash/image-to-video": { "kind": "video", "unit": "second", "usd": 0.13, "min_seconds": 3, "source": "Alisa0808/vox-director references/models-and-gotchas.md", "verify": true },
+    "atlas/xai/tts-v1": { "kind": "tts", "unit": "request", "usd": 0.015, "source": "Alisa0808/vox-director references/models-and-gotchas.md (approximate, per narration request)", "verify": true },
+    "atlas/minimax/music-2.6": { "kind": "music", "unit": "request", "usd": 0.11, "source": "Alisa0808/vox-director references/models-and-gotchas.md", "verify": true },
+    "elevenlabs/eleven_multilingual_v2": { "kind": "tts", "unit": "1k_chars", "usd": 0.08, "source": "elevenlabs.io/pricing/api", "checked": "2026-10-11" },
+    "elevenlabs/eleven_flash_v2_5": { "kind": "tts", "unit": "1k_chars", "usd": 0.04, "source": "elevenlabs.io/pricing/api", "checked": "2026-10-11" },
+    "elevenlabs/voice-clone": { "kind": "voice-clone", "unit": "request", "usd": 0, "source": "elevenlabs.io/pricing/api (instant voice cloning depends on the plan; no per-call price listed)", "verify": true }
+  }
+}

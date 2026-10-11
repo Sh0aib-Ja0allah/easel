@@ -1,0 +1,1 @@
+Two `easel-illustrate:svg` pieces: the corrected quarterly bar chart from `reference/examples.md` (bars on the baseline, heights to scale) and a 75% progress ring in `currentColor` that follows the page's text colour on light and dark.

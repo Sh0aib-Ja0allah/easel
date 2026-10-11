@@ -1,0 +1,1 @@
+Generative-art example (MIT, Easel's own): "Tidal Script", strands of ink combed by a looping noise field. `tidal-script.html` opens in a browser with seed and parameter controls; the tests render a still and a short stretch of the 8 s loop through the engine. `philosophy.md` is the algorithmic philosophy.

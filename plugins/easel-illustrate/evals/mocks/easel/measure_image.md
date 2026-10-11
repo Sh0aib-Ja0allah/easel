@@ -1,0 +1,1 @@
+{ "images": [{ "file": "refs/a.png", "width": 1080, "height": 1350, "box": [0, 0, 1080, 1350], "aspect": 0.8, "orientation": "portrait", "palette": [{ "hex": "#f2ead8", "rgb": [242, 234, 216], "share": 0.71 }, { "hex": "#1b1714", "rgb": [27, 23, 20], "share": 0.22 }], "points": [] }], "note": "Thin lines read lighter than they are in a screenshot.", "ms": 600 }

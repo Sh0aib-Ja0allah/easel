@@ -41,11 +41,11 @@
 
 ## To trace before use
 
-These skills come from open-design, but their original source isn't known yet:
+These skills come from open-design. Traced 2026-10-11 (D21); all three deferred to v2:
 
-- `shader-dev`
-- `hand-drawn-diagrams`
-- `threejs`
+- `shader-dev`: MiniMax-AI/skills (MIT) @ `60aaae52bb2af8162732751a4332f62a5fef518b`
+- `hand-drawn-diagrams`: muthuishere/hand-drawn-diagrams (licence not identified by GitHub) @ `c8ffd6c3febbc0e745ab6691ea81c8703a9829c8`
+- `threejs`: CloudAI-X/threejs-skills (no licence) @ `b1c623076c661fc9b03dac19292e825a5d106823`
 - `emil-design-eng` and `review-animations` (believed to be MIT, Matt Pocock; confirm)
 - `brandkit` (believed to be MIT, Leonxlnx; confirm)
 - the slide skills

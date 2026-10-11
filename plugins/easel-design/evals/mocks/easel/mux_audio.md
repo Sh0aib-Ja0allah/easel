@@ -1,1 +1,1 @@
-{ "file": "easel-out/launch/launch-audio.mp4", "video": "easel-out/launch/launch.mp4", "audio": "music/theme.mp3", "shortest": true, "ms": 900 }
+{ "file": "easel-out/launch/launch-audio.mp4", "video": "easel-out/launch/launch.mp4", "audio": "music/theme.mp3", "shortest": true, "loudness": { "lufs": -19.2, "truePeak": -3.1, "inRange": false, "fix": "outside -16 to -12 LUFS: run again with master: true" }, "ms": 900 }

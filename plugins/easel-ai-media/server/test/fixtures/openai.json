@@ -1,0 +1,21 @@
+{
+ "routes": [
+  {
+   "method": "POST",
+   "match": "/v1/images/generations",
+   "json": {
+    "data": [
+     {
+      "b64_json": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP4zwAAAgEBABntfj0AAAAASUVORK5CYII="
+     }
+    ]
+   }
+  },
+  {
+   "method": "POST",
+   "match": "/v1/audio/speech",
+   "file": "tiny.mp3",
+   "contentType": "audio/mpeg"
+  }
+ ]
+}

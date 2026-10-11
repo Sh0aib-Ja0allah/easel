@@ -70,5 +70,8 @@ export function muxAudio(args) {
     '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', ...(shortest ? ['-shortest'] : []), '-movflags', '+faststart', file]);
   if (args.master) rmSync(track, { force: true });
   if (r.status !== 0) throw new Error(`ffmpeg mux failed: ${(r.stderr || '').trim().slice(-600)}`);
-  return { file, video, audio, ...(mastered ? { mastered: { target: args.lufs ?? -14, measuredBefore: mastered.measured.i } } : {}), shortest, ms: Date.now() - t0 };
+  // measure the result, so the caller can tell the user whether the track sits in the delivery range
+  let loudness = null;
+  try { const m = measureLoudness(file); loudness = { lufs: m.i, truePeak: m.tp, inRange: m.i >= -16 && m.i <= -12, ...(m.i >= -16 && m.i <= -12 ? {} : { fix: 'outside -16 to -12 LUFS: run again with master: true' }) }; } catch { loudness = null; }
+  return { file, video, audio, ...(mastered ? { mastered: { target: args.lufs ?? -14, measuredBefore: mastered.measured.i } } : {}), shortest, loudness, ms: Date.now() - t0 };
 }

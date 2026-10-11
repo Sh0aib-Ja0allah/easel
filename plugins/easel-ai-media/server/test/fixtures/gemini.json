@@ -1,0 +1,27 @@
+{
+ "routes": [
+  {
+   "method": "POST",
+   "match": ":generateContent",
+   "json": {
+    "candidates": [
+     {
+      "content": {
+       "parts": [
+        {
+         "text": "here"
+        },
+        {
+         "inlineData": {
+          "mimeType": "image/png",
+          "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP4zwAAAgEBABntfj0AAAAASUVORK5CYII="
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

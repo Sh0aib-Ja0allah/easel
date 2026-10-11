@@ -12,11 +12,15 @@ const LOCAL_ORIGIN = 'https://easel.local';
 const MIME = { '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 // Libraries doctor installs into the data dir, addressable as https://easel.local/lib/<file>.
-const LIBRARIES = { 'gsap.min.js': ['gsap', 'dist/gsap.min.js'], 'gsap.js': ['gsap', 'dist/gsap.js'] };
+const LIBRARIES = { 'gsap.min.js': ['gsap', 'dist/gsap.min.js'], 'gsap.js': ['gsap', 'dist/gsap.js'], 'p5.min.js': ['p5', 'lib/p5.min.js'], 'p5.js': ['p5', 'lib/p5.js'] };
 const CDN_PATTERNS = [
   /^https:\/\/cdn\.jsdelivr\.net\/npm\/gsap@[^/]+\/dist\/([\w.-]+\.js)$/,
   /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/gsap\/[^/]+\/([\w.-]+\.js)$/,
   /^https:\/\/unpkg\.com\/gsap@[^/]+\/dist\/([\w.-]+\.js)$/,
+  // p5.js (easel-illustrate:generative-art): served from the copy doctor installed, whatever version the page names
+  /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/p5\.js\/[^/]+\/(p5(?:\.min)?\.js)$/,
+  /^https:\/\/cdn\.jsdelivr\.net\/npm\/p5@[^/]+\/lib\/(p5(?:\.min)?\.js)$/,
+  /^https:\/\/unpkg\.com\/p5@[^/]+\/lib\/(p5(?:\.min)?\.js)$/,
 ];
 
 function libraryPath(file) {

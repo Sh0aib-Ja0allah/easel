@@ -95,6 +95,20 @@ test('renders are offline; GSAP CDN URLs are served from the local copy', { skip
   } finally { await context.close(); }
 });
 
+test('p5.js CDN URLs are served from the copy doctor installed, and renderAt(t) seeks a p5 sketch', { skip: skip || (!(await import('../lib/deps.mjs')).findPackage('p5') && 'needs p5 (doctor --install)') }, async () => {
+  const at = async (name, t) => (await mod.renderStill({ file: fx('p5-offline.html'), outDir: join(out, 'p5'), name, width: 120, height: 60, t }, { browser })).files[0];
+  const a = await at('p5-0', 0), b = await at('p5-half', 0.5);
+  const px = await mod.withPixels(browser, [a.file, b.file], (imgs) => imgs.map((i) => { const at = (x, y) => Array.from(i.data.slice((y * i.width + x) * 4, (y * i.width + x) * 4 + 3)); return [at(15, 30), at(55, 30)]; }));
+  assert.deepEqual(px[0], [[244, 162, 97], [42, 157, 143]], 'at t=0 the square is on the left');
+  assert.deepEqual(px[1], [[42, 157, 143], [244, 162, 97]], 'at t=0.5 it has moved to the middle');
+  const { page, context } = await mod.newPage(browser, { width: 120, height: 60 });
+  try {
+    await page.goto(pathToFileURL(fx('p5-offline.html')).href);
+    await page.waitForFunction(() => window.__ready === true);
+    assert.equal(await page.title(), 'p5 1.11.13');
+  } finally { await context.close(); }
+});
+
 test('contact_sheet: logo ladder on light and dark', { skip }, async () => {
   const r = await mod.contactSheet({ items: [{ file: fx('mark.svg'), label: 'mark' }], sizes: [16, 32, 64, 128], themes: ['light', 'dark'], outDir: join(out, 'sheet'), title: 'Size ladder' });
   assert.equal(r.cells.length, 8);

@@ -10,6 +10,20 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   by the engine, with references adapted from designskills, Anthropic's canvas-design and
   theme-factory, and code-katz's logo method; ten generic design systems (`systems/`); an OKLCH
   palette tool; an example per skill rendered and checked by the tests; fourteen routing evals.
+- **easel-illustrate (Phase 3, in progress):** five skills (`illustrate` entry, `svg`,
+  `svg-illustration`, `concept-illustration`, `generative-art`) adapted from linyaosky's svg-skill
+  (its bar chart example fixed), upbrew's svg-creator (Apache-2.0, modified), the Peanut
+  Illustrations method (with a neutral mascot of Easel's own) and Anthropic's algorithmic-art; an
+  SVG checker (`tools/svg-check.mjs`); an example per skill; seven routing evals.
+- **easel-ai-media (Phase 4, in progress):** the `media` MCP server (Node, no dependencies) with
+  adapters for Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud and ElevenLabs on the user's own keys
+  (environment or masked plugin settings); every generation a dry run with a cost estimate first,
+  a spending limit above which an approved amount is needed, provenance for every file; four
+  skills (`providers`, `image`, `ai-video` adapted from vox-director as the editorial collage
+  look, `voice` with a consent gate for cloning) and `assemble` (clips, captions, narration and
+  ducked music with the local ffmpeg). Tested with recorded responses; no live calls yet.
+- **easel-core (unreleased):** p5.js 1.11.13 is installed by doctor and served offline to pages
+  that load it from a CDN, like GSAP.
 
 ## easel-motion 0.2.0 (2026-10-11)
 

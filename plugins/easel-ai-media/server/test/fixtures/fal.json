@@ -1,0 +1,38 @@
+{
+ "routes": [
+  {
+   "method": "POST",
+   "match": "queue.fal.run/fal-ai/kling-video",
+   "json": {
+    "request_id": "r1",
+    "status_url": "https://queue.fal.run/fal-ai/kling-video/requests/r1/status",
+    "response_url": "https://queue.fal.run/fal-ai/kling-video/requests/r1"
+   }
+  },
+  {
+   "match": "/requests/r1/status",
+   "json": {
+    "status": "IN_PROGRESS"
+   }
+  },
+  {
+   "match": "/requests/r1/status",
+   "json": {
+    "status": "COMPLETED"
+   }
+  },
+  {
+   "match": "/requests/r1",
+   "json": {
+    "video": {
+     "url": "https://v3.fal.media/files/clip.mp4"
+    }
+   }
+  },
+  {
+   "match": "v3.fal.media/files/clip.mp4",
+   "file": "tiny.mp4",
+   "contentType": "video/mp4"
+  }
+ ]
+}

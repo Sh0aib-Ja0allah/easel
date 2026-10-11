@@ -1,0 +1,51 @@
+// easel-ai-media tool registry (MCP server "media"): providers, estimate, generate, assemble, consent_template.
+import { assemble } from './lib/assemble.mjs';
+import { CONSENT_TEMPLATE } from './lib/consent.mjs';
+import { KINDS, estimate, generate, listProviders } from './lib/media.mjs';
+import { PROVIDERS } from './providers/index.mjs';
+
+const PROVIDER_IDS = Object.keys(PROVIDERS);
+const common = {
+  kind: { enum: KINDS }, provider: { enum: PROVIDER_IDS }, model: { type: 'string' },
+  prompt: { type: 'string', maxLength: 8000 }, text: { type: 'string', maxLength: 20000, description: 'tts: the words to speak.' },
+  refs: { type: 'array', maxItems: 8, items: { type: 'string' }, description: 'Reference or start images (paths): the user\'s own files.' },
+  size: { type: 'string', pattern: '^\\d+x\\d+$' }, aspect: { type: 'string', pattern: '^\\d+:\\d+$' }, quality: { enum: ['low', 'medium', 'high'] },
+  resolution: { enum: ['1k', '2k'] }, seconds: { type: 'number', minimum: 1, maximum: 60 }, count: { type: 'integer', minimum: 1, maximum: 8 },
+  voice: { type: 'string', description: 'tts: the provider voice id or name.' }, language: { type: 'string' }, instructions: { type: 'string' },
+};
+
+export const tools = {
+  providers: {
+    description: 'List the media providers (Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud, ElevenLabs), which have a key set (names only, never values), the kinds and models each one does, the price used for estimates (with its source and whether it was checked) and the spending limit above which an approved amount is needed.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    run: () => listProviders(),
+  },
+  estimate: {
+    description: 'Estimate the cost of a generation before spending: provider, model, USD, how it was worked out, and the price source. Spends nothing.',
+    inputSchema: { type: 'object', required: ['kind'], properties: { ...common }, additionalProperties: false },
+    run: (args) => estimate(args),
+  },
+  generate: {
+    description: 'Generate media with the user\'s own provider key: image (text or references), video (image-to-video), tts (speech, with word timings where the provider gives them), music, or voice-clone (only with a consent statement in the job folder). ' +
+      'Without confirm it is a dry run: it returns the cost estimate and the request and spends nothing. Show those to the user; call again with confirm: true only when they agree, and with approvedUsd when the estimate is above the limit. Files go to ./easel-out/<slug>/ with a provenance.json entry.',
+    inputSchema: { type: 'object', required: ['kind'], properties: { ...common, confirm: { type: 'boolean' }, approvedUsd: { type: 'number', minimum: 0 }, name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+      voiceName: { type: 'string', description: 'voice-clone: the name for the new voice.' }, samples: { type: 'array', maxItems: 25, items: { type: 'string' }, description: 'voice-clone: recordings of the voice (the owner\'s own).' },
+      consentFile: { type: 'string', description: 'voice-clone: consent.json in the job folder (see consent_template).' } }, additionalProperties: false },
+    run: (args) => generate(args),
+  },
+  assemble: {
+    description: 'Join generated clips into one film with the local ffmpeg: each clip scaled to fill the frame and cut or slowed (never frozen) to its beat length, caption or watermark PNGs overlaid at their times (render them with easel-core render_still, transparent: true), narration and music mixed with the music ducked under the voice.',
+    inputSchema: { type: 'object', required: ['clips'], properties: {
+      clips: { type: 'array', minItems: 1, maxItems: 60, items: { type: 'object', required: ['file'], properties: { file: { type: 'string' }, seconds: { type: 'number', minimum: 0.2, maximum: 120 } }, additionalProperties: false } },
+      size: { type: 'string', pattern: '^\\d+x\\d+$' }, fps: { type: 'integer', minimum: 12, maximum: 60 },
+      narration: { type: 'string' }, music: { type: 'string' }, musicDb: { type: 'number', minimum: -40, maximum: 0 },
+      overlays: { type: 'array', maxItems: 200, items: { type: 'object', required: ['file'], properties: { file: { type: 'string' }, start: { type: 'number', minimum: 0 }, end: { type: 'number', minimum: 0 } }, additionalProperties: false } },
+      crf: { type: 'integer', minimum: 0, maximum: 51 }, preset: { enum: ['ultrafast', 'veryfast', 'fast', 'medium', 'slow'] }, name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' } }, additionalProperties: false },
+    run: (args) => assemble(args),
+  },
+  consent_template: {
+    description: 'The consent statement a voice owner must give before their voice is cloned (save it as consent.json in the job folder with their recording). Voice cloning is refused without it.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    run: () => ({ template: CONSENT_TEMPLATE, rules: ['The voice owner gives the statement themselves, in their words, naming the purpose.', 'Their recording of the statement is saved in the job folder.', 'Never clone a public figure, or anyone who has not consented.', 'Every clone is logged to consent-log.jsonl in the job folder.'] }),
+  },
+};

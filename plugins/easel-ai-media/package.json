@@ -1,0 +1,8 @@
+{
+  "name": "easel-ai-media-tests",
+  "private": true,
+  "description": "Tests for easel-ai-media (the provider server with recorded fixtures and no network, the consent gate, assembly with ffmpeg, the skills and settings). No dependencies.",
+  "scripts": {
+    "test": "node --test --test-reporter=spec \"server/test/*.test.mjs\" \"test/*.test.mjs\""
+  }
+}

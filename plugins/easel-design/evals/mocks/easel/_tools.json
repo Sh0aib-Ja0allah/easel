@@ -709,7 +709,7 @@
     },
     {
       "name": "mux_audio",
-      "description": "Put an audio track (a score from audio_score, or the user's own track) on a video that already exists: the video stream is copied unchanged, the audio becomes AAC, and the result is cut to the shorter of the two (shortest: false keeps the longer). master: true first masters the track to lufs (default -14). Writes <name>.mp4 (default <video name>-audio) to ./easel-out/<slug>/; never overwrites the input. For a page you are still rendering, use render_video audio instead. The easel-core:score skill covers the whole job (which audio, mux, loudness check).",
+      "description": "Part of the easel-core:score skill (use the skill for the whole job: which audio, mux, loudness). Puts an audio track (a score from audio_score, or the user's own track) on a video that already exists: the video stream is copied unchanged, the audio becomes AAC, and the result is cut to the shorter of the two (shortest: false keeps the longer). master: true first masters the track to lufs (default -14). Writes <name>.mp4 (default <video name>-audio) to ./easel-out/<slug>/; never overwrites the input; reports the result's loudness (LUFS) against the -16 to -12 range. For a page you are still rendering, use render_video audio instead. The easel-core:score skill covers the whole job (which audio, mux, loudness check).",
       "inputSchema": {
         "type": "object",
         "required": [

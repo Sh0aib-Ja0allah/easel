@@ -17,5 +17,58 @@
   ],
   "dependencies": [
     "easel-core"
-  ]
+  ],
+  "userConfig": {
+    "gemini_api_key": {
+      "type": "string",
+      "title": "Google Gemini API key",
+      "description": "Optional. Your own Google Gemini key, stored in the system's secure credential store. Leave empty to use the GEMINI_API_KEY environment variable, or if you do not use Google Gemini.",
+      "sensitive": true,
+      "required": false
+    },
+    "openai_api_key": {
+      "type": "string",
+      "title": "OpenAI API key",
+      "description": "Optional. Your own OpenAI key, stored in the system's secure credential store. Leave empty to use the OPENAI_API_KEY environment variable, or if you do not use OpenAI.",
+      "sensitive": true,
+      "required": false
+    },
+    "fal_api_key": {
+      "type": "string",
+      "title": "fal.ai API key",
+      "description": "Optional. Your own fal.ai key, stored in the system's secure credential store. Leave empty to use the FAL_KEY environment variable, or if you do not use fal.ai.",
+      "sensitive": true,
+      "required": false
+    },
+    "replicate_api_key": {
+      "type": "string",
+      "title": "Replicate API key",
+      "description": "Optional. Your own Replicate key, stored in the system's secure credential store. Leave empty to use the REPLICATE_API_TOKEN environment variable, or if you do not use Replicate.",
+      "sensitive": true,
+      "required": false
+    },
+    "atlas_api_key": {
+      "type": "string",
+      "title": "Atlas Cloud API key",
+      "description": "Optional. Your own Atlas Cloud key, stored in the system's secure credential store. Leave empty to use the ATLASCLOUD_API_KEY environment variable, or if you do not use Atlas Cloud.",
+      "sensitive": true,
+      "required": false
+    },
+    "elevenlabs_api_key": {
+      "type": "string",
+      "title": "ElevenLabs API key",
+      "description": "Optional. Your own ElevenLabs key, stored in the system's secure credential store. Leave empty to use the ELEVENLABS_API_KEY environment variable, or if you do not use ElevenLabs.",
+      "sensitive": true,
+      "required": false
+    },
+    "max_spend_usd": {
+      "type": "number",
+      "title": "Spending limit per generation (USD)",
+      "description": "A generation whose estimate is above this needs an amount you approve. Every paid call is still shown and confirmed first.",
+      "default": 0.5,
+      "min": 0,
+      "max": 100,
+      "required": false
+    }
+  }
 }

@@ -1,0 +1,50 @@
+{
+ "routes": [
+  {
+   "method": "POST",
+   "match": "/with-timestamps",
+   "json": {
+    "audio_base64": "SUQzAwAAAAAAAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAD/+5AA//uQAP/7kAA=",
+    "alignment": {
+     "characters": [
+      "H",
+      "i",
+      " ",
+      "t",
+      "h",
+      "e",
+      "r",
+      "e"
+     ],
+     "character_start_times_seconds": [
+      0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7
+     ],
+     "character_end_times_seconds": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8
+     ]
+    }
+   }
+  },
+  {
+   "method": "POST",
+   "match": "/v1/voices/add",
+   "json": {
+    "voice_id": "v_123"
+   }
+  }
+ ]
+}

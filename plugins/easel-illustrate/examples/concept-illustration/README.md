@@ -1,0 +1,1 @@
+One `easel-illustrate:concept-illustration` sketch for "This meeting could have been an email": the metaphor is a whole meeting stuffed into an envelope, and the default mascot, the card, shoves an oval meeting table, its chairs still tucked in, into an open envelope marked FYI (the envelope carries the one orange accent).

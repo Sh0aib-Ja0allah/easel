@@ -87,6 +87,16 @@ jobs:
           npm --prefix plugins/easel-design test 2>&1 | tee design-test.txt
           test "${PIPESTATUS[0]}" -eq 0
           grep -q 'skipped 0' design-test.txt
+      - name: easel-illustrate tests (skills, the SVG checker, every example and the p5.js loop through the engine; must not be skipped)
+        run: |
+          npm --prefix plugins/easel-illustrate test 2>&1 | tee illustrate-test.txt
+          test "${PIPESTATUS[0]}" -eq 0
+          grep -q 'skipped 0' illustrate-test.txt
+      - name: easel-ai-media tests (provider server with recorded fixtures and no network, consent gate, assembly with ffmpeg, skills and settings; must not be skipped)
+        run: |
+          npm --prefix plugins/easel-ai-media test 2>&1 | tee media-test.txt
+          test "${PIPESTATUS[0]}" -eq 0
+          grep -q 'skipped 0' media-test.txt
       - name: MCP smoke (initialize + tools/list over stdio)
         run: |
           printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \

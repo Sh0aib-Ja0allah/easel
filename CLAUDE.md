@@ -138,6 +138,13 @@ Gates - run before every commit, never commit red:
   tools, links, attribution headers), the generic design systems (valid DESIGN.md, AA text,
   bundled faces, no brand names), the palette tool, and every example in `examples/manifest.json`
   rendered and checked through the engine. Same data dir and 0-skipped rule.
+- `npm --prefix plugins/easel-illustrate test` (since T3.5): the skills and attribution, the SVG
+  checker, every example in `examples/manifest.json` through the engine, and the p5.js loop
+  (seekable, seamless, MP4). Needs p5.js in the data dir (doctor installs it). Same 0-skipped rule.
+- `npm --prefix plugins/easel-ai-media test` (since T4.1): the `media` server with recorded
+  provider responses (no network, fake keys that must never appear in output), the spending
+  limit, the voice-clone consent gate and its refusals, assembly with ffmpeg, and the skills,
+  attribution and settings. Never run live paid calls from the tests.
 - CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`

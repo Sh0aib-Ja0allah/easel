@@ -1,0 +1,1 @@
+One `easel-illustrate:svg-illustration` spot piece: a small red-and-white lighthouse on a rocky islet at dusk, layered back to front, with multi-stop gradients, five-zone light on the tower, violet cast and contact shadows, a soft lamp glow and beams, light grain and a navy vignette.

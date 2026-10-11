@@ -1,0 +1,41 @@
+{
+ "routes": [
+  {
+   "method": "POST",
+   "match": "/v1/models/black-forest-labs/flux-schnell/predictions",
+   "json": {
+    "id": "p1",
+    "status": "starting",
+    "urls": {
+     "get": "https://api.replicate.com/v1/predictions/p1"
+    }
+   }
+  },
+  {
+   "match": "/v1/predictions/p1",
+   "json": {
+    "status": "processing",
+    "urls": {
+     "get": "https://api.replicate.com/v1/predictions/p1"
+    }
+   }
+  },
+  {
+   "match": "/v1/predictions/p1",
+   "json": {
+    "status": "succeeded",
+    "output": [
+     "https://replicate.delivery/x/out-0.webp"
+    ],
+    "urls": {
+     "get": "https://api.replicate.com/v1/predictions/p1"
+    }
+   }
+  },
+  {
+   "match": "replicate.delivery/x/out-0.webp",
+   "file": "tiny.png",
+   "contentType": "image/webp"
+  }
+ ]
+}

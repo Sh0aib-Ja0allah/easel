@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tidal Script</title>
+<!-- Easel example (MIT): "Tidal Script", made from the generative-art viewer template. Easel generative-art viewer (MIT, Easel's own). In a browser it loads p5.js from the CDN; under the
+     Easel engine the same URL is served offline from the copy doctor installed. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.13/p5.min.js"></script>
+<style>
+  :root { --ink: #1c1b19; --paper: #f4f1ea; --muted: #5d5a53; --line: #d8d2c4; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.45 "Inter", sans-serif; }
+  /* ?render (the engine) shows the canvas alone at its exact size; otherwise canvas + controls */
+  body.render #controls { display: none; }
+  body.render canvas { display: block; }   /* no inline gap under the canvas: the page is exactly the piece size */
+  body:not(.render) { display: flex; gap: 24px; padding: 24px; align-items: flex-start; flex-wrap: wrap; }
+  body:not(.render) #stage canvas { max-width: min(100%, 80vh); height: auto !important; box-shadow: 0 1px 0 var(--line); }
+  #controls { width: 260px; display: grid; gap: 14px; }
+  #controls h1 { font: 600 18px/1.2 "Space Grotesk", sans-serif; margin: 0; }
+  #controls label { display: grid; gap: 4px; color: var(--muted); }
+  #controls output { color: var(--ink); font-family: "JetBrains Mono", monospace; }
+  #controls .row { display: flex; gap: 6px; }
+  #controls button { font: inherit; border: 1px solid var(--ink); background: transparent; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="controls">
+  <h1 id="title">Generative piece</h1>
+  <label>Seed <output id="seedOut"></output>
+    <span class="row"><button id="prev">Prev</button><button id="next">Next</button><button id="rand">Random</button></span>
+  </label>
+  <div id="paramControls"></div>
+  <span class="row"><button id="play">Play</button><button id="save">Save PNG</button></span>
+</div>
+<script>
+"use strict";
+// ---------------------------------------------------------------------------
+// THE CONTRACT (keep): a fixed canvas, a seed, parameters, and draw(t) that paints the
+// whole frame for time t from scratch. The Easel engine calls window.renderAt(t) for every
+// frame it captures, so the same t always gives the same picture.
+// ---------------------------------------------------------------------------
+const PIECE = { title: 'Tidal Script', width: 1200, height: 1200, fps: 30, duration: 8 };   // duration = one seamless loop
+const params = { seed: 7, count: 1100, steps: 42, scale: 0.0019, swirl: 2.6, drift: 0.55 };
+const CONTROLS = [
+  { key: 'count', label: 'strands', min: 200, max: 3000, step: 100 },
+  { key: 'steps', label: 'strand length', min: 10, max: 90, step: 1 },
+  { key: 'scale', label: 'field scale', min: 0.0006, max: 0.004, step: 0.0001 },
+  { key: 'swirl', label: 'swirl', min: 0.5, max: 5, step: 0.1 },
+  { key: 'drift', label: 'tide (loop radius)', min: 0.1, max: 1.5, step: 0.05 },
+];
+
+// ---- YOUR ALGORITHM -------------------------------------------------------
+// Precompute what does not depend on t in build() (called after every seed or parameter change),
+// then paint frame t in paint(t). For a seamless loop, make paint(0) equal paint(PIECE.duration):
+// drive motion with angle = TWO_PI * t / PIECE.duration (sin/cos, noise on a circle).
+// Tidal Script: strands of ink combed by a slow noise current. Each strand starts at a seeded point
+// and is traced through the field for a fixed number of steps; the field itself drifts around a
+// circle in noise space, so the frame at t = duration is the frame at t = 0 (a seamless loop).
+let state = null;
+const PAPER = '#f4f1ea', INKS = ['#1f3a5f', '#2d6a6a', '#b4532a', '#1c1b19'];
+function build() {
+  randomSeed(params.seed); noiseSeed(params.seed);
+  const starts = [];
+  for (let i = 0; i < params.count; i++) {
+    // a slightly denser band through the middle, like a tide line
+    const y = height * (0.5 + 0.42 * (random() - 0.5) * (1 + random()));
+    starts.push({ x: random(-60, width + 60), y, ink: INKS[floor(random() * random() * INKS.length)], w: random(0.6, 1.8) });
+  }
+  state = { starts };
+}
+function paint(t) {
+  background(PAPER);
+  const a = TWO_PI * t / PIECE.duration, ox = params.drift * cos(a), oy = params.drift * sin(a);
+  noFill(); strokeCap(ROUND);
+  for (const s of state.starts) {
+    let x = s.x, y = s.y;
+    stroke(s.ink + 'b0'); strokeWeight(s.w);
+    beginShape();
+    for (let k = 0; k < params.steps; k++) {
+      vertex(x, y);
+      const n = noise(x * params.scale + ox, y * params.scale + oy);
+      const ang = (n - 0.5) * TWO_PI * params.swirl;
+      x += cos(ang) * 6; y += sin(ang) * 3.2;
+    }
+    endShape();
+  }
+  // a quiet margin keeps the strands off the edge, like a print
+  noStroke(); fill(PAPER);
+  rect(0, 0, width, 70); rect(0, height - 70, width, 70); rect(0, 0, 70, height); rect(width - 70, 0, 70, height);
+}
+// ---------------------------------------------------------------------------
+
+window.__composition = { width: PIECE.width, height: PIECE.height, fps: PIECE.fps, duration: PIECE.duration };
+const RENDER = new URLSearchParams(location.search).has('render') || !!window.__easel;
+let playing = false, t0 = 0;
+window.renderAt = (t) => { paint(((t % PIECE.duration) + PIECE.duration) % PIECE.duration); };
+window.__ready = false;
+
+function setup() {
+  pixelDensity(1);
+  createCanvas(PIECE.width, PIECE.height).parent('stage');
+  noLoop();
+  build();
+  paint(0);
+  if (RENDER) document.body.classList.add('render'); else wireControls();
+  window.__ready = true;
+}
+function draw() { if (playing) paint(((millis() - t0) / 1000) % PIECE.duration); }
+
+function wireControls() {
+  document.getElementById('title').textContent = PIECE.title;
+  const seedOut = document.getElementById('seedOut');
+  const reseed = (s) => { params.seed = Math.max(1, s | 0); seedOut.textContent = params.seed; build(); paint(0); };
+  seedOut.textContent = params.seed;
+  document.getElementById('prev').onclick = () => reseed(params.seed - 1);
+  document.getElementById('next').onclick = () => reseed(params.seed + 1);
+  document.getElementById('rand').onclick = () => reseed(1 + Math.floor(Math.random() * 99999));
+  document.getElementById('play').onclick = (e) => { playing = !playing; e.target.textContent = playing ? 'Pause' : 'Play'; t0 = millis(); playing ? loop() : noLoop(); };
+  document.getElementById('save').onclick = () => saveCanvas(`piece-seed-${params.seed}`, 'png');
+  const host = document.getElementById('paramControls');
+  for (const c of CONTROLS) {
+    const l = document.createElement('label'); l.textContent = c.label || c.key;
+    const out = document.createElement('output'); out.textContent = params[c.key];
+    const r = Object.assign(document.createElement('input'), { type: 'range', min: c.min, max: c.max, step: c.step, value: params[c.key] });
+    r.oninput = () => { params[c.key] = Number(r.value); out.textContent = r.value; build(); paint(0); };
+    l.append(out, r); host.append(l);
+  }
+}
+</script>
+</body>
+</html>

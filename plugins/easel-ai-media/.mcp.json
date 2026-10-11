@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "media": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/server/server.mjs"
+      ],
+      "env": {
+        "EASEL_MEDIA_MAX_USD": "${user_config.max_spend_usd}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "EASEL_CFG_GEMINI": "${user_config.gemini_api_key}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+        "EASEL_CFG_OPENAI": "${user_config.openai_api_key}",
+        "FAL_KEY": "${FAL_KEY:-}",
+        "EASEL_CFG_FAL": "${user_config.fal_api_key}",
+        "REPLICATE_API_TOKEN": "${REPLICATE_API_TOKEN:-}",
+        "EASEL_CFG_REPLICATE": "${user_config.replicate_api_key}",
+        "ATLASCLOUD_API_KEY": "${ATLASCLOUD_API_KEY:-}",
+        "EASEL_CFG_ATLAS": "${user_config.atlas_api_key}",
+        "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY:-}",
+        "EASEL_CFG_ELEVENLABS": "${user_config.elevenlabs_api_key}",
+        "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-}"
+      }
+    }
+  }
+}

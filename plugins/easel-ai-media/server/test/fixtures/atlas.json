@@ -1,0 +1,37 @@
+{
+ "routes": [
+  {
+   "method": "POST",
+   "match": "/model/generateImage",
+   "json": {
+    "data": {
+     "id": "a1"
+    }
+   }
+  },
+  {
+   "match": "/model/prediction/a1",
+   "json": {
+    "data": {
+     "status": "processing"
+    }
+   }
+  },
+  {
+   "match": "/model/prediction/a1",
+   "json": {
+    "data": {
+     "status": "completed",
+     "outputs": [
+      "https://oss.atlascloud.ai/a1.png"
+     ]
+    }
+   }
+  },
+  {
+   "match": "oss.atlascloud.ai/a1.png",
+   "file": "tiny.png",
+   "contentType": "image/png"
+  }
+ ]
+}

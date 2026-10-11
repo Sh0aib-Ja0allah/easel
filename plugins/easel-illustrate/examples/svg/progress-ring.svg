@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="75% complete">
+  <!-- r 9 -> C = 2 x pi x 9 = 56.55; 75% -> offset 56.55 x 0.25 = 14.14.
+       Track and arc are both currentColor (the track at low opacity), so the ring follows the
+       text colour and shows on light and dark pages. Butt caps so the arc reads exactly 75%. -->
+  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/>
+  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3"
+          stroke-dasharray="56.55" stroke-dashoffset="14.14" stroke-linecap="butt"
+          transform="rotate(-90 12 12)"/>
+</svg>

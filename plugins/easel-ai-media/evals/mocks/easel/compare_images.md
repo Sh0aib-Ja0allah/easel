@@ -1,0 +1,1 @@
+{ "sheet": "easel-out/job/references/compare.png", "width": 1180, "height": 1070, "reference": { "palette": [{ "hex": "#f2ead8", "share": 0.71 }] }, "ours": { "palette": [{ "hex": "#f0e8d4", "share": 0.69 }] }, "check": "Compare in this order: proportions on the 10% grid, the palette numbers, the texture, the type.", "ms": 700 }

@@ -26,6 +26,14 @@ piece's own frames, checked once with the user, then saved as a style folder any
 `<easel-motion>` means `${CLAUDE_PLUGIN_ROOT}` (this plugin's folder). The full procedure is in
 [new-style.md](new-style.md); read it first. The short version:
 
+## First, the name
+
+If the user names an artist, studio, brand, channel or franchise as the look ("make it look like
+<studio>", "call it <artist>"), say in your first reply, before anything else, that the style will
+be named after the look and not after them, propose a descriptive name (for example "watercolour
+anime", "polka-dot pop", "bold-line street art", "editorial collage"), and that you will match the
+kind of image (medium, palette, proportions), never their characters or frames. Then continue.
+
 ## Rules
 
 - **References stay local.** Everything with reference pixels in it (copies, trims, crops,

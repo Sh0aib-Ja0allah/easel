@@ -27,9 +27,16 @@ the notices travel with an installed plugin.
 - Repository: https://github.com/anthropics/skills @ `dbd4588f9e1033efb41dad4bef2f7947c8993d44`
 - Copyright 2026 Anthropic, PBC. Licensed under the Apache License, Version 2.0 (each skill's
   `LICENSE.txt`).
-- Adapted (modified by Easel, headers in each file): `plugins/easel-design/skills/poster/reference/canvas-design.md`
+- Adapted (modified by Easel, headers in each file): `plugins/easel-illustrate/skills/generative-art/` (from `skills/algorithmic-art`; Easel's own viewer template), `plugins/easel-design/skills/poster/reference/canvas-design.md`
   (from `skills/canvas-design`), `plugins/easel-design/skills/design-system/reference/theme-factory.md`
   (from `skills/theme-factory` and its themes).
+
+### upbrew-tech/svg-creator-skill
+
+- Repository: https://github.com/upbrew-tech/svg-creator-skill @ `1eb83d602a992b69a1771c4e0116a9f7de6ffaa2`
+- Copyright 2025 SVG Creator Skill Contributors. Licensed under the Apache License, Version 2.0. No
+  NOTICE file upstream.
+- Adapted (modified by Easel, headers in each file): `plugins/easel-illustrate/skills/svg-illustration/`.
 
 ## MIT sources
 
@@ -39,11 +46,14 @@ The MIT License applies to each source below; its text is reproduced once at the
 |---|---|---|---|
 | [referodesign/refero_skill](https://github.com/referodesign/refero_skill) | Copyright (c) 2026 Refero | Reached through open-design's craft rulebooks, which adapt it | `a9b54a3e62a6391f5f5ab7a20e4ddb32fb79a27d` |
 | [alchaincyf/huashu-art-motion](https://github.com/alchaincyf/huashu-art-motion) | Copyright (c) 2026 alchaincyf (花叔 · 花生) | Ideas for the film gates in `qa` (blue-purple share, still stretches) and the motion rulebook; easel-motion's nine explainer grammars (`grammars/`) and ten style recipes (`recipes/`), translated into English and renamed (headers in each file). **Excluded:** character assets and rig, the Mario/Nintendo showcase, the Clawd fan work | `9ff59339f934e08483ba0a5b1db20f4c2c421b35` |
-| [ArnavPuri/designskills](https://github.com/ArnavPuri/designskills) | Copyright (c) 2026 Arnav Puri | Critique procedure ideas in the rubrics and the critique skill; `easel-motion/skills/ui-motion/ui-patterns.md`, adapted from its `motion-design` skill; easel-design's reference files (22 of its skills, adapted) and `tools/palette.mjs` (a Node port of its palette script); list in `plugins/easel-design/NOTICE.md` | `c7873015add8571ca95043febad0d9e6c97ee5c6` |
+| [ArnavPuri/designskills](https://github.com/ArnavPuri/designskills) | Copyright (c) 2026 Arnav Puri | Critique procedure ideas in the rubrics and the critique skill; `easel-motion/skills/ui-motion/ui-patterns.md`, adapted from its `motion-design` skill; easel-design's reference files (22 of its skills, adapted) and `tools/palette.mjs` (a Node port of its palette script), list in `plugins/easel-design/NOTICE.md`; easel-ai-media's image prompt reference | `c7873015add8571ca95043febad0d9e6c97ee5c6` |
 | [Vincentwei1021/mg-styles-15](https://github.com/Vincentwei1021/mg-styles-15) | Copyright (c) 2026 Vincentwei1021 | Rubric ideas (independent jury, calibrated scale); the `renderAt(t)` contract and cue sheet ideas; the looks of easel-motion's synthwave, liquid, aurora-glass and hud styles (from its style prompts; Easel's own code) | `49052d80bfaf9fa8412cc9710530e5e95a3b8d8c` |
 | [with-pebbly/aseprite-ai-artist](https://github.com/with-pebbly/aseprite-ai-artist) | Copyright (c) 2026 with-pebbly | Critic agent ideas (cold read, read-only critic) | `f51fe6908223ef9ac476de1568234c699594722d` |
 | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) | Copyright (c) 2026 GreenSock | The eight official GSAP skills as references for easel-motion's `ui-motion` skill (`skills/ui-motion/gsap/`, text unchanged, header added) | `aed9cfd3277740755f6bfc1155c7aa645403b760` |
 | [code-katz/claude-illustrate-skill](https://github.com/code-katz/claude-illustrate-skill) | Copyright (c) 2026 Will Curran (Code Katz) | easel-design's `logo` method (concepts, size-ladder contact sheet, one worst failure per pass, provenance) and its IP and licensing reference | `7189cde8c29c36faf5c7fc8b57bc1b15e5ae4cbd` |
+| [linyaosky/svg-skill](https://github.com/linyaosky/svg-skill) | Copyright (c) 2026 svg-skill contributors | easel-illustrate's `svg` skill and references (its bar chart example fixed), the SVG checker's checklist | `2103b92cb47f588a97a6c38aa6c40571fadbd4f8` |
+| [aishwaryaashok14/peanut-illustrations](https://github.com/aishwaryaashok14/peanut-illustrations) | Copyright (c) 2026 Aishwarya Ashok, **and** Copyright (c) 2026 Ian (portions adapted from [helloianneo/ian-xiaohei-illustrations](https://github.com/helloianneo/ian-xiaohei-illustrations)) | easel-illustrate's concept-illustration method ("Peanut Illustrations" by Aishwarya Ashok). **Excluded:** the peanut and Xiaohei characters and all example images; Easel's mascot is its own | `1e5c645892a2d70242062f23ee2277b18240e05c` |
+| [Alisa0808/vox-director](https://github.com/Alisa0808/vox-director) | Copyright (c) 2026 Alisa Qian | easel-ai-media's `ai-video` pipeline and its prompt, beat and model references, and the voice reference, renamed "editorial collage" (headers in each file, list in `plugins/easel-ai-media/NOTICE.md`). **Excluded:** the real-people (CR7) examples and every note on getting around content filters; its Python scripts (replaced by Easel's Node server) | `6a85a7c341610442a6a5b1885e6e0217ab82a11f` |
 | [cth9191/animate](https://github.com/cth9191/animate) | Copyright (c) 2026 cth9191 | The three check-ins in the brief skill; easel-motion's animate kit (`kit/`), seven styles, templates, story grammars and `tools/build.mjs` (headers in each file, list in `plugins/easel-motion/NOTICE.md`); the `renderFrame(t)` page contract the engine reads; easel-core's `canvas_text` check, `measure_image`, `compare_images` and the `audio_score` synth; the style-match procedure | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
 
 ## Ideas only (no license; nothing copied)
@@ -72,8 +82,8 @@ Latin subsets from Fontsource 5.3.0, in `plugins/easel-core/fonts/` with each fa
 ## Installed at run time, not redistributed
 
 `doctor` installs these from npm into the user's plugin data folder: `playwright-core` 1.64.0
-(Apache-2.0, Microsoft) and its Chromium build, and `gsap` 3.14.2 (GreenSock's Standard License;
-see decision D10). Easel does not ship them.
+(Apache-2.0, Microsoft) and its Chromium build, `gsap` 3.14.2 (GreenSock's Standard License;
+see decision D10) and `p5` 1.11.13 (LGPL-2.1, the Processing Foundation). Easel does not ship them.
 
 ## Trademarks
 

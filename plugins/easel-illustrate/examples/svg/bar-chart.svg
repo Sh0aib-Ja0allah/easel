@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img"
+     aria-labelledby="chart-title chart-desc">
+  <title id="chart-title">Quarterly sales: Q1 40, Q2 65, Q3 50, Q4 80</title>
+  <desc id="chart-desc">Bar chart. Sales rise from 40 in Q1 to 65 in Q2, dip to 50 in Q3 and peak at 80 in Q4.</desc>
+  <!-- Plot area x 50..370 (320 wide), y 40..240 (200 high); baseline y = 240.
+       Max 80 -> scale 200 / 80 = 2.5 px per unit. Step 320 / 4 = 80; bar width 48 (0.6 x step).
+       Centres 90, 170, 250, 330 -> bar x = centre - 24.
+       Q1 40 -> h 100,   y 140   | Q2 65 -> h 162.5, y 77.5
+       Q3 50 -> h 125,   y 115   | Q4 80 -> h 200,   y 40      (y + h = 240 for every bar)
+       Value labels 8 above each bar; category labels at y 260. -->
+  <g fill="#4f46e5">
+    <rect x="66"  y="140"  width="48" height="100"/>
+    <rect x="146" y="77.5" width="48" height="162.5"/>
+    <rect x="226" y="115"  width="48" height="125"/>
+    <rect x="306" y="40"   width="48" height="200"/>
+  </g>
+  <line x1="50" y1="240" x2="370" y2="240" stroke="#64748b" stroke-width="1"/>
+  <g font-family="Inter, sans-serif" font-size="12" text-anchor="middle">
+    <g fill="#1e293b" font-weight="600">
+      <text x="90"  y="132">40</text>
+      <text x="170" y="69.5">65</text>
+      <text x="250" y="107">50</text>
+      <text x="330" y="32">80</text>
+    </g>
+    <g fill="#475569">
+      <text x="90"  y="260">Q1</text>
+      <text x="170" y="260">Q2</text>
+      <text x="250" y="260">Q3</text>
+      <text x="330" y="260">Q4</text>
+    </g>
+  </g>
+</svg>

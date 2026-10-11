@@ -1,0 +1,42 @@
+{
+  "note": "Every example the tests render through the easel-core engine and check with qa (fixedFrame).",
+  "pieces": [
+    {
+      "skill": "svg",
+      "file": "svg/bar-chart.svg",
+      "width": 400,
+      "height": 300
+    },
+    {
+      "skill": "svg",
+      "file": "svg/progress-ring.svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "skill": "svg",
+      "file": "svg/spinner.svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "skill": "svg-illustration",
+      "file": "svg-illustration/lighthouse.svg",
+      "width": 800,
+      "height": 600
+    },
+    {
+      "skill": "concept-illustration",
+      "file": "concept-illustration/meeting-email.svg",
+      "width": 1600,
+      "height": 900
+    },
+    {
+      "skill": "generative-art",
+      "file": "generative-art/tidal-script.html",
+      "width": 1200,
+      "height": 1200,
+      "loop": 8
+    }
+  ]
+}

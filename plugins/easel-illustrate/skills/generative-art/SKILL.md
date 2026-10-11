@@ -1,0 +1,77 @@
+---
+name: generative-art
+description: >-
+  Algorithmic and generative art with p5.js: a short algorithmic philosophy first, then one
+  seeded, parameterised sketch in an offline viewer page whose frames are a pure function of time,
+  rendered by the Easel engine to PNG stills (several seeds side by side) and a seamless loop MP4.
+  Flow fields, particle systems, noise, recursion, packing, tilings, harmonic patterns.
+when_to_use: >-
+  The user asks for generative art, algorithmic art, creative coding, a flow field, particles,
+  p5.js, a looping abstract animation or "art made with code". For a story-driven animation use
+  easel-motion:animate; for a poster or print layout use easel-design:poster; for a hand-drawn
+  concept sketch use easel-illustrate:concept-illustration. GLSL shaders are not covered yet.
+argument-hint: "[idea or mood] [still | loop] [size]"
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep
+---
+
+<!-- Easel: the philosophy-first method, seeded randomness, parameter design and craftsmanship rules
+     are adapted from anthropics/skills @ dbd4588f9e1033efb41dad4bef2f7947c8993d44
+     (github.com/anthropics/skills, skills/algorithmic-art/SKILL.md and templates/generator_template.js),
+     Apache License 2.0, Copyright 2026 Anthropic, PBC; license text in licenses/Apache-2.0.txt, see NOTICE.md.
+     Modified by Easel (2026-10-11): Easel's own offline viewer (no upstream branding), a time-seekable
+     render contract for the engine, renders and loops through the Easel engine. -->
+
+# Generative art
+
+The beauty is in the process, but what the user gets is pictures and a loop. Work in
+`./easel-out/<slug>/`: `philosophy.md`, `piece.html`, `stills/`, `loop/`.
+
+Read [reference/algorithmic-philosophy.md](reference/algorithmic-philosophy.md) for how to write
+the philosophy and turn it into an algorithm, and start every piece from
+[templates/viewer.html](templates/viewer.html) (copy it to `piece.html`).
+
+## 1. Philosophy
+
+Name the movement in one or two words and write 4-6 short paragraphs on how it lives in process,
+noise, forces, structure and colour. Name an aesthetic, never a living artist or a studio, and
+never copy a known artwork; reinterpret the user's reference as qualities. Keep the user's
+subject as a quiet seed of the concept, not an illustration of it.
+
+## 2. The sketch (the contract)
+
+In the copied viewer, fill only the marked part:
+
+- `PIECE`: the canvas size (1200 x 1200 for a square; 1920 x 1080 for 16:9; 1080 x 1350 for a
+  portrait print), `fps` and `duration` (the loop length in seconds).
+- `params` and `CONTROLS`: the seed plus the 3-8 qualities worth tuning (counts, scales,
+  probabilities, angles, palette). Sliders are generated from `CONTROLS`.
+- `build()`: everything that depends on the seed and parameters but not on time (seed first:
+  `randomSeed`, `noiseSeed`; then grids, particles' starting points, palettes).
+- `paint(t)`: the whole frame at time t, **from scratch**, using only `state`, `params` and t.
+  No accumulation across frames, no `frameCount`, no `millis()`: the engine seeks frames out of
+  order and the same t must give the same picture. Trails are drawn by re-tracing them inside
+  `paint(t)` (integrate each particle from its start for a fixed number of steps, offset by t).
+- **Loops:** make `paint(0)` equal `paint(duration)`: drive motion by the angle
+  `TWO_PI * t / duration` (sin and cos, or noise sampled on a circle).
+- Palette: 3-6 colours chosen on purpose (from `.easel/brand.md` when the art is for a brand).
+
+## 3. Render and look
+
+- **Stills:** `mcp__plugin_easel-core_easel__render_still` on `piece.html` at the piece size
+  (`t` for a moment of a loop). Look at it. Then 6-9 seeds: save a copy per seed
+  (`seeds/seed-12.html` with only `params.seed` changed) and lay them out with
+  `mcp__plugin_easel-core_easel__contact_sheet` (one item per copy, `sizes` at the piece size).
+  Keep the seeds that work; say which.
+- **Motion:** `mcp__plugin_easel-core_easel__filmstrip` (`count: 8`) to check that it moves the
+  way the philosophy says and that the first and last frames match.
+- **Loop:** `mcp__plugin_easel-core_easel__render_video` (`file`, the piece's `duration` and
+  `fps` are read from the page) and run `mcp__plugin_easel-core_easel__qa` with `video` (no
+  still stretch unless intended).
+- Refine what is there rather than adding more: one pass on composition and balance, one on
+  colour, one on detail. Three passes at most.
+
+## 4. Deliver
+
+`philosophy.md`, `piece.html` (opens in any browser with seed and parameter controls; it loads
+p5.js from a CDN there, while Easel's renders use the offline copy), the chosen stills, the loop
+MP4, and the seeds. p5.js (LGPL-2.1) is installed by easel-core's doctor; it is not bundled.

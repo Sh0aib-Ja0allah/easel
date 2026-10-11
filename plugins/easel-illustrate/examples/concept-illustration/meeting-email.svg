@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img"
+     aria-labelledby="me-title me-desc">
+  <title id="me-title">This meeting could have been an email</title>
+  <desc id="me-desc">A hand-drawn concept drawing. The card, a deadpan index-card mascot, shoves a whole oval meeting table, chairs and all, into an open envelope marked FYI.</desc>
+  <!-- Concept metaphor. The mascot (the card) does the core action: stuffing the meeting into an
+       envelope. One accent (#E8772E) on one element: the envelope, the result. Labels in Caveat,
+       black. The top of the canvas and both sides stay empty. -->
+  <defs>
+    <!-- light wobble for the line art only; labels stay crisp -->
+    <filter id="wobble" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <g id="drawing" filter="url(#wobble)" fill="none" stroke="#111111" stroke-width="3"
+     stroke-linecap="round" stroke-linejoin="round">
+    <!-- ground, loose -->
+    <path d="M430 721 C700 718 1010 724 1370 719"/>
+
+    <!-- envelope flap, folded open behind the mouth -->
+    <path d="M820 520 L1060 412 L1300 520 Z" fill="#ffffff" stroke="#E8772E"/>
+
+    <!-- the meeting, seen from above: an oval table with its chairs still tucked in, slid
+         diagonally into the mouth; the part already inside is hidden by the envelope body -->
+    <g transform="translate(930 505) rotate(32)">
+      <g fill="#ffffff">
+        <rect x="-105" y="-86" width="30" height="22" rx="6"/>
+        <rect x="-45" y="-86" width="30" height="22" rx="6"/>
+        <rect x="15" y="-86" width="30" height="22" rx="6"/>
+        <rect x="75" y="-86" width="30" height="22" rx="6"/>
+        <rect x="-45" y="64" width="30" height="22" rx="6"/>
+        <rect x="15" y="64" width="30" height="22" rx="6"/>
+        <rect x="75" y="64" width="30" height="22" rx="6"/>
+        <rect x="-184" y="-15" width="22" height="30" rx="6"/>
+        <rect x="162" y="-15" width="22" height="30" rx="6"/>
+        <ellipse cx="0" cy="0" rx="152" ry="56"/>
+      </g>
+      <path d="M-104 -90 H-76 M-44 -90 H-16 M16 -90 H44 M76 -90 H104 M-188 -14 V14" stroke-width="2.5"/>
+    </g>
+
+    <!-- squeeze marks at the far corner of the mouth -->
+    <path d="M1314 508 l16 -8 M1312 494 l12 -14" stroke-width="2.5"/>
+
+    <!-- envelope body (white, so it hides what is already inside) -->
+    <rect x="820" y="520" width="480" height="200" rx="6" fill="#ffffff" stroke="#E8772E"/>
+    <path d="M820 720 L1060 600 L1300 720" stroke="#E8772E"/>
+    <path d="M820 520 L1000 640 M1300 520 L1120 640" stroke="#E8772E" stroke-width="2.5"/>
+
+    <!-- the card, pushing with both arms -->
+    <g>
+      <rect x="636" y="540" width="108" height="144" rx="12" fill="#ffffff"/>
+      <path d="M654 630 H726 M654 648 H726 M654 666 H702" stroke-width="2" opacity="0.5"/>
+      <circle cx="684" cy="574" r="5" fill="#111111" stroke="none"/>
+      <circle cx="716" cy="574" r="5" fill="#111111" stroke="none"/>
+      <path d="M744 588 L772 522 L780 430"/>
+      <path d="M744 612 L790 550 L798 442"/>
+      <path d="M668 684 L660 720 M712 684 L722 720"/>
+    </g>
+
+    <!-- leader from the label to the table -->
+    <path d="M700 384 C760 370 830 362 872 372" stroke-width="2.5"/>
+  </g>
+
+  <g id="labels" font-family="Caveat, cursive" fill="#111111">
+    <text x="460" y="396" font-size="42" font-weight="700">the 1-hour sync</text>
+    <text x="1060" y="686" font-size="44" font-weight="700" text-anchor="middle">FYI</text>
+    <text x="512" y="528" font-size="36">it fits.</text>
+  </g>
+</svg>

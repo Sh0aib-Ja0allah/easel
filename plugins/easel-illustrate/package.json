@@ -1,0 +1,8 @@
+{
+  "name": "easel-illustrate-tests",
+  "private": true,
+  "description": "Tests for easel-illustrate (skills, references, the SVG checker, and every example rendered through easel-core's engine). No dependencies.",
+  "scripts": {
+    "test": "node --test --test-reporter=spec \"test/*.test.mjs\""
+  }
+}

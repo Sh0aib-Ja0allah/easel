@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+  <style>
+    .spinner { transform-origin: 12px 12px; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+  </style>
+  <g class="spinner">
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-dasharray="40 20" stroke-linecap="round"/>
+  </g>
+</svg>
