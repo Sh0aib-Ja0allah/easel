@@ -128,10 +128,11 @@ test('the faces\' cmaps: Latin subsets cover Latin, not Latin Extended, CJK or A
 
 test('refuses an SVG that is not well-formed XML, naming the parser\'s message and the usual fix, and writes nothing', { skip }, async () => {
   const cases = {
-    amp: ['<text x="10" y="40" font-family="Inter">R&D</text>', /EntityRef: expecting ';'/],
-    nbsp: ['<text x="10" y="40" font-family="Inter">Acme&nbsp;Co &copy;</text>', /Entity 'nbsp' not defined/],
-    dup: ['<text x="10" x="12" y="40" font-family="Inter">Dup</text>', /Attribute x redefined/],
-    comment: ['<!-- a -- b --><text x="10" y="40" font-family="Inter">C</text>', /Double hyphen within comment/],
+    // either Chromium parser's wording (libxml2's up to about v150, a newer parser after; CI runs v156)
+    amp: ['<text x="10" y="40" font-family="Inter">R&D</text>', /EntityRef: expecting ';'|Unexpected token inside entity/],
+    nbsp: ['<text x="10" y="40" font-family="Inter">Acme&nbsp;Co &copy;</text>', /Entity 'nbsp' not defined|Unexpected entity: nbsp/],
+    dup: ['<text x="10" x="12" y="40" font-family="Inter">Dup</text>', /Attribute '?x'? (is )?redefined/],
+    comment: ['<!-- a -- b --><text x="10" y="40" font-family="Inter">C</text>', /Double hyphen within comment|Unexpected token '--'/],
   };
   for (const [name, [body, message]] of Object.entries(cases)) {
     const f = svgFile(`bad-${name}`, `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">${body}</svg>`);
@@ -146,7 +147,7 @@ test('refuses an SVG that is not well-formed XML, naming the parser\'s message a
     assert.deepEqual(readdirSync(join(out, `bad-${name}`)), [`bad-${name}.svg`], name);
   }
   const late = svgFile('bad-late', `\n<?xml version="1.0" encoding="UTF-8"?>\n${WORDMARK.replace(/^<\?xml[^>]*>\n/, '')}`);
-  await assert.rejects(m.embedFonts({ file: late }), /not well-formed XML[\s\S]*XML declaration allowed only at the start/);
+  await assert.rejects(m.embedFonts({ file: late }), /not well-formed XML[\s\S]*(XML declaration allowed only at the start|only allows "<\?xml" at the very beginning)/);
   const html = svgFile('bad-root', '<html><body><p style="font-family:Inter">Hi</p></body></html>');
   await assert.rejects(m.embedFonts({ file: html }), /root element is <html>, not <svg>/);
   const nons = svgFile('bad-ns', '<svg width="200" height="60"><text y="40" font-family="Inter">Hi</text></svg>');

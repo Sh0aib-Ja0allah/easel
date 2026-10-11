@@ -23,19 +23,21 @@ img{display:block;width:100%;height:100%;object-fit:${fit};}</style></head><body
 // window.__easelXmlError ({ file, message, cp }) for waitReady (browser.mjs) to refuse; cp is the
 // code point of an HTML-only entity, for the fix.
 const xmlCheck = (text, file) => `(()=>{const d=new DOMParser().parseFromString(${JSON.stringify(text).replace(/</g, '\\u003c')},'image/svg+xml');const e=d.querySelector('parsererror');
-if(e){const message=((e.querySelector('div')||e).textContent||'').trim(),n=message.match(/Entity '(\\w+)' not defined/),h=n&&new DOMParser().parseFromString('&'+n[1]+';','text/html').body.textContent;window.__easelXmlError={file:${JSON.stringify(file).replace(/</g, '\\u003c')},message,cp:h&&h[0]!=='&'?h.codePointAt(0):null};}
+if(e){const message=((e.querySelector('div')||e).textContent||'').trim(),n=message.match(/Entity '(\\w+)' not defined|Unexpected entity: (\\w+)/),n1=n&&(n[1]||n[2]),h=n&&new DOMParser().parseFromString('&'+n1+';','text/html').body.textContent;window.__easelXmlError={file:${JSON.stringify(file).replace(/</g, '\\u003c')},message,cp:h&&h[0]!=='&'?h.codePointAt(0):null};}
 else if(d.documentElement.namespaceURI!=='http://www.w3.org/2000/svg')console.error(${JSON.stringify(`${file}: the root element is not <svg xmlns="http://www.w3.org/2000/svg">, so the file does not open as an image on its own (an <img> shows it broken); add xmlns="http://www.w3.org/2000/svg" to the <svg> tag`).replace(/</g, '\\u003c')});})();`;
 
 // The error for an SVG that is not well-formed XML: the parser's message and the fix for its usual cause.
 export function xmlProblem({ file, message, cp }) {
+  // Chromium's parser messages changed wording (libxml2's up to about v150, a newer parser after), so
+  // each fix matches both
   const m = String(message || '').replace(/\s+/g, ' ').trim();
-  const ent = m.match(/Entity '(\w+)' not defined/);
-  const fix = /EntityRef|expecting ';'/.test(m) ? 'write a literal & as &amp; (R&D -> R&amp;D)'
-    : ent ? `XML knows only &amp; &lt; &gt; &quot; &apos;: write &${ent[1]}; as a numeric reference (${cp ? `&${ent[1]}; -> &#${cp};` : 'e.g. &nbsp; -> &#160;'})`
+  const ent = m.match(/Entity '(\w+)' not defined|Unexpected entity: (\w+)/), name = ent && (ent[1] || ent[2]);
+  const fix = /EntityRef|expecting ';'|inside entity/.test(m) ? 'write a literal & as &amp; (R&D -> R&amp;D)'
+    : ent ? `XML knows only &amp; &lt; &gt; &quot; &apos;: write &${name}; as a numeric reference (${cp ? `&${name}; -> &#${cp};` : 'e.g. &nbsp; -> &#160;'})`
     : /redefined/.test(m) ? 'give each attribute once per element'
-    : /Double hyphen/.test(m) ? 'remove "--" from inside the comment'
-    : /XML declaration allowed only at the start/.test(m) ? 'put the <?xml ...?> declaration at the very start of the file (nothing before it, not even a comment or a blank line), or delete it'
-    : /Unescaped '<'/.test(m) ? 'write < inside an attribute value as &lt;'
+    : /Double hyphen|'--'/.test(m) ? 'remove "--" from inside the comment'
+    : /XML declaration allowed only at the start|only allows "<\?xml" at the very beginning/.test(m) ? 'put the <?xml ...?> declaration at the very start of the file (nothing before it, not even a comment or a blank line), or delete it'
+    : /Unescaped '<'|'<'.*attribute|attribute.*'<'/i.test(m) ? 'write < inside an attribute value as &lt;'
     : 'the usual causes are a bare & (write &amp;) and HTML entities such as &nbsp; (write &#160;)';
   return `${file} is not well-formed XML (${m}): it would render here, but browsers, <img> and editors refuse it. Fix: ${fix}, then render again.`;
 }

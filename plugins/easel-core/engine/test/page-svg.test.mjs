@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { doctorReport } from '../lib/doctor.mjs';
+import { xmlProblem } from '../lib/source.mjs';
 
 const ready = ['playwright-core', 'chromium'].every((n) => doctorReport().checks.find((c) => c.name === n)?.ok);
 const skip = ready ? false : 'needs Chromium (doctor --install)';
@@ -57,13 +58,27 @@ test('SMIL inside an HTML page is seeked too, and the filmstrip frames move', { 
 });
 
 // ---------- Q-13 / C6: well-formed XML ----------
+// The parser's wording changed across Chromium versions (libxml2's up to about v150, a newer parser
+// after: CI runs v156), so each case accepts either; the fix Easel gives is the same for both.
 const BAD = {
-  'bare ampersand': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><text y="15">R&D</text></svg>', /EntityRef: expecting ';'/, /&amp;/],
-  'HTML entity': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><text y="15">Acme&nbsp;Co</text></svg>', /Entity 'nbsp' not defined/, /&#160;/],
-  'duplicate attribute': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><rect width="5" height="5" fill="#000" fill="#f00"/></svg>', /Attribute fill redefined/, /once/],
-  'double hyphen in a comment': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><!-- step 1 -- draft --><rect width="5" height="5"/></svg>', /Double hyphen within comment/, /remove "--"/],
-  'late XML declaration': ['\n<!-- logo --><?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"/>', /XML declaration allowed only at the start/, /very start/],
+  'bare ampersand': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><text y="15">R&D</text></svg>', /EntityRef: expecting ';'|Unexpected token inside entity/, /&amp;/],
+  'HTML entity': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><text y="15">Acme&nbsp;Co</text></svg>', /Entity 'nbsp' not defined|Unexpected entity: nbsp/, /&#160;/],
+  'duplicate attribute': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><rect width="5" height="5" fill="#000" fill="#f00"/></svg>', /Attribute '?fill'? (is )?redefined/, /once/],
+  'double hyphen in a comment': ['<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"><!-- step 1 -- draft --><rect width="5" height="5"/></svg>', /Double hyphen within comment|Unexpected token '--'/, /remove "--"/],
+  'late XML declaration': ['\n<!-- logo --><?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="80" height="20"/>', /XML declaration allowed only at the start|only allows "<\?xml" at the very beginning/, /very start/],
 };
+// No browser needed: the fix Easel names is found in both parsers' wording (v140 and v156 messages)
+test('the fix for each XML error is found in either Chromium parser\'s wording', () => {
+  const cases = [
+    [["EntityRef: expecting ';'", 'Unexpected token inside entity: </'], /&amp; \(R&D/],
+    [["Entity 'nbsp' not defined", 'Unexpected entity: nbsp'], /&nbsp; -> &#160;/, 160],
+    [['Attribute fill redefined', "Attribute 'fill' is redefined"], /once per element/],
+    [['Double hyphen within comment', "Unexpected token '--' before ' '"], /remove "--"/],
+    [['XML declaration allowed only at the start of the document', 'Invalid processing instruction: <?xml The XML spec only allows "<?xml" at the very beginning of the file'], /very start/],
+  ];
+  for (const [messages, fix, cp] of cases) for (const message of messages) assert.match(xmlProblem({ file: 'f.svg', message: `error on line 1 at column 9: ${message}`, cp }), fix, message);
+});
+
 for (const [kind, [svg, parser, fix]] of Object.entries(BAD)) {
   test(`an SVG that is not well-formed XML is refused with the parser's message: ${kind}`, { skip }, async () => {
     const d = dir(`xml-${kind.replace(/\W+/g, '-')}`);
