@@ -9,5 +9,9 @@ spikes/hyperframes/comp-*/gsap.min.js
 plugins/*/evals/results/
 # animate pieces built by plugins/easel-motion/tools/build.mjs (generated from src/ parts)
 plugins/easel-motion/styles/*/demo*/index.html
+plugins/easel-motion/styles/*/demo*/board.html
 plugins/easel-motion/templates/*/index.html
+plugins/easel-motion/templates/*/board.html
+plugins/easel-motion/examples/*/index.html
+plugins/easel-motion/examples/*/board.html
 plugins/easel-motion/test/golden/candidates/

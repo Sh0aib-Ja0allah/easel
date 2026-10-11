@@ -34,7 +34,7 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 
 | ID | Task | Done when | Needs |
 | --- | --- | --- | --- |
-| T2.1 | Port animate's kit + 7 styles to the engine contract (fix the shared-globals issue so styles can mix) | Each style renders its demo; golden frames stored | T1.3 |
+| T2.1 | ✅ Done (`e3948c4` + `953a665`; engine 90 tests, easel-motion 25, 0 skipped). Port animate's kit + 7 styles to the engine contract (fix the shared-globals issue so styles can mix) | Each style renders its demo; golden frames stored | T1.3 |
 | T2.2 | `animate` skill (entry), using `brief` check-ins, grammars and the quality loop | Topic → reviewed MP4 in 16:9 + 9:16 | T2.1, T1.8 |
 | T2.3 | `style-match` (new-style procedure + reference breakdown) | Builds a style from 3 reference images; comparison sheet output | T2.1 |
 | T2.4 | Audio decision + `score` skill: port mgaudio to Node **or** a JS synth with optional Python | Cue sheet → mastered WAV in the −16 to −12 LUFS range | T1.5 |

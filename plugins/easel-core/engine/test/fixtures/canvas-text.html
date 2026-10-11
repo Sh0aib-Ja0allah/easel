@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><style>html,body{margin:0;background:#111}canvas{display:block}</style></head>
+<body>
+<canvas id="c" width="360" height="640"></canvas>
+<script>
+"use strict";
+// canvas_text fixture (portrait): a caption that fits; from 0.5 s a label runs off the right edge;
+// before 0.3 s two labels overlap; a line sits in the bottom phone-UI band the whole time.
+window.TIMELINE = { width: 360, height: 640, fps: 10, duration: 1, frames: 10, safe: { top: 60, bottom: 100, right: 35 }, bpm: 120, cuts: [0.25, 0.6], morphs: [0.5] };   // the 0.6 s cut is off the 8th grid
+function renderFrame(t, canvas) {
+  const g = (canvas || document.getElementById('c')).getContext('2d');
+  g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#111'; g.fillRect(0, 0, 360, 640);
+  g.fillStyle = '#fff'; g.font = "700 28px 'Inter'"; g.textAlign = 'left';
+  g.fillText('fits fine', 40, 200);
+  if (t >= 0.5) g.fillText('runs off the edge', 250, 300);
+  if (t < 0.3) { g.fillText('first label', 40, 400); g.fillText('second one', 60, 410); }
+  g.font = "400 22px 'Inter'"; g.fillText('under the buttons', 40, 600);
+}
+window.renderFrame = renderFrame;
+</script>
+</body>
+</html>

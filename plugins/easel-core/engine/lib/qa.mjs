@@ -1,6 +1,8 @@
 // qa: measured quality checks. Hard gates refuse delivery until they pass (architecture §8).
 //   text_clipping  (page)  text cut off by its own box, an ancestor that clips, or the frame
 //   contrast       (page)  WCAG 2.x contrast of each text run against what is really behind it
+//   canvas_text    (canvas piece) text a renderFrame(t) piece draws: cut off by the frame, overlapping, under the phone UI
+//   beat_grid      (canvas piece) cuts and morph centres on the 8th-note grid of TIMELINE.bpm
 //   stillness      (video) a still or empty stretch longer than N seconds (ffmpeg freezedetect)
 //   colour_cast    (video/image) share of frames dominated by blue-purple hues
 //   loudness       (audio/video) integrated loudness in LUFS (ffmpeg ebur128)
@@ -11,6 +13,7 @@ import { newPage, openBrowser, waitReady } from './browser.mjs';
 import { requireBinary } from './binaries.mjs';
 import { resolveSource } from './source.mjs';
 import { outputDir } from './render.mjs';
+import { canvasChecks } from './canvastext.mjs';
 
 const VIDEO = new Set(['.mp4', '.mov', '.webm', '.mkv', '.gif']);
 
@@ -229,9 +232,20 @@ export async function qa(args) {
   if (!args.html && !args.file && !args.video && !args.audio && !args.image) throw new Error('Give a page (html or file) and/or a video, audio or image file to check.');
   const want = (n) => !args.checks || !args.checks.length || args.checks.includes(n);
   const checks = [];
+  const explicit = (n) => !!(args.checks && args.checks.includes(n));
   if ((args.html || args.file) && (want('text_clipping') || want('contrast'))) {
     const out = outputDir(args);
     checks.push(...(await pageChecks({ ...args, wantContrast: want('contrast') }, out)).filter((c) => want(c.name)));
+  }
+  // Canvas pieces (window.renderFrame + window.TIMELINE): asked for by name, or found when no checks are named.
+  if ((args.html || args.file) && (want('canvas_text') || want('beat_grid'))) {
+    const out = outputDir(args);
+    const src = resolveSource(args, out, 'qa-canvas');
+    try {
+      const cs = await canvasChecks(args, src, want);
+      if (cs) checks.push(...cs);
+      else for (const n of ['canvas_text', 'beat_grid'].filter(explicit)) checks.push({ name: n, pass: false, hard: true, value: null, threshold: 'a canvas piece', findings: [{ fix: `${n} needs a page with window.renderFrame(t) and window.TIMELINE (an animate piece)` }] });
+    } finally { if (src.kind === 'image') rmSync(src.path, { force: true }); }
   }
   if (args.video) {
     if (want('stillness')) checks.push(stillness(args.video, { seconds: args.stillSeconds ?? 2 }));

@@ -2,7 +2,8 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/styles/crosshatch/demo/src/head.html).
      MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
-     Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts. -->
+     Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts;
+     build and render comments point at easel-motion and easel-core. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -21,7 +22,7 @@
 // =====================================================================
 //  CROSSHATCH DEMO — 9:16, 6.0s @ 120 BPM, 24fps. A desk by morning; the coffee in the mug becomes the moon
 //  over the navy world inside the machine. Proves the style kit renders, morphs and stays deterministic.
-//  Build: node <skill>/tools/build.mjs <skill>/styles/crosshatch/demo
+//  Build: node <easel-motion>/tools/build.mjs <easel-motion>/styles/crosshatch/demo
 // =====================================================================
 const FPS = 24, W = 1080, H = 1920;
 const BPM = 120, BEAT = 60 / BPM, E8 = BEAT / 2, E16 = BEAT / 4;

@@ -120,3 +120,23 @@ test('mixed styles: a page error names the missing style when an era asks for on
   const text = JSON.stringify(r);
   assert.match(text, /style \\?"riso\\?", which is not in this piece: add it to piece.json \\?"mix\\?"/);
 });
+
+test('the water-cycle example: one piece renders in 16:9 and 9:16 with its score, and passes the page checks in both', { skip }, async () => {
+  const d = join(out, 'water-cycle');
+  cpSync(join(PLUGIN, 'examples', 'water-cycle'), d, { recursive: true });
+  const { file, board } = build(d);
+  const v = await m.renderVideo({ file, outDir: join(d, 'renders'), name: 'water-cycle', aspects: ['16:9', '9:16'], audio: 'page', preset: 'ultrafast', ...(FULL ? {} : { duration: 1 }) });
+  assert.equal(v.warnings, undefined, JSON.stringify(v.warnings));
+  assert.deepEqual(v.videos.map((x) => { const p = m.probe(x.file); return [p.video.width, p.video.height, !!p.audio]; }), [[1920, 1080, true], [1080, 1920, true]]);
+  for (const aspect of ['16:9', '9:16']) {
+    const q = await m.qa({ file, aspect, checks: ['canvas_text', 'beat_grid'], every: 3, outDir: join(d, 'qa') });
+    assert.equal(q.pass, true, `${aspect}: ${JSON.stringify(q.checks)}`);
+    assert.deepEqual(q.checks.map((c) => c.name).sort(), ['beat_grid', 'canvas_text']);
+  }
+  assert.ok(m.loudness(join(d, 'renders', 'water-cycle.wav')).pass);
+  // the storyboard page: one panel per TIMELINE.board beat, at its real size
+  const b = await m.renderStill({ file: board, outDir: join(d, 'board'), name: 'board', width: 1200, height: 800, selector: '#easel-board' }, { browser });
+  assert.equal(b.warnings, undefined, JSON.stringify(b.warnings));
+  assert.ok(b.files[0].width > 1200 && b.files[0].height > 400, JSON.stringify(b.files[0]));   // 16:9 panels: 1980 x 513
+  assert.deepEqual(m.pngSize(b.files[0].file), { width: b.files[0].width, height: b.files[0].height });
+});

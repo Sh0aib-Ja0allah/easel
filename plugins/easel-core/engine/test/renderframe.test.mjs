@@ -77,3 +77,44 @@ test('window.ASSETS_READY: rendering waits until renderFrame appears', { skip },
   const px = await m.withPixels(browser, [s.files[0].file], (imgs) => Array.from(imgs[0].data.slice(0, 3)));
   assert.deepEqual(px, [0x2a, 0x9d, 0x8f], 'the frame was drawn by renderFrame, not left black');
 });
+
+test('qa canvas_text: cut off and overlapping text fail, the phone-UI band warns, textIgnore allows', { skip }, async () => {
+  const r = await m.qa({ file: fx('canvas-text.html'), checks: ['canvas_text'], every: 1, outDir: join(out, 'ct') });
+  const c = r.checks.find((x) => x.name === 'canvas_text');
+  assert.equal(c.pass, false);
+  assert.equal(r.pass, false);
+  const kinds = c.findings.map((f) => `${f.severity}:${f.kind}:${f.text}`).sort();
+  assert.deepEqual(kinds, [
+    'fail:cut off by the frame edge:runs off the edge',
+    'fail:overlaps other text:"first label" × "second one"',
+    'warn:under the phone UI (safe zone):under the buttons',
+  ]);
+  const cut = c.findings.find((f) => f.kind === 'cut off by the frame edge');
+  assert.deepEqual([cut.t0, cut.t1, cut.frames], [0.5, 0.9, 5]);
+  const ok = await m.qa({ file: fx('canvas-text.html'), checks: ['canvas_text'], every: 1, textIgnore: [[0, 0.3, 'a deliberate pile-up'], [0.5, 1, 'the label exits']], outDir: join(out, 'ct2') });
+  assert.equal(ok.pass, true, JSON.stringify(ok.checks));
+  assert.equal(ok.checks[0].allowed, 2);
+});
+
+test('qa canvas_text: a clean piece passes; a page that is not a canvas piece is reported when asked', { skip }, async () => {
+  const r = await m.qa({ file: fx('anim-renderframe.html'), checks: ['canvas_text'], outDir: join(out, 'ct3') });
+  assert.equal(r.pass, true, JSON.stringify(r.checks));
+  assert.equal(r.checks[0].framesSampled, 4);
+  const sq = await m.qa({ file: fx('anim-renderframe.html'), checks: ['canvas_text'], aspect: '9:16', outDir: join(out, 'ct4') });
+  assert.equal(sq.checks[0].aspect, '9:16');
+  const no = await m.qa({ file: fx('still.html'), checks: ['canvas_text'], outDir: join(out, 'ct5') });
+  assert.equal(no.pass, false);
+  assert.match(JSON.stringify(no.checks[0].findings), /window\.renderFrame/);
+});
+
+test('qa beat_grid: a cut off the 8th-note grid fails with the nearest grid time; no checks named runs every canvas check', { skip }, async () => {
+  const r = await m.qa({ file: fx('canvas-text.html'), checks: ['beat_grid'], outDir: join(out, 'bg') });
+  assert.deepEqual(r.checks.map((c) => c.name), ['beat_grid']);
+  const g = r.checks[0];
+  assert.equal(g.pass, false);
+  assert.equal(g.eventsChecked, 3);
+  assert.deepEqual(g.findings.map((f) => [f.kind, f.t, f.nearest]), [['cut', 0.6, 0.5]]);
+  const all = await m.qa({ file: fx('canvas-text.html'), outDir: join(out, 'bg2') });
+  assert.deepEqual(all.checks.map((c) => c.name).sort(), ['beat_grid', 'canvas_text', 'contrast', 'text_clipping']);
+  assert.deepEqual(all.hardFailures.sort(), ['beat_grid', 'canvas_text']);
+});

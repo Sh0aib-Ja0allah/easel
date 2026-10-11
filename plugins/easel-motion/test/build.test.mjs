@@ -19,7 +19,7 @@ test('all seven styles are present, each with STYLE.md, kit.js and a demo', () =
 });
 
 test('every demo and template builds (copied out, so the plugin tree stays clean)', () => {
-  for (const rel of [...STYLES.map((s) => `styles/${s}/demo`), 'templates/piece', 'templates/beat-cut']) {
+  for (const rel of [...STYLES.map((s) => `styles/${s}/demo`), 'templates/piece', 'templates/beat-cut', 'examples/water-cycle']) {
     const d = copy(rel);
     try {
       // a copied demo has no styles/ folder beside it: the style comes from the plugin
@@ -83,6 +83,51 @@ test('the build still rejects URLs and data: URIs in code', () => {
 test('no system font names remain in the kit, styles or templates (bundled OFL fonts only)', () => {
   const bad = /Ink Free|Segoe|Arial|Consolas|Cambria|Comic Sans|Menlo|Helvetica|Georgia|Times New Roman|DejaVu|Bradley Hand|Chalkboard|Marker Felt|Cascadia|Impact/;
   const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]));
-  const files = ['kit', 'styles', 'templates'].flatMap((d) => walk(join(PLUGIN, d))).filter((f) => /\.(js|html|md)$/.test(f) && !f.endsWith('index.html'));
+  const files = ['kit', 'styles', 'templates', 'examples'].flatMap((d) => walk(join(PLUGIN, d))).filter((f) => /\.(js|html|md)$/.test(f) && !/(index|board)\.html$/.test(f));
   for (const f of files) assert.doesNotMatch(readFileSync(f, 'utf8'), bad, f);
+});
+
+test('new-piece: every style starts from its demo with a format-aware head, and builds', async () => {
+  const { newPiece } = await import('../tools/new-piece.mjs');
+  const root = mkdtempSync(join(tmpdir(), 'easel-newpiece-'));
+  try {
+    for (const s of STYLES) {
+      const r = newPiece(join(root, s), { style: s, formats: ['16:9', '9:16'], title: `A ${s} test` });
+      assert.deepEqual(r.piece.formats, ['16:9', '9:16']);
+      assert.equal(r.from, `styles/${s}/demo`);
+      const head = readFileSync(join(root, s, 'src', 'head.html'), 'utf8');
+      assert.match(head, /const PIECE_FORMATS = \["16:9","9:16"\];/);
+      assert.match(head, /window\.__easel && window\.__easel\.aspect/);
+      assert.doesNotMatch(head, /aspect-ratio: 9 \/ 16/);
+      assert.match(head, new RegExp(`<title>A ${s} test</title>`));
+      assert.ok(build(join(root, s)).lines > 500);
+    }
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('new-piece: a 9:16-only demo piece keeps its head; templates need cut-paper; nothing is overwritten', async () => {
+  const { newPiece } = await import('../tools/new-piece.mjs');
+  const root = mkdtempSync(join(tmpdir(), 'easel-newpiece-'));
+  try {
+    newPiece(join(root, 'tall'), { style: 'riso' });
+    assert.equal(readFileSync(join(root, 'tall', 'src', 'head.html'), 'utf8'), readFileSync(join(PLUGIN, 'styles', 'riso', 'demo', 'src', 'head.html'), 'utf8'));
+    assert.throws(() => newPiece(join(root, 'tall'), { style: 'riso' }), /already has a piece\.json/);
+    assert.throws(() => newPiece(join(root, 't'), { style: 'riso', from: 'piece' }), /drawn in cut-paper/);
+    assert.throws(() => newPiece(join(root, 'u'), { style: 'nope' }), /unknown style/);
+    assert.throws(() => newPiece(join(root, 'v'), { style: 'riso', formats: ['3:2'] }), /unknown format/);
+    const t = newPiece(join(root, 'wide'), { style: 'cut-paper', from: 'piece', formats: ['16:9'], mix: ['riso'] });
+    assert.deepEqual(t.piece.mix, ['riso']);
+    assert.match(readFileSync(join(root, 'wide', 'src', 'head.html'), 'utf8'), /\|\| "16:9"/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('the animate skill names only tools and files that exist', () => {
+  const skill = readFileSync(join(PLUGIN, 'skills', 'animate', 'SKILL.md'), 'utf8');
+  for (const t of skill.match(/mcp__plugin_easel-core_easel__\w+/g)) assert.match(t, /__(render_still|render_video|filmstrip|contact_sheet|qa|validate|craft|doctor)$/, t);
+  for (const rel of skill.match(/<easel-motion>\/[\w./-]+/g)) {
+    const p = join(PLUGIN, rel.replace('<easel-motion>/', '').replace(/\/<id>\/.*$/, ''));
+    assert.ok(existsSync(p), `${rel} -> ${p}`);
+  }
+  for (const f of ['intake.md', 'craft.md']) assert.ok(existsSync(join(PLUGIN, 'skills', 'animate', f)), f);
+  assert.ok(existsSync(join(PLUGIN, 'tools', 'new-piece.mjs')));
 });

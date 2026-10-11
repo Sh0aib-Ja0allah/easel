@@ -1,7 +1,8 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/grammar/STORY.md).
      MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
-     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/). -->
+     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/);
+     review steps point at easel-core qa. -->
 # Story grammar: beat by beat
 
 **The one idea:** tell a *true process* as a story. The process gives the order, the hero carries you through it, and the pace changes with what each step means. Every cut or transition has a reason you could say out loud.
@@ -18,7 +19,7 @@ These rules come from measured shot logs of short story-driven animations. Sever
 ## The hero and the anchor
 
 - **One small, simple hero from the first frame to the last.**
-- **In the fastest section the hero holds its screen position while the world changes around it** (`review.mjs` checks this as the anchor).
+- **In the fastest section the hero holds its screen position while the world changes around it** (check it on a filmstrip of that stretch).
 - **The hero changes form but keeps one identity cue** (a colour, the eyes, the same paper and handwriting, a ray count that grows).
 
 ## The pace

@@ -3,7 +3,8 @@
      (github.com/cth9191/animate, plugins/animate/skills/animate/templates/piece/src/head.html).
      MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
      Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts;
-     the format also comes from window.__easel.aspect (the Easel engine's aspects). -->
+     the format also comes from window.__easel.aspect (the Easel engine's aspects);
+     build and render comments point at easel-motion and easel-core. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -22,8 +23,8 @@
 // =====================================================================
 //  STARTER PIECE — 8.0s @ 120 BPM, 24fps, in any of the formats below. Two eras joined by one shape morph
 //  (the moon becomes the sun). Replace the eras, shots, cues, acts and board with your piece's.
-//  Build: node <skill>/tools/build.mjs <this piece dir>. Preview: open index.html (click to hear the score;
-//  ?t=2.5 freezes a frame; ?format=16:9 shows another format). Export all: export.mjs <piece> --formats 9:16,1:1,16:9
+//  Build: node <easel-motion>/tools/build.mjs <this piece dir>. Preview: open index.html (click to hear the score;
+//  ?t=2.5 freezes a frame; ?format=16:9 shows another format). Render all: easel-core render_video with aspects ["9:16", "1:1", "16:9"]
 //  Scenes place things with LX(fraction of width), LY(fraction of height) and size them with UNIT (kit/core.js),
 //  so one piece re-lays itself out for each format instead of being cropped.
 // =====================================================================

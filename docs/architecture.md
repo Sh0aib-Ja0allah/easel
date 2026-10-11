@@ -126,7 +126,7 @@ Every visual artifact is a web page that can be put into an exact state at any t
 | `contact_sheet` | Many renders or sizes on one sheet (logo 16–512 px, storyboard panels) |
 | `render_video` | Page + duration + fps + aspect ratios → MP4 (and ProRes with alpha, v2) |
 | `filmstrip` | Frames at chosen times side by side, so a vision model can review motion |
-| `qa` | Measured checks: text clipping, contrast, dead or still stretches, loudness, colour-cast gate |
+| `qa` | Measured checks: text clipping, contrast, canvas text (cut off, overlapping, under the phone UI) and beat grid for canvas pieces, dead or still stretches, loudness, colour-cast gate |
 | `audio_score` | Cue sheet → synthesized music and SFX → WAV mastered to −14 LUFS |
 | `craft` | Return a craft rulebook or rubric by name |
 | `generate` | Provider-layer call (§6); used by `easel-ai-media` |
@@ -205,7 +205,8 @@ Every visual skill ends with the same loop:
 
 **Hard gates** (delivery is refused until they pass):
 
-- Text clipping
+- Text clipping (DOM text, and text a canvas piece draws: `canvas_text`)
+- Cuts and morphs off the 8th-note grid in canvas pieces (`beat_grid`)
 - Contrast below WCAG AA for UI work
 - An empty or still frame run longer than N seconds in video
 - More than 30% of frames with a blue-purple cast (from huashu)

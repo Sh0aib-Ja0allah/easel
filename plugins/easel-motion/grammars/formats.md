@@ -1,7 +1,8 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/grammar/FORMATS.md).
      MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
-     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/). -->
+     Modified by Easel (2026-10-11): links follow the Easel layout (grammars/);
+     review steps point at easel-core qa. -->
 # Formats: the structures short animations are built on
 
 **Where it sits:** a piece = **grammar** ([STORY.md](story.md), rules every piece follows) + **a format** (this file: what drives the plot and how we get from one thing to the next) + **a style** (`styles/`: the medium) + **a subject** (something true).
@@ -42,7 +43,7 @@ Every piece is one choice from each column. Read a format as a proven combinatio
 
 ## The formats
 
-"Checks" are things `tools/review.mjs` proves when `TIMELINE.format` is set.
+"Checks" were proven by upstream's review script when `TIMELINE.format` was set. In Easel, easel-core `qa` measures the beat grid (`beat_grid`), the text (`canvas_text`), still stretches and loudness; check the rest on a filmstrip.
 
 ### F1. Machine (token through stations, one sheet)
 - **Engine:** a token (a ball, a marble) moves through N stations; each does one literal thing to it. Order = the path.

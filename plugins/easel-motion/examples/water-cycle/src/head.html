@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- Easel example piece (MIT). The page structure follows easel-motion's templates/piece, which is
+     adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263 (MIT, Copyright (c) 2026
+     cth9191); the story, timeline and scenes are Easel's own. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where rain comes from</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1b1714; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { max-width: 100vw; max-height: 100vh; width: auto; height: auto; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+"use strict";
+// =====================================================================
+//  WHERE RAIN COMES FROM: an Easel example piece, 8.0 s @ 120 BPM, 24 fps, in 16:9 and 9:16.
+//  The sun warms the sea and the spark rides a rising drop up into the sky; the drop becomes a cloud
+//  (a shape morph), and the cloud gives the water back as rain on the hills.
+//  Built from easel-motion's templates/piece (cut-paper) with tools/new-piece.mjs; written by Easel.
+//  Scenes place things with LX / LY and size them with UNIT, so each format lays itself out.
+// =====================================================================
+const FORMATS = { '9:16': [1080, 1920], '4:5': [1080, 1350], '1:1': [1080, 1080], '16:9': [1920, 1080] };
+// the format: the Easel engine says which one it renders in window.__easel.aspect; ?format=9:16 in a browser
+const FORMAT = new URLSearchParams(location.search).get('format') || (window.__easel && window.__easel.aspect) || '16:9';
+const FPS = 24, [W, H] = FORMATS[FORMAT];
+{ const cv = document.getElementById('c'); cv.width = W; cv.height = H; }
+const BPM = typeof BEATS !== 'undefined' ? BEATS.bpm : 120, GRID0 = typeof BEATS !== 'undefined' ? BEATS.offset : 0;
+const BEAT = 60 / BPM, E8 = BEAT / 2, E16 = BEAT / 4;
+const DURATION = 8.0;
+const NFRAMES = Math.round(DURATION * FPS);
+const LOOP_T = NFRAMES / FPS;
+const SAFE = { '9:16': { top: 240, bottom: 420, right: 140 }, '4:5': { top: 80, bottom: 160, right: 60 }, '1:1': { top: 60, bottom: 110, right: 60 }, '16:9': { top: 60, bottom: 110, right: 60 } }[FORMAT];
+const HAND = '"Caveat", cursive';   // bundled OFL font (easel-core/fonts): the same on every OS
+const CX = (W - SAFE.right) / 2;
+const onBeat = (t) => +(GRID0 + Math.round((t - GRID0) / E8) * E8).toFixed(4);
+const M1 = onBeat(4.0);                                      // the morph: the drop becomes a cloud
+const ERA_LIST = [[0, M1, () => sceneSea()], [M1, DURATION, () => sceneSky()]];
+const SHOTS = [
+  //  key    era  t0    t1        title
+  ['sea',    0,   0.0,  M1,       'the sun warms the sea; a drop rises with the spark'],
+  ['sky',    1,   M1,   DURATION, 'the drop becomes a cloud; the cloud rains on the hills'],
+];
+const TIMELINE = {
+  width: W, height: H, fps: FPS, bpm: BPM, gridOffset: GRID0, duration: DURATION, frames: NFRAMES, loop: LOOP_T, safe: SAFE, aspect: FORMAT,
+  format: 'morph-chain',
+  shots: SHOTS.map(([key, era, t0, t1, title], i) => ({ id: i + 1, key, era, t0, t1, title })),
+  cuts: [],
+  morphs: [M1],
+  cues: { warm: onBeat(0.5), rise: onBeat(1.5), rain: onBeat(5.0) },
+  acts: [
+    { name: '1 Sea', role: 'build', t0: 0.0, t1: M1 },
+    { name: '2 Sky', role: 'gift',  t0: M1, t1: DURATION },
+  ],
+  board: [
+    { t: 2.75, title: 'a drop rises from the warm sea', sound: 'a low pad; soft rising blips', next: 'the drop becomes a cloud' },
+    { t: 7.0, title: 'the cloud rains on the hills', sound: 'rain hiss; a warm chord', next: 'loops' },
+  ],
+  narration: [],
+};
+window.TIMELINE = TIMELINE;

@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { jobDir } from './paths.mjs';
 import { ASPECTS, newPage, openBrowser, waitReady } from './browser.mjs';
 import { resolveSource } from './source.mjs';
+import { pngSize } from './image.mjs';
 
 const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'still';
 
@@ -36,7 +37,9 @@ export async function renderStill(args, { browser: shared } = {}) {
           const file = join(out, `${name}${suffix}.png`);
           const target = args.selector ? page.locator(args.selector).first() : page;
           await target.screenshot({ path: file, omitBackground: !!args.transparent, ...(args.selector ? {} : { fullPage: !!args.fullPage }), animations: 'allow' });
-          files.push({ file, width: size.width * (args.scale || 1), height: size.height * (args.scale || 1), theme });
+          // an element or a full page has its own size; report what was written
+          const real = args.selector || args.fullPage ? pngSize(file) : { width: Math.round(size.width * (args.scale || 1)), height: Math.round(size.height * (args.scale || 1)) };
+          files.push({ file, ...real, theme });
           if (blocked.length) warnings.push(`Blocked network requests (render is offline): ${[...new Set(blocked)].slice(0, 5).join(', ')}`);
           if (errors.length) warnings.push(`Page errors: ${[...new Set(errors)].slice(0, 5).join(' | ')}`);
         } finally {

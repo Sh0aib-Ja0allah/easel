@@ -2,7 +2,8 @@
 <!-- Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
      (github.com/cth9191/animate, plugins/animate/skills/animate/styles/math/demo/src/head.html).
      MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
-     Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts. -->
+     Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts;
+     build and render comments point at easel-motion and easel-core. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -23,7 +24,7 @@
 //  with its squares (16 + 9 = 25 cells); the square on c morphs into the unit circle, where a and b become cos θ and
 //  sin θ and the equation Transforms into cos²θ + sin²θ = 1 while a live readout keeps summing to 1.
 //  Colour code (one colour per quantity, everywhere): a / cos θ red, b / sin θ green, c / 1 yellow, θ blue.
-//  Build: node <skill>/tools/build.mjs <skill>/styles/math/demo
+//  Build: node <easel-motion>/tools/build.mjs <easel-motion>/styles/math/demo
 // =====================================================================
 const FPS = 24, W = 1080, H = 1920;
 const BPM = 120, BEAT = 60 / BPM, E8 = BEAT / 2, E16 = BEAT / 4;

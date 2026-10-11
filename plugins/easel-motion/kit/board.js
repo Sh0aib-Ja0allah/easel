@@ -1,13 +1,14 @@
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/kit/board.js).
 // MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
-// Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts.
+// Modified by Easel (2026-10-11): system font stacks replaced with bundled OFL fonts; board.html (written
+// by tools/build.mjs) shows the storyboard as the page, for easel-core's render_still.
 
 // =====================================================================
 //  kit/board.js — the storyboard: every beat in TIMELINE.board drawn as a 9:16 key frame with its notes.
 //  The panels ARE the piece: each one is renderFrame(t) at the beat's key time, so an approved board
 //  carries straight into the video.  TIMELINE.board = [{ t, title, sound, next }]
-//  Render: node tools/storyboard.mjs <piece dir> [out.png] [panel numbers...]
+//  Render (Easel): build the piece, then easel-core render_still on <piece>/board.html with selector '#easel-board'
 // =====================================================================
 function drawPanel(k) { renderFrame(TIMELINE.board[k].t, ctx.canvas); }
 function renderBoard() {
@@ -36,3 +37,15 @@ function renderBoard() {
   return bc;
 }
 window.renderBoard = renderBoard; window.drawPanel = drawPanel;
+// Easel: in board.html (tools/build.mjs sets EASEL_BOARD) the page is the storyboard. The engine seeks
+// t = 0 through window.renderAt, which wins over renderFrame, after the bundled fonts have loaded.
+if (typeof EASEL_BOARD !== 'undefined' && EASEL_BOARD) {
+  const host = document.createElement('canvas'), first = renderBoard();
+  host.id = 'easel-board'; host.width = first.width; host.height = first.height;
+  host.style.cssText = `display:block;max-width:none;max-height:none;width:${host.width}px;height:${host.height}px;aspect-ratio:auto`;
+  document.documentElement.style.cssText = 'height:auto;overflow:visible;background:#2a211b';
+  document.body.style.cssText = 'margin:0;height:auto;display:block;overflow:visible;background:#2a211b';
+  document.body.replaceChildren(host);
+  window.renderAt = () => { const g = host.getContext('2d'); g.clearRect(0, 0, host.width, host.height); g.drawImage(renderBoard(), 0, 0); };
+  window.EASEL_BOARD_SIZE = { width: host.width, height: host.height };
+}

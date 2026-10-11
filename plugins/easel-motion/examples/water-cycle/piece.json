@@ -1,0 +1,26 @@
+{
+  "name": "water-cycle",
+  "title": "Where rain comes from",
+  "format": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 24,
+    "bpm": 120,
+    "duration": 8.0,
+    "frames": 192
+  },
+  "storyFormat": "F2 morph chain (2 eras, 1 shape morph)",
+  "style": "cut-paper",
+  "review": {
+    "safe": {
+      "top": 60,
+      "bottom": 110,
+      "right": 60
+    },
+    "refs": {}
+  },
+  "formats": [
+    "16:9",
+    "9:16"
+  ]
+}

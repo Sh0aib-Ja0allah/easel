@@ -121,7 +121,7 @@ export const tools = {
   },
   qa: {
     description:
-      'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images). ' +
+      'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images); for canvas pieces (window.renderFrame + window.TIMELINE, e.g. animate pieces) canvas_text traces every string drawn on sampled frames: cut off by the frame or overlapping other text fails, under the phone UI on portrait formats warns (pass aspect to check one format), and beat_grid checks that TIMELINE.cuts and TIMELINE.morphs land on the 8th-note grid of TIMELINE.bpm. ' +
       'Media checks: stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
       'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. Contrast is a hard gate when mode is "ui".',
     inputSchema: {
@@ -132,7 +132,10 @@ export const tools = {
         width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
         times: { type: 'array', maxItems: 24, items: { type: 'number', minimum: 0 }, description: 'For animated pages: check at these times.' },
         mode: { enum: ['ui', 'graphic', 'video'] }, theme: { enum: ['light', 'dark'] },
-        checks: { type: 'array', items: { enum: ['text_clipping', 'contrast', 'stillness', 'colour_cast', 'loudness'] } },
+        checks: { type: 'array', items: { enum: ['text_clipping', 'contrast', 'canvas_text', 'beat_grid', 'stillness', 'colour_cast', 'loudness'] } },
+        aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'canvas_text: the format to check a format-aware piece in.' },
+        every: { type: 'integer', minimum: 1, maximum: 48, description: 'canvas_text: sample every Nth frame (default 6), plus the first and last frame of each shot.' },
+        textIgnore: { type: 'array', maxItems: 32, items: { type: 'array', minItems: 2, maxItems: 3 }, description: 'canvas_text: [[t0, t1, "why"], ...] windows where crowded or cropped text is deliberate.' },
         stillSeconds: { type: 'number', minimum: 0.1 }, castMaxRatio: { type: 'number', minimum: 0, maximum: 1 },
         lufsMin: { type: 'number' }, lufsMax: { type: 'number' }, slug: { type: 'string' }, outDir: { type: 'string' },
       },

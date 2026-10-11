@@ -9,10 +9,18 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   `render_video` takes `audio: "page"` (the page's own score from `window.renderAudioWav()`,
   mastered to -14 LUFS with two-pass loudnorm and saved beside the video). Pages learn the format
   being rendered from `window.__easel.aspect`; `render_still` and `filmstrip` take `aspect`.
+- **easel-core qa:** `canvas_text` (every string a canvas piece draws, traced to screen: cut off
+  or overlapping fails, under the phone UI warns; per format) and `beat_grid` (cuts and morph
+  centres on the 8th-note grid). `render_still` reports the real size of element and full-page
+  captures.
 - **easel-core fonts:** Caveat, STIX Two Text (with italics), Noto Sans Math and Inter 900 (OFL).
 - **easel-motion:** the animate kit, seven styles (crosshatch, cut-paper, isometric, math, pixel,
   riso, sketchbook) with demos and golden frames, starter templates, story grammars and the build
   tool, adapted from cth9191/animate. Styles can now mix in one piece (`"mix"`, `KITS.<name>`).
+- **easel-motion `animate` skill:** brief check-ins (story, look, storyboard), a new piece from any
+  style in any formats (`tools/new-piece.mjs`), the storyboard page (`board.html`), renders in every
+  format with the piece's own score, and the quality loop (qa per format, filmstrips, the critic).
+  An 8 s example piece (`examples/water-cycle`) renders in 16:9 and 9:16.
 
 ## easel-core 0.1.0 (2026-10-11)
 

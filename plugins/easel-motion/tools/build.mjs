@@ -2,7 +2,7 @@
 // Easel: adapted from cth9191/animate @ 7e5eb56feb2dd573f890e1b7b34748af43d58263
 // (github.com/cth9191/animate, plugins/animate/skills/animate/tools/build.mjs).
 // MIT License, Copyright (c) 2026 cth9191; full text in THIRD_PARTY_NOTICES.md.
-// Modified by Easel (2026-10-11): paths follow the easel-motion layout (kit/ and styles/ at the
+// Modified by Easel (2026-10-11): also writes board.html (the storyboard page); paths follow the easel-motion layout (kit/ and styles/ at the
 // plugin root); styles can mix: piece.json "mix" adds more styles, each wrapped in its own scope as
 // KITS.<name> (upstream put every kit's names in one global scope, so two kits collided), and an era
 // picks its style with a 4th ERA_LIST item; the build is a function (build(dir)) that throws, so it
@@ -163,9 +163,13 @@ export function build(dir) {
   try { new vm.Script(m2[1], { filename: 'index.html' }); } catch (e) { throw new Error(`syntax error: ${e.message}`); }
   const file = path.join(ROOT, 'index.html');
   fs.writeFileSync(file, out);
+  // board.html: the same piece, showing its storyboard (kit/board.js reads EASEL_BOARD)
+  const board = path.join(ROOT, 'board.html');
+  const bAt = out.indexOf('"use strict";') >= 0 ? out.indexOf('"use strict";') + '"use strict";'.length : out.indexOf('<script>') + '<script>'.length;
+  fs.writeFileSync(board, out.slice(0, bAt) + '\nconst EASEL_BOARD = true;   // tools/build.mjs: this page shows the storyboard' + out.slice(bAt));
   if (assetBytes > 12e6) warnings.push(`${(assetBytes / 1e6).toFixed(1)} MB of assets: resize screenshots to the size they're shown at`);
   const extras = [fs.existsSync(beatsFile) ? 'beats.json' : null, fs.existsSync(voiceFile) ? 'voice.json' : null, assetFiles.length ? `${assetFiles.length} asset(s), ${(assetBytes / 1e6).toFixed(1)} MB` : null].filter(Boolean);
-  return { file, lines: out.split('\n').length, parts: parts.length, style: styleName, mix, extras, warnings };
+  return { file, board, lines: out.split('\n').length, parts: parts.length, style: styleName, mix, extras, warnings };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
