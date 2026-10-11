@@ -17,13 +17,19 @@ Each plugin is versioned and tagged separately as `<plugin>--v<version>`.
   SVG checker (`tools/svg-check.mjs`); an example per skill; seven routing evals.
 - **easel-ai-media (Phase 4, in progress):** the `media` MCP server (Node, no dependencies) with
   adapters for Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud and ElevenLabs on the user's own keys
-  (environment or masked plugin settings); every generation a dry run with a cost estimate first,
-  a spending limit above which an approved amount is needed, provenance for every file; four
-  skills (`providers`, `image`, `ai-video` adapted from vox-director as the editorial collage
-  look, `voice` with a consent gate for cloning) and `assemble` (clips, captions, narration and
-  ducked music with the local ffmpeg). Tested with recorded responses; no live calls yet.
-- **easel-core (unreleased):** p5.js 1.11.13 is installed by doctor and served offline to pages
-  that load it from a CDN, like GSAP.
+  (environment or masked plugin settings, sent only to each provider's own hosts); every generation
+  a dry run with a cost estimate first, a spending limit above which an approved amount is needed,
+  checked result URLs, a job log, provenance for every file and no overwrites; four skills
+  (`providers`, `image`, `ai-video` adapted from vox-director as the editorial collage look,
+  `voice` with a consent gate for cloning: the owner's statement and recording, checked) and
+  `assemble` (clips, captions, narration and ducked music with the local ffmpeg). Tested with
+  recorded responses; no live calls yet.
+- **easel-pixel (Phase 4, in progress):** four skills (`pixel` entry, `pixel-draw`,
+  `pixel-animate`, `pixel-export`) and three agents adapted from with-pebbly's aseprite-ai-artist,
+  driving the user's own Aseprite through the pinned `@pebbly/aseprite-ai-artist` 0.8.0, which a
+  Node launcher installs into the plugin data folder from a shipped lockfile (no npx; Lua execution
+  off); the look-nudge and session-status hooks with matchers for Easel's tool names; five evals.
+  Not affiliated with Aseprite or Igara Studio.
 
 ## easel-motion 0.2.0 (2026-10-11)
 
@@ -82,6 +88,11 @@ The engine side of Phase 2, used by easel-motion.
 - **easel-core:** `reducedMotion: "reduce"` on `render_still`, `render_video`, `filmstrip` and `qa`
   renders a page's reduced-motion path; `beat_grid` allows 16ths inside a piece's fast window
   (`TIMELINE.fastFrom` to `fastTo`) and fails when asked for on a piece without a BPM.
+- **easel-core:** p5.js 1.11.13 is installed by doctor and served offline to pages that load any
+  p5 1.x from a CDN (2.x and p5.sound are refused with a message). `mux_audio` reports the
+  result's loudness. `filmstrip` and `render_video` measure a plain page's or SVG's length from its
+  CSS animations when it declares none; an SVG prints at its own size in `render_pdf`; the wrapper
+  page written beside an image or SVG is always removed.
 
 Both releases:
 

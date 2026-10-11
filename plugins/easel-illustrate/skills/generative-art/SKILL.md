@@ -11,7 +11,7 @@ when_to_use: >-
   easel-motion:animate; for a poster or print layout use easel-design:poster; for a hand-drawn
   concept sketch use easel-illustrate:concept-illustration. GLSL shaders are not covered yet.
 argument-hint: "[idea or mood] [still | loop] [size]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: the philosophy-first method, seeded randomness, parameter design and craftsmanship rules
@@ -54,6 +54,8 @@ In the copied viewer, fill only the marked part:
 - **Loops:** make `paint(0)` equal `paint(duration)`: drive motion by the angle
   `TWO_PI * t / duration` (sin and cos, or noise sampled on a circle).
 - Palette: 3-6 colours chosen on purpose (from `.easel/brand.md` when the art is for a brand).
+- p5.js 1.x only (the viewer loads 1.11.13; the engine refuses p5 2.x and the p5.sound add-on
+  offline). Use the 1.x API.
 
 ## 3. Render and look
 
@@ -63,12 +65,16 @@ In the copied viewer, fill only the marked part:
   `mcp__plugin_easel-core_easel__contact_sheet` (one item per copy, `sizes` at the piece size).
   Keep the seeds that work; say which.
 - **Motion:** `mcp__plugin_easel-core_easel__filmstrip` (`count: 8`) to check that it moves the
-  way the philosophy says and that the first and last frames match.
+  way the philosophy says, and `render_still` at `t` = one frame before the end and at `t: 0`:
+  the last frame must flow into the first like any other step (no jump at the seam).
 - **Loop:** `mcp__plugin_easel-core_easel__render_video` (`file`, the piece's `duration` and
   `fps` are read from the page) and run `mcp__plugin_easel-core_easel__qa` with `video` (no
   still stretch unless intended).
 - Refine what is there rather than adding more: one pass on composition and balance, one on
   colour, one on detail. Three passes at most.
+
+- **Critique:** `easel-core:critique` with the **illustration** rubric on the chosen stills and
+  a filmstrip. Fix blocking findings and anything below 7.
 
 ## 4. Deliver
 

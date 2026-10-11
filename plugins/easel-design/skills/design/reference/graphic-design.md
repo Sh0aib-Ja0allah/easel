@@ -142,7 +142,7 @@ Eye scans horizontally across top, then drops down and scans shorter horizontal 
 
 ## Step 5: Color Scheme Selection
 
-Start from the brand colors, then apply these strategies. For tints and shades of a brand color: `node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --from "#2563eb" --css`.
+Start from the brand colors, then apply these strategies. For tints and shades of a brand color: the palette tool (`palette.mjs --from "#2563eb" --css`; the command with its full path is in the design and design-system skills).
 
 ### Complementary Enhancement
 ```

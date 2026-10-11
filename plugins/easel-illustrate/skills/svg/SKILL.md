@@ -17,7 +17,7 @@ when_to_use: >-
   easel-illustrate:concept-illustration; for p5.js or algorithmic art use
   easel-illustrate:generative-art; for a data infographic use easel-design:infographic.
 argument-hint: "[what to draw] [where it goes: file, React, Vue, CSS, email]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: adapted from linyaosky/svg-skill @ 2103b92cb47f588a97a6c38aa6c40571fadbd4f8
@@ -154,7 +154,8 @@ that does not exist; no accessible name (a `<title>` or root `aria-label`) and n
   with `items: [{file}, ...]`, `sizes: [16, 24, 32, 48]`, `themes: ["light", "dark"]`. Look
   for strokes that blur or vanish at 16 px and icons whose weight differs from their siblings.
 - CSS animation (spinners, stroke draws, hover-free loops): `mcp__plugin_easel-core_easel__filmstrip`
-  with `file` and `times` or `count`; `render_still` with `t` for one moment, and
+  with `file` and `times`, or `count` (spread over the CSS animation's length; pass `duration`
+  for anything else); `render_still` with `t` for one moment, and
   `reducedMotion: "reduce"` to check the reduced-motion path. The engine seeks CSS animations;
   SMIL runs on its own clock, so to check SMIL frames write a small HTML page that inlines the
   SVG and defines `window.renderAt = (t) => { svg.pauseAnimations(); svg.setCurrentTime(t); }`.
@@ -164,6 +165,10 @@ that does not exist; no accessible name (a `<title>` or root `aria-label`) and n
 Read every PNG. Fix what is wrong (misalignment, bars off the baseline, clipped labels, a
 stroke too thin at small size) and render again. Deliver only what you have rendered and looked
 at; icons usually need 1-2 passes, diagrams and charts 2-3.
+
+Before delivering anything people will see (an illustration-like graphic, a chart, a set of
+icons), run `easel-core:critique` with the **design** rubric on the render; fix blocking findings
+and anything below 7. A single utility icon needs only the checks above.
 
 ### Deliverables
 

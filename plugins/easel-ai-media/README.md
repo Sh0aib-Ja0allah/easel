@@ -2,7 +2,7 @@
 
 AI images, narrated video and voice through one provider layer that runs on **your own API keys**:
 Google Gemini, OpenAI, fal.ai, Replicate, Atlas Cloud and ElevenLabs. Every generation is a dry run
-first: you see the estimated cost and the exact request, and nothing is spent until you agree.
+first: you see the estimated cost and a summary of the request (provider, model, prompt, size), and nothing is spent until you agree.
 Above your spending limit an approved amount is also needed. Voice cloning is refused without a
 recorded consent statement from the voice's owner.
 
@@ -33,7 +33,8 @@ setup skill checks it).
   needs an amount you approve. Estimates come from `server/prices.json` (each price names its
   source and the date it was checked, or says "verify"); your provider's bill is what counts.
 
-Files go to `./easel-out/<slug>/`, each with an entry in `provenance.json` (provider, model,
+Files go to `./easel-out/<slug>/` (never over an earlier paid file), each with an entry in
+`provenance.json` (provider, model,
 prompt, estimate, time).
 
 ## What's here
@@ -52,6 +53,9 @@ prompt, estimate, time).
 
 On Claude Code older than 2.1.275, add the marketplace first:
 `/plugin marketplace add Sh0aib-Ja0allah/easel`, then `/plugin install easel-ai-media@easel`.
+
+Credits: the ai-video pipeline and its references are adapted from Alisa Qian's vox-director;
+the image prompt reference from Arnav Puri's designskills.
 
 Easel is not affiliated with any of the providers. Licences: MIT; adapted material is listed in
 [NOTICE.md](NOTICE.md).

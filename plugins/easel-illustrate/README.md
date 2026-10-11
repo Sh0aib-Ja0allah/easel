@@ -38,4 +38,9 @@ generative art). Photographic or painted rasters go through `easel-ai-media` whe
 On Claude Code older than 2.1.275, add the marketplace first:
 `/plugin marketplace add Sh0aib-Ja0allah/easel`, then `/plugin install easel-illustrate@easel`.
 
+Credits: adapted from svg-skill (svg-skill contributors), svg-creator-skill (SVG Creator Skill
+Contributors, upbrew; Apache-2.0), Peanut Illustrations by Aishwarya Ashok (itself adapted in part
+from Ian's ian-xiaohei-illustrations), Anthropic's algorithmic-art (Apache-2.0) and Will Curran's
+claude-illustrate-skill (Code Katz).
+
 Licences: MIT; adapted material is listed in [NOTICE.md](NOTICE.md).

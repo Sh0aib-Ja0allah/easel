@@ -4,15 +4,18 @@
 // with the music ducked under the voice. Everything runs in the user's local ffmpeg.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join, relative, resolve, sep } from 'node:path';
 import { requireBinary } from './binaries.mjs';
-import { jobDir } from './media.mjs';
+import { appendAsset, jobDir, readProvenanceFiles } from './media.mjs';
 
 const need = (name) => requireBinary(name);
 
+// Length of a clip's picture (its video stream), not of the container: a clip whose audio runs
+// longer must still be slowed to fill its beat, never padded with a frozen last frame.
 export function duration(file) {
-  const r = spawnSync(need('ffprobe'), ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', file], { encoding: 'utf8', windowsHide: true });
-  const d = Number((r.stdout || '').trim());
+  const r = spawnSync(need('ffprobe'), ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=duration:format=duration', '-of', 'json', file], { encoding: 'utf8', windowsHide: true });
+  let d = NaN;
+  try { const j = JSON.parse(r.stdout || '{}'); d = Number((j.streams && j.streams[0] && j.streams[0].duration) || (j.format && j.format.duration)); } catch { /* below */ }
   if (r.status !== 0 || !Number.isFinite(d)) throw new Error(`cannot read the length of ${file}`);
   return d;
 }
@@ -39,7 +42,7 @@ export function assemble(args) {
   for (const [k, o] of (args.overlays || []).entries()) {
     inputs.push('-loop', '1', '-t', total.toFixed(3), '-i', o.file);
     const start = o.start || 0, end = o.end === undefined ? total : o.end;
-    filters.push(`[${n}:v]scale=${W}:${H}:force_original_aspect_ratio=decrease,format=rgba[o${k}]`, `[${last}][o${k}]overlay=(W-w)/2:(H-h)/2:enable='between(t,${start},${end})'[vo${k}]`);
+    filters.push(`[${n}:v]scale=${W}:${H}:force_original_aspect_ratio=decrease,format=rgba[o${k}]`, `[${last}][o${k}]overlay=(W-w)/2:(H-h)/2:shortest=1:enable='between(t,${start},${end})'[vo${k}]`);
     last = `vo${k}`; n++;
   }
   let audioMap = [];
@@ -58,5 +61,9 @@ export function assemble(args) {
   const file = join(out, `${String(args.name || 'film').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'film'}.mp4`);
   const r = spawnSync(need('ffmpeg'), ['-y', '-hide_banner', '-loglevel', 'error', ...inputs, '-filter_complex', filters.join(';'), '-map', `[${last}]`, ...audioMap, '-c:v', 'libx264', '-preset', args.preset || 'medium', '-crf', String(args.crf ?? 18), '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', total.toFixed(3), '-movflags', '+faststart', file], { encoding: 'utf8', windowsHide: true, maxBuffer: 1 << 26 });
   if (r.status !== 0) throw new Error(`ffmpeg failed: ${(r.stderr || '').trim().slice(-800)}`);
+  // provenance: the film is composited from the clips, captions, narration and music
+  const known = new Set(readProvenanceFiles(out));
+  const input = (f, generatedKind = 'generated') => { const rel = relative(out, resolve(f)).split(sep).join('/'); return known.has(rel) ? { kind: generatedKind, name: rel, license: 'provider-terms' } : { kind: 'user', name: rel.startsWith('..') ? basename(f) : rel, license: 'user-owned' }; };
+  appendAsset(out, { file: relative(out, file).split(sep).join('/'), tool: 'easel-ai-media:ai-video', method: 'composited', inputs: [...clips.map((c) => input(c.file)), ...(args.overlays || []).map((o) => input(o.file)), ...(args.narration ? [input(args.narration)] : []), ...(args.music ? [input(args.music)] : [])], notes: `assembled with the local ffmpeg: ${clips.length} clips, ${(args.overlays || []).length} overlays${args.narration ? ', narration' : ''}${args.music ? ', music' : ''}` });
   return { file, seconds: +total.toFixed(3), size: `${W}x${H}`, fps, beats: clips.map((c, i) => ({ i, file: c.file, start: +c.start.toFixed(3), seconds: c.seconds })), ms: Date.now() - t0 };
 }

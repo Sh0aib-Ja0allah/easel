@@ -22,7 +22,16 @@ export async function compositionInfo(page) {
     if (root) return { id: root.dataset.compositionId, width: num(root.dataset.width), height: num(root.dataset.height), duration: num(root.dataset.duration), fps: num(root.dataset.fps) };
     const o = window.__composition || window.TIMELINE;
     if (o && typeof o === 'object') return { id: o.id || o.name, width: num(o.width), height: num(o.height), duration: num(o.duration), fps: num(o.fps) };
-    return {};
+    // A plain page or SVG with CSS animations: the longest one (delay + duration x iterations; one
+    // iteration of an infinite loop), so filmstrip count and render_video work without a duration.
+    let css = 0;
+    for (const a of document.getAnimations()) {
+      const t = a.effect && a.effect.getComputedTiming ? a.effect.getComputedTiming() : null;
+      if (!t || !Number.isFinite(Number(t.duration))) continue;
+      const iters = Number.isFinite(t.iterations) ? t.iterations : 1;
+      css = Math.max(css, (Number(t.delay) || 0) + Number(t.duration) * iters);
+    }
+    return css > 0 ? { duration: +(css / 1000).toFixed(3), fromCss: true } : {};
   });
 }
 
@@ -63,7 +72,7 @@ async function renderOne(browser, src, opts) {
     const info = await compositionInfo(page);
     const fps = opts.fps || info.fps || 30;
     const duration = opts.duration || info.duration;
-    if (!duration) throw new Error('No duration: pass duration (seconds) or set data-duration on the [data-composition-id] root.');
+    if (!duration) throw new Error('No duration: pass duration (seconds) or set data-duration on the [data-composition-id] root (CSS animations are measured when there is neither).');
     const frames = Math.round(duration * fps);
     let audio = opts.audio;
     if (audio === 'page') audio = await opts.pageAudio(page);
@@ -105,9 +114,10 @@ export async function renderVideo(args) {
     return mastered;
   };
   const src = resolveSource(args, out, name);
-  const browser = await openBrowser();
+  let browser = null;
   const results = [];
   try {
+    browser = await openBrowser();
     // Default size: the composition's data-width/height, else 1920x1080.
     let base = { width: args.width, height: args.height };
     if (!base.width || !base.height) {
@@ -122,7 +132,8 @@ export async function renderVideo(args) {
       results.push(await renderOne(browser, src, { ...args, ...tg, file, ffmpeg, pageAudio, seed: args.seed ?? 1, crf: args.crf ?? 18, preset: args.preset || 'medium', theme: args.theme || 'light' }));
     }
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
+    if (src.kind === 'image') rmSync(src.path, { force: true });
   }
   const warnings = [];
   for (const r of results) {
@@ -140,8 +151,9 @@ export async function filmstrip(args) {
   mkdirSync(framesDir, { recursive: true });
   const name = slugOf(args.name || 'filmstrip');
   const src = resolveSource(args, out, name);
-  const browser = await openBrowser();
+  let browser = null;
   try {
+    browser = await openBrowser();
     const [aw, ah] = args.aspect ? ASPECTS[args.aspect] : [];
     const { page, context } = await newPage(browser, { width: args.width || aw || 1920, height: args.height || ah || 1080, seed: args.seed ?? 1, colorScheme: args.theme || 'light', aspect: args.aspect || null, reducedMotion: args.reducedMotion });
     let cells = [];
@@ -153,7 +165,7 @@ export async function filmstrip(args) {
       const duration = args.duration || info.duration;
       let times = args.times;
       if (!times || !times.length) {
-        if (!duration) throw new Error('Give times (seconds) or a duration (or data-duration on the composition root).');
+        if (!duration) throw new Error('Give times (seconds) or a duration (or data-duration on the composition root; CSS animations are measured when there is neither).');
         const count = args.count || 8;
         times = Array.from({ length: count }, (_, i) => +((duration * i) / count + duration / (2 * count)).toFixed(3));
       }
@@ -170,6 +182,7 @@ export async function filmstrip(args) {
     const sheet = await composeSheet(browser, { cells, out: join(out, `${name}.png`), columns: args.columns || Math.min(cells.length, 4), title: args.title, maxCell: args.cellWidth || 360 });
     return { filmstrip: sheet.file, frames: cells.map((c) => ({ file: c.file, label: c.label })), ms: Date.now() - t0 };
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
+    if (src.kind === 'image') rmSync(src.path, { force: true });
   }
 }

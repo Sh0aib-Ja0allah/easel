@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "aseprite": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/launch.mjs", "serve"],
+      "env": {
+        "EASEL_PIXEL_DATA": "${CLAUDE_PLUGIN_DATA}",
+        "ASEPRITE_AI_PLUGIN_PORT": "9931",
+        "ASEPRITE_AI_CONTROL_PORT": "9932",
+        "ASEPRITE_AI_PROMPTS": "0",
+        "ASEPRITE_AI_ALLOW_LUA": "0",
+        "ASEPRITE_PATH": "${user_config.aseprite_path}",
+        "ASEPRITE_AI_HEADLESS": "${user_config.headless}"
+      }
+    }
+  }
+}

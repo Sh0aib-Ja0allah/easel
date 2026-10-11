@@ -17,6 +17,9 @@
     "social"
   ],
   "dependencies": [
-    "easel-core"
+    {
+      "name": "easel-core",
+      "version": ">=0.2.0"
+    }
   ]
 }

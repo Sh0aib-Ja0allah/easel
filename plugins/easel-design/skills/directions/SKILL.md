@@ -63,6 +63,10 @@ Render each with `mcp__plugin_easel-core_easel__render_still`.
 - Run `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping", "contrast"]`) on each; fix hard
   failures before showing.
 
+Before showing them, run `easel-core:critique` with the **design** rubric on the sheet: a
+direction with a blocking finding (unreadable text, broken layout) is fixed or dropped first; a
+direction is never killed by the critic for being unusual.
+
 ## 5. Keep or kill
 
 Show both sheets. For each direction the user says **keep** or **kill** (and why, in a few

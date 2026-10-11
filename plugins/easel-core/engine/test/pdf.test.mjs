@@ -33,6 +33,12 @@ test('render_pdf: the page\'s @page size, a named format, explicit sizes, and on
   writeFileSync(svg, '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="80" fill="#e76f51"/></svg>');
   const s = await m.renderPdf({ file: svg, outDir: out, name: 'mark', format: 'A6' });
   assert.equal(s.pages, 1);
+  near(boxes(s.file)[0], [298, 420]);
+  // without a size, an SVG prints at its own size (200 px = 150 pt; a 1600 x 900 viewBox = 1200 x 675 pt)
+  near(boxes((await m.renderPdf({ file: svg, outDir: out, name: 'mark-own' })).file)[0], [150, 150]);
+  const wide = join(out, 'wide.svg');
+  writeFileSync(wide, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><rect width="1600" height="900" fill="#264653"/></svg>');
+  near(boxes((await m.renderPdf({ file: wide, outDir: out, name: 'wide' })).file)[0], [1200, 675]);
 });
 
 test('render_pdf: bad sizes and images are refused clearly', { skip }, async () => {

@@ -1,7 +1,7 @@
 <!-- Easel: adapted from aishwaryaashok14/peanut-illustrations @ 1e5c645892a2d70242062f23ee2277b18240e05c
      (github.com/aishwaryaashok14/peanut-illustrations, peanut-illustrations/references/style-dna.md), MIT License,
      Copyright (c) 2026 Aishwarya Ashok, with portions adapted from ian-xiaohei-illustrations, Copyright (c)
-     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): the peanut and its watermark removed (Easel images carry no watermark); a section on drawing the style as SVG added. -->
+     2026 Ian; see NOTICE.md. Modified by Easel (2026-10-11): the peanut and its watermark removed (Easel images carry no watermark); the upstream author line dropped (credited in NOTICE.md); "not vector" reworded for SVG drawing; a section on drawing the style as SVG added. -->
 
 # Style DNA
 
@@ -15,7 +15,7 @@ Like someone quickly sketching one explanatory drawing on a blank sheet of paper
 
 - 16:9 horizontal concept illustration.
 - Pure white background: no beige, no warm gray, no paper texture, no gradient, no shadow, no noise, no vintage feel.
-- Mostly black hand-drawn line art: thin lines, slightly wobbly, not mechanical, not vector, not heavy outlines.
+- Mostly black hand-drawn line art: thin lines, slightly wobbly, not mechanical (even when drawn as SVG paths), not heavy outlines.
 - Lots of whitespace: the main subject fills about 40%-60% of the canvas, at least 35% stays empty, ideally one whole quiet zone.
 - A few short handwritten English labels: at most 5-8, each as short as possible (1-3 words).
 - One image expresses only one core action, structure, state, or metaphor.

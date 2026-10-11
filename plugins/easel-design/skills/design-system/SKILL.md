@@ -12,7 +12,7 @@ when_to_use: >-
   whole new brand with a logo use easel-design:brand-identity; to save the brand for every skill
   use easel-core:brand.
 argument-hint: "[brand colour or starting style] [what it is for]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep Bash(node:*)
 ---
 
 # Design system
@@ -53,4 +53,6 @@ References:
    and background pair the system allows must pass.
 6. **Save:** offer to write the result into `.easel/brand.md` with `easel-core:brand`, so every
    Easel skill uses it.
-7. **Deliver** the tokens, the specimen render and the qa numbers.
+7. **Critique:** `easel-core:critique` with the **design** rubric on the specimen render. Fix
+   blocking findings and anything below 7, re-render, re-check.
+8. **Deliver** the tokens, the specimen render, the qa numbers and the critique score.

@@ -198,12 +198,13 @@ text L 0.57 | bg L 0.97 | diff 0.40 -> ~4.1:1, FAILS AA for normal text
 
 ### Measure, Don't Guess
 
-Browsers render OKLCH directly, but the brand file stores hex and contrast must be computed on sRGB. Generate scales with the bundled Node tool:
+Browsers render OKLCH directly, but the brand file stores hex and contrast must be computed on sRGB. Generate scales with the bundled Node tool, `tools/palette.mjs` (the design-system skill gives the
+command with the plugin's full path); its arguments:
 
 ```text
-node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --from "#2563eb"              # scale around a brand color
-node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" 250 0.15 --name brand --css   # hue + chroma -> CSS vars
-node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" 250 0.02 --name gray --json   # neutrals as JSON
+palette.mjs --from "#2563eb"              # scale around a brand color
+palette.mjs 250 0.15 --name brand --css   # hue + chroma -> CSS vars
+palette.mjs 250 0.02 --name gray --json   # neutrals as JSON
 ```
 
 It prints each step's hex and its contrast on white and black. Out-of-gamut steps lose chroma, never lightness or hue.

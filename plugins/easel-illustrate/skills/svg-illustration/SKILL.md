@@ -18,7 +18,7 @@ when_to_use: >-
   easel-illustrate:generative-art; for a data infographic use easel-design:infographic; for
   video use easel-motion:animate.
 argument-hint: "[subject] [style or mood] [size]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__filmstrip mcp__plugin_easel-core_easel__qa Bash(node:*) Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: adapted from upbrew-tech/svg-creator-skill @ 1eb83d602a992b69a1771c4e0116a9f7de6ffaa2
@@ -164,7 +164,8 @@ drawn after the limbs. This gives the most reliable connected look.
 
 For animated characters: write an HTML page with the SVG inline and a small inline script that
 computes every joint from its parent (forward kinematics: bone lengths are constants, angles
-animate) and defines `window.renderAt = (t) => { ... }`, which the Easel engine calls to seek.
+animate) and defines `window.renderAt = (t) => { ... }`, which the Easel engine calls to seek, plus
+`window.__composition = { width, height, duration, fps }` (one cycle) so `count` knows the length.
 Check the motion with `mcp__plugin_easel-core_easel__filmstrip` (`file`, `count` or `times`)
 and single poses with `render_still` `t`. For a video of the character, use
 easel-motion:animate. Details in
@@ -206,6 +207,12 @@ Small repeating tiles. `<pattern>` with `patternUnits="userSpaceOnUse"`;
 `patternTransform="rotate(45)"` for diagonal variants.
 
 ---
+
+## Critique before delivery
+
+Run `easel-core:critique` with the **illustration** rubric on the rendered PNG (both themes when
+the piece uses `currentColor`). Fix blocking findings and anything below 7, re-render, and
+deliver only what you have looked at after the last fix.
 
 ## Document structure
 

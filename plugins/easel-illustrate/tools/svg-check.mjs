@@ -28,7 +28,12 @@ export function checkSvg(text, { email = false } = {}) {
   const root = /<svg\b([^>]*)>/.exec(body);
   if (!root) return { pass: false, problems: ['no <svg> element'], warnings };
   if (!/\bxmlns="http:\/\/www\.w3\.org\/2000\/svg"/.test(root[1])) problems.push('the root <svg> has no xmlns="http://www.w3.org/2000/svg" (needed when the file is used on its own)');
-  if (!/\bviewBox="[-\d.\s,]+"/.test(root[1])) problems.push('the root <svg> has no viewBox (it will not scale)');
+  // A sprite sheet (only <symbol>s at the top level) is never drawn itself: its symbols need the
+  // viewBox instead of the root.
+  const inner = body.slice(body.indexOf(root[0]) + root[0].length).replace(/<\/svg>\s*$/, '');
+  const sheet = /<symbol\b/.test(inner) && !/<\w/.test(inner.replace(/<(symbol|defs|title|desc|style)\b[\s\S]*?<\/\1>/g, '').replace(/<!--[\s\S]*?-->/g, ''));
+  if (sheet) { for (const m of inner.matchAll(/<symbol\b([^>]*)>/g)) if (!/\bviewBox="[-\d.\s,]+"/.test(m[1])) problems.push(`a <symbol>${(/\bid="([^"]+)"/.exec(m[1]) || [, ''])[1] ? ` (#${/\bid="([^"]+)"/.exec(m[1])[1]})` : ''} has no viewBox`); }
+  else if (!/\bviewBox="[-\d.\s,]+"/.test(root[1])) problems.push('the root <svg> has no viewBox (it will not scale)');
   if (/[^\x00-\x7F]/.test(body.replace(/<[^>]*>/g, '')) && !/^<\?xml[^>]*encoding="UTF-8"/i.test(src.trim())) problems.push('non-ASCII text without <?xml version="1.0" encoding="UTF-8"?> first');
   for (const m of body.matchAll(/<path\b([^>]*)>/g)) { const d = /\bd="([^"]*)"/.exec(m[1]); if (!d || !d[1].trim()) problems.push('an empty <path> (no d)'); }
   if (/\b(TODO|FIXME|placeholder)\b/i.test(body)) problems.push('a TODO or placeholder left in the file');
@@ -40,7 +45,7 @@ export function checkSvg(text, { email = false } = {}) {
   for (const m of body.matchAll(/url\(#([^)]+)\)/g)) if (!ids.includes(m[1])) problems.push(`url(#${m[1]}) is not defined`);
   const hidden = /\baria-hidden="true"/.test(root[1]);
   const titled = /<title\b[^>]*>[^<]+<\/title>/.test(body) || /\baria-label="[^"]+"/.test(root[1]);
-  if (!hidden && !titled) problems.push('no accessible name: add <title> (with role="img") or aria-hidden="true" for decoration');
+  if (!hidden && !titled && !sheet) problems.push('no accessible name: add <title> (with role="img") or aria-hidden="true" for decoration');
   if (/<script\b/i.test(body) || /\son\w+="/i.test(body)) problems.push('scripts or event handlers (not allowed in delivered SVG)');
   for (const m of body.matchAll(/\b(?:href|xlink:href|src)="((?:https?:)?\/\/[^"]+)"/g)) problems.push(`external reference ${m[1]} (embed it or draw it)`);
   if (/@import|url\((['"]?)(https?:)?\/\//.test(body)) problems.push('external CSS or url() reference');

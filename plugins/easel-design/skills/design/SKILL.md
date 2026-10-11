@@ -12,7 +12,7 @@ when_to_use: >-
   illustrations and drawings use easel-illustrate:illustrate; for animation or video use
   easel-motion:animate.
 argument-hint: "[what to design] [where it will be used]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft Read Write Edit Glob Grep Bash(node:*)
 ---
 
 # Design
@@ -48,6 +48,7 @@ job (a campaign, several deliverables) starts with `easel-core:brief`.
 
 1. **Brand:** read `.easel/brand.md`; if there is none, run `easel-core:brand` or ask for the
    colours and faces, and say when defaults were used.
+   Tints and shades of a brand colour: `node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --from "<hex>" --css`.
 2. **Brief:** what it is for, where it appears (exact pixel size), the one message, the copy
    (exact words), any product image. Ask only for what is missing.
 3. **Rules:** read the `anti-generic` and `typography` rulebooks with

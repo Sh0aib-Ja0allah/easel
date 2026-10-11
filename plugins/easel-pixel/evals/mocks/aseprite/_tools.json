@@ -1,0 +1,238 @@
+{
+  "tools": [
+    {
+      "name": "reference",
+      "description": "Bring an external image into the sprite as a reference layer, so you can trace proportions or sample colours from it. Ops: 'import' (place an image on a locked, semi-transparent layer above the art), 'sample_palette' (read its dominant colours without importing), 'list', 'remove'. A concept sheet or storyboard arrives as one image: `region` crops one panel of it, and `grid` cuts it into panels and puts panel i on frame i of a single reference layer, so each animation frame is drawn over its own storyboard panel. Importing at a different size uses nearest-neighbour; a reference scaled down to 32\u00d732 is a guide for proportion and pose, never a finished sprite.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "export",
+      "description": "Write game-ready files. Ops: 'png' (single frame), 'gif' (animation), 'spritesheet' (packed sheet plus a JSON atlas with per-frame and per-tag data), 'frames' (numbered PNGs), 'aseprite' (save a copy of the source). Spritesheet is what an engine actually consumes: pass `sheetType` and `byTag` to control layout. Exporting does not save the working document \u2014 use sprite_manage op 'save' for that.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tileset",
+      "description": "Work with Aseprite tilemap layers. Ops:\n\u2022 'list' \u2014 tilesets in the sprite.\n\u2022 'create_layer' \u2014 a new empty tilemap layer on a given grid.\n\u2022 'get' \u2014 tile count and, with a path, the tiles as one packed PNG.\n\u2022 'stamp' \u2014 place tiles by grid coordinate. x/y are grid cells, not pixels.\n\u2022 'pack' \u2014 turn a hand-painted mockup layer into a tileset plus a tilemap that reconstructs it exactly. Deduplicates identical cells; `tolerance` also merges near-identical ones. The canvas must be a whole number of tiles, and the source layer is hidden rather than deleted so you can compare.\n\u2022 'export' \u2014 writes the packed PNG plus the file the engine reads: 'tiled' (.tsj tileset and a .tmj map that uses it), 'godot' (Godot 4 .tres TileSet), or 'json' (tile grid plus the tilemap layout).\nPainting a level by hand and packing it produces better tilesets than authoring tiles in isolation, because you see the whole picture while drawing. `layout: 'blob47'` adds a Tiled wangset for autotiling, and assumes the tileset is authored in canonical blob47 order after the empty tile \u2014 it refuses rather than writing a wangset that would autotile wrongly. Requires an extension build advertising the 'tileset' feature \u2014 check preflight first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "recolor",
+      "description": "Change colours in a region by intent, staying palette-legal. Ops:\n\u2022 'shade' \u2014 darken or lighten with proper hue shifting (shadows cool, highlights warm). Use this instead of picking a darker hex by hand.\n\u2022 'snap' \u2014 pull off-palette pixels onto the nearest palette colour by perceptual (CIELAB) distance.\n\u2022 'replace' \u2014 swap one exact colour for another.\n\u2022 'hue_shift' \u2014 rotate hue, e.g. to make a colour variant of a finished sprite.\n\u2022 'desaturate' \u2014 drop toward grey, useful for a value check.\nOperates on a region's distinct colours in one pass, so a 64\u00d764 recolour is one undo step, not four thousand.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "validate",
+      "description": "Lint a sprite against pixel-art rules and report concrete, located problems. Checks: off-palette colours, orphan/stray pixels, broken or doubled outlines, banding, semi-transparent (soft or resized) pixels, empty layers, untagged frames and uniform frame timing; `expect` adds per-layer frame ranges and layers that must not overlap. Symmetry and cross-frame volume drift are not checked \u2014 judge those with `look` op 'ascii' and 'filmstrip'. Run this before telling the user a sprite is finished. It answers 'is this actually done' with evidence rather than optimism.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "draw",
+      "description": "Apply a batch of drawing operations to one cel, as a single undoable action. Ops: pixels, line, polyline, rect, ellipse, fill, replace, dither, gradient, clear, blit, text, grid. Batch aggressively \u2014 a whole sprite in one call is normal and correct, and it means the user can undo your work with one Ctrl+Z. Set `paletteLock` (default true) to snap every colour to the sprite's palette by perceptual distance before anything is written, so you cannot silently widen a curated palette. Ops run in array order, so paint fills before outlines and outlines before highlights. 'text' is laid out here from a bitmap font and expanded to plain pixels before it reaches Aseprite \u2014 pass `measureOnly: true` with only 'text' ops to get each one's ink bounds without touching the sprite, e.g. to centre a label first. 'grid' paints a picture written as text \u2014 one character per pixel, a legend mapping characters to colours, the same shape `look op=\"ascii\"` returns \u2014 so you can see the whole silhouette while you write it instead of composing it from shapes. It is the easiest way to draw a small sprite or a whole animation frame, and to edit one: read a region with `look op=\"ascii\" layer=\u2026 rulers=false`, change the rows, and send them back as a grid at the region's x/y.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "select",
+      "description": "Read or change the active selection. Ops: 'get', 'none', 'all', 'rect', 'ellipse', 'color' (select every pixel matching a colour), 'invert', 'grow', 'shrink'. A selection scopes draw, transform and recolor, which is usually cheaper and safer than masking by hand.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "transform",
+      "description": "Move, flip, rotate or scale pixels on ONE cel \u2014 the target layer's image on the target frame. Ops: 'translate', 'flip', 'rotate', 'scale', 'outline', 'crop_to_content'. To transform part of a cel, crop the region out with `draw` op 'blit' first; there is no selection-scoped transform. Rotation is only clean at 90\u00b0 multiples \u2014 arbitrary angles destroy pixel art, so anything else needs `allowLossy`. Scaling is nearest-neighbour and integer-only for the same reason.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "look",
+      "description": "See what is actually on the canvas. Ops:\n\u2022 'preview' \u2014 a nearest-neighbour upscaled PNG of the active frame (~1024px long edge). Use for overall read: silhouette, colour, whether it looks like the thing.\n\u2022 'ascii' \u2014 an exact text grid, one glyph per pixel with a colour legend and coordinate rulers. Use to verify precise pixel positions and values, to count cells, or on any client without vision. Reads up to the whole canvas; pass a region to crop. Glyphs are bound to palette indices, so every region and frame of a sprite agrees on what a glyph means; each read's legend lists only the colours it contains, so merge legends when rows from one piece go into another. Only colours outside the palette (listed in `offPalette`) get per-read glyphs. `rulers=false` prints the bare rows, which `draw` kind 'grid' takes back as-is: read a layer, edit the rows, send them at the same x/y.\n\u2022 'filmstrip' \u2014 every frame composited into one image. The only reliable way to review an animation, since a vision model reads just the first frame of a GIF.\n\u2022 'onion' \u2014 the target frame at full opacity over ghosted neighbouring frames, oldest-first. Use to check in-betweens and spacing while animating, without stepping through frames one at a time. Over an opaque background the target hides every ghost \u2014 pass `layer` to onion-skin just the part that moves.\n\u2022 'diff' \u2014 a pixel-level text diff between two frames: '.' unchanged, '-' erased, glyph = the new colour. Use it to confirm exactly what an edit touched.\n\u2022 'compare' \u2014 the reference layer (left, full opacity) beside the art without any reference layer (right), same frame, same scale. Use it when drawing from a concept or storyboard: name the few largest mismatches and fix only those.\nDraw, then look, then fix. Do not report a sprite finished without looking at it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "read_pixels",
+      "description": "Read a rectangular region as structured data: a list of distinct colours plus a row-major index grid. Use this when you need to compute over pixels (sample a palette from art, find a silhouette edge, copy a region) rather than just look at them. For eyeballing, 'look' is cheaper.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "palette",
+      "description": "Read and shape the sprite's palette. Ops:\n\u2022 'get' \u2014 current palette with per-colour usage counts.\n\u2022 'set' \u2014 write specific indices, or replace the palette wholesale.\n\u2022 'preset' \u2014 load a bundled palette by key: ~2000 of them, the classics (pico8, gameboy, cga, nes\u2026) and the most-downloaded on Lospec (sweetie-16, endesga-32, resurrect-64, aap-64\u2026). An unknown key or a name answers with the matching keys, so 'preset: \"gameboy\"' or 'preset: \"endesga\"' is a search.\n\u2022 'load' \u2014 read a .gpl/.hex/.pal/.png palette file from disk.\n\u2022 'ramp' \u2014 generate a hue-shifted ramp from a base colour and append it. Shadows rotate toward blue, highlights toward orange; a ramp that only changes brightness is the clearest tell of machine-made pixel art.\n\u2022 'analyze' \u2014 report ramp structure, contrast, near-duplicate entries and colours used in the art that are not in the palette.\n\u2022 'extract' \u2014 replace the palette with one quantized from the art itself (RGB sprites only). Use to derive a curated palette from a reference image imported at full colour.\nDecide the palette before drawing. Retro-fitting one onto finished art means repainting.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "preflight",
+      "description": "Check that Aseprite is connected and report what this session can do. Call this FIRST in any pixel-art task and stop if `ready` is false \u2014 every editing tool writes into the user's open Aseprite window ('live') or into a batch Aseprite this server owns ('headless'), and there is no useful fallback when that Aseprite is not there. Pass `mode` to choose which one the session works with from now on \u2014 only because the user asked (e.g. --headless) or the request plainly needs no window (files for CI, a batch of assets). Never switch to get around a live session that is not ready: ask the user instead. Switching loses nothing; each side keeps its documents.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "sprite_info",
+      "description": "Full structured state of a sprite: dimensions, colour mode, palette, every layer (with opacity, blend mode, visibility, group nesting), every frame with its duration, animation tags, slices and the current selection. Read this before editing \u2014 guessing at layer names or frame counts is the most common way an agent corrupts someone's file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "sprite_manage",
+      "description": "Open, create, focus, resize, save and close sprites in the running Aseprite session. Ops: 'list' (open documents), 'new', 'open', 'activate', 'save', 'save_as', 'close', 'resize_canvas', 'set_properties', 'slice_create', 'slice_update', 'slice_delete'. Canvas resize keeps existing pixels \u2014 pass an anchor to say where they land. Slices name a rectangular region of the canvas for an engine to read back \u2014 a 9-patch panel's `center`, or a hotspot's `pivot`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "layer",
+      "description": "Manage layers. Ops: 'list', 'create', 'rename', 'delete', 'reorder', 'set' (visibility/opacity/blend/lock), 'group', 'ungroup', 'merge', 'duplicate', 'activate'. Pass `batch` to run several in one undoable action \u2014 building a rig in one call is the normal use. 'duplicate' takes an optional `toSprite` to copy the layer's cels into another OPEN sprite instead of this one, by frame index; frames past the target's frame count are dropped and reported. A character that will be animated wants its parts on separate layers (head, torso, arm-far, arm-near, leg-far, leg-near) before any frames exist; splitting baked pixels apart later is far more work.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "frame",
+      "description": "Manage animation frames. Ops: 'list', 'add', 'duplicate', 'delete', 'set_duration', 'activate', 'reorder'. Durations are milliseconds per frame and carry most of the life in a cycle \u2014 hold a contact pose longer than a pass pose. Use `count` to add several at once and `durations` to set a whole cycle's timing in one call.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tag",
+      "description": "Manage animation tags \u2014 the named frame ranges a game engine imports as 'idle', 'walk', 'attack'. Ops: 'list', 'create', 'update', 'delete'. Tag every cycle before export; an untagged spritesheet is a pile of frames the engine cannot address.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "cel",
+      "description": "Manage cels \u2014 one layer's image on one frame. Ops: 'list', 'create', 'clear', 'delete', 'move', 'copy', 'link', 'unlink', 'set' (position/opacity), 'tween', 'oscillate'. 'move' is how you shift a whole limb between frames without redrawing it; 'link' shares one image across frames so a static part of a cycle stays in sync. 'tween' interpolates position or opacity between two frames with an easing curve; 'oscillate' adds a sinusoidal position offset over a frame range \u2014 both fill in any missing in-between cels from the start cel, in one transaction.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  ]
+}

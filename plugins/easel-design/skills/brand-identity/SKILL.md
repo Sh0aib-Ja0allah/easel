@@ -11,7 +11,7 @@ when_to_use: >-
   logo alone use easel-design:logo; for colours or type alone use easel-design:design-system; to
   record an existing brand use easel-core:brand.
 argument-hint: "[company or product] [what it stands for]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__validate Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__render_pdf mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa mcp__plugin_easel-core_easel__craft mcp__plugin_easel-core_easel__validate Read Write Edit Glob Grep Bash(node:*)
 ---
 
 # Brand identity
@@ -30,7 +30,8 @@ icons, avatars, applications, the checklist).
 2. **Directions:** run `easel-design:directions` for 3-5 structurally different directions (each
    names the convention it breaks). The user keeps one; nothing is blended.
 3. **Mark:** run `easel-design:logo` in the kept direction (concepts, size ladder, mono, export).
-4. **System:** colour scales and type from `easel-design:design-system` (the palette tool, the
+4. **System:** colour scales and type from `easel-design:design-system` (the palette tool:
+   `node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --from "<hex>"`, the
    type scale); patterns and textures from the reference.
 5. **Applications:** a business card (`mcp__plugin_easel-core_easel__render_pdf`, 3.5 x 2 in), social avatars and a cover,
    favicons and app icons (`mcp__plugin_easel-core_easel__render_still` `sizes`), one hero or poster in the brand. Lay them

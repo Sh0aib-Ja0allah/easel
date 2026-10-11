@@ -154,7 +154,7 @@ Every visual artifact is a web page that can be put into an exact state at any t
 
 | Piece | How | Notes |
 | --- | --- | --- |
-| Aseprite bridge | `easel-pixel/.mcp.json` → `npx -y @pebbly/aseprite-ai-artist@<pinned> serve` | The user installs the Lua extension once (`npx @pebbly/aseprite-ai-artist install-extension`). Their hook matchers are rewritten for our tool names. |
+| Aseprite bridge | `easel-pixel/.mcp.json` → `node ${CLAUDE_PLUGIN_ROOT}/server/launch.mjs serve`, which runs the pinned `@pebbly/aseprite-ai-artist` 0.8.0 installed in the data folder (D23) | The pixel skill runs `launch.mjs setup` once: `npm ci` from the shipped lockfile, then the package's Lua extension. Their hook matchers are rewritten for our tool names. |
 | HyperFrames | Not a dependency (D7 = B). Users may install it themselves; Easel compositions follow its format | Apache-2.0; credited for the composition-format idea |
 | Image/video/voice APIs | Provider layer (§6) | Bring your own key |
 | Figma / Canva / Recraft / Hugging Face MCP | Documented as optional backends in `easel-ai-media:providers` | No bundled config; the user installs these themselves |

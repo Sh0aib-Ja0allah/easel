@@ -12,7 +12,7 @@ Every prompt should follow this hierarchy:
 [FORMAT] + [SUBJECT] + [STYLE] + [COMPOSITION] + [COLOR] + [TYPOGRAPHY] + [MOOD] + [NEGATIVE]
 ```
 
-**Example — product social post:**
+**Example - product social post:**
 > Create a square social media graphic for a premium headphone launch.
 > The headphones are centered on a deep navy (#0d1b2a) to electric blue (#00b4d8) diagonal gradient background.
 > Bold white sans-serif text "HEAR EVERYTHING" spans the top third.
@@ -22,12 +22,12 @@ Every prompt should follow this hierarchy:
 
 ### Key Principles
 
-1. **Describe scenes, not keywords** — "A sneaker floating above a reflective surface with dramatic side lighting" beats "sneaker, cool, modern"
-2. **Be specific about colors** — Always include hex codes from `.easel/brand.md`
-3. **Describe spatial layout** — "headline in upper third, product centered, CTA in lower right"
-4. **Name the style** — "flat vector", "3D render", "watercolor", "photorealistic", "minimalist Swiss design" (a medium or a movement, never a living artist, a studio or a brand)
-5. **Include typography instructions** — font style, size relationship, color, position
-6. **State what to exclude** — "no stock photo watermarks, no beveled effects, no clipart"
+1. **Describe scenes, not keywords** - "A sneaker floating above a reflective surface with dramatic side lighting" beats "sneaker, cool, modern"
+2. **Be specific about colors** - Always include hex codes from `.easel/brand.md`
+3. **Describe spatial layout** - "headline in upper third, product centered, CTA in lower right"
+4. **Name the style** - "flat vector", "3D render", "watercolor", "photorealistic", "minimalist Swiss design" (a medium or a movement, never a living artist, a studio or a brand)
+5. **Include typography instructions** - font style, size relationship, color, position
+6. **State what to exclude** - "no stock photo watermarks, no beveled effects, no clipart"
 
 ### Style-Specific Prompt Patterns
 
@@ -49,7 +49,7 @@ Never deliver an image you have not looked at. Read every generated file at full
 
 Text is the most common failure. To reduce errors:
 - Put exact copy in double quotes in the prompt: `headline "HEAR EVERYTHING"`
-- Keep rendered text short — a headline, a subline, a CTA. Move long copy (paragraphs, legal, prices that change) into an HTML/CSS overlay instead of the image.
+- Keep rendered text short - a headline, a subline, a CTA. Move long copy (paragraphs, legal, prices that change) into an HTML/CSS overlay instead of the image.
 - Spell out unusual words or brand names and say "spelled exactly as written".
 - If a word comes back misspelled, fix it in a follow-up turn quoting only that word: `Change "EVERYTHNG" to "EVERYTHING". Change nothing else.`
 - After two failed text fixes, generate the image without text and add the text as a code overlay (an HTML page over the image, rendered with easel-core's `render_still`; easel-design's skills show how).

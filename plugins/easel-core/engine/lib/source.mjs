@@ -21,8 +21,14 @@ export function svgWrapper(svg) {
     const w = open[0].match(/\bwidth=["']?([\d.]+)/i), h = open[0].match(/\bheight=["']?([\d.]+)/i);
     if (w && h) body = body.replace(open[0], open[0].replace(/<svg\b/i, `<svg viewBox="0 0 ${w[1]} ${h[1]}"`));
   }
+  // Printed (render_pdf), the page is the SVG's own size: width/height, else the viewBox, in CSS px.
+  const tag = (body.match(/<svg\b[^>]*>/i) || [''])[0];
+  const attr = (k) => { const m = tag.match(new RegExp(`\\b${k}=["']?([\\d.]+)(px)?["'\\s>]`, 'i')); return m ? Number(m[1]) : null; };
+  const vb = (tag.match(/viewBox=["']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/i) || []).slice(1).map(Number);
+  const [pw, ph] = attr('width') && attr('height') ? [attr('width'), attr('height')] : vb.length === 2 ? vb : [null, null];
+  const pageRule = pw > 0 && ph > 0 ? `@page{size:${pw}px ${ph}px;margin:0}` : '';
   // currentColor follows the theme: dark ink on light, light ink on dark (icons and mono logos on a dark contact-sheet cell)
-  return `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:100%;height:100%;background:transparent;color:#111;}
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${pageRule}html,body{margin:0;width:100%;height:100%;background:transparent;color:#111;}
 @media (prefers-color-scheme: dark){html,body{color:#f2f2f2;}}
 body>svg{display:block;width:100%;height:100%;}</style></head><body>${body}</body></html>`;
 }

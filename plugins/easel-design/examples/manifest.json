@@ -1,5 +1,5 @@
 {
-  "note": "Every example the tests render through the easel-core engine: PNG pieces get render_still and qa (fixedFrame for fixed-size graphics), PDF pieces get render_pdf with the page count.",
+  "note": "Every example the tests render through the easel-core engine: PNG pieces get render_still and qa (fixedFrame for fixed-size graphics), PDF pieces get render_pdf with the page count and every page's size in points (pt).",
   "pieces": [
     { "skill": "social-graphic", "file": "social-graphic/feed-post-1080x1080.html", "width": 1080, "height": 1080, "mode": "graphic", "fixedFrame": true },
     { "skill": "social-graphic", "file": "social-graphic/story-1080x1920.html", "width": 1080, "height": 1920, "mode": "graphic", "fixedFrame": true },
@@ -7,10 +7,10 @@
     { "skill": "ad-creative", "file": "ad-creative/ad-728x90.html", "width": 728, "height": 90, "mode": "graphic", "fixedFrame": true },
     { "skill": "ad-creative", "file": "ad-creative/ad-1080x1080.html", "width": 1080, "height": 1080, "mode": "graphic", "fixedFrame": true },
     { "skill": "poster", "file": "poster/poster-a3.html", "width": 1145, "height": 1610, "mode": "graphic", "fixedFrame": true },
-    { "skill": "poster", "file": "poster/poster-a3.html", "pdf": true, "pages": 1 },
+    { "skill": "poster", "file": "poster/poster-a3.html", "pdf": true, "pages": 1, "pt": [859, 1208] },
     { "skill": "infographic", "file": "infographic/home-delivery.html", "width": 1200, "height": 1500, "mode": "graphic", "fixedFrame": true },
     { "skill": "presentation", "file": "presentation/members-meeting.html", "width": 1280, "height": 720, "mode": "graphic" },
-    { "skill": "presentation", "file": "presentation/members-meeting.html", "pdf": true, "pages": 4 },
+    { "skill": "presentation", "file": "presentation/members-meeting.html", "pdf": true, "pages": 4, "pt": [960, 540] },
     { "skill": "ui-design", "file": "ui-design/component-states.html", "width": 1440, "height": 900, "mode": "ui", "fixedFrame": true },
     { "skill": "ui-design", "file": "ui-design/mobile-bills.html", "width": 390, "height": 844, "mode": "ui", "fixedFrame": true },
     { "skill": "landing-page", "file": "landing-page/home-physio.html", "width": 1440, "height": 900, "mode": "ui" },
@@ -18,7 +18,7 @@
     { "skill": "design-system", "file": "design-system/specimen.html", "width": 1440, "height": 1800, "mode": "ui", "fixedFrame": true },
     { "skill": "icons", "file": "icons/icons.html", "width": 960, "height": 540, "mode": "ui", "fixedFrame": true },
     { "skill": "logo", "file": "logo/lockup.html", "width": 1200, "height": 630, "mode": "graphic", "fixedFrame": true },
-    { "skill": "brand-identity", "file": "brand-identity/card.html", "pdf": true, "pages": 2 },
+    { "skill": "brand-identity", "file": "brand-identity/card.html", "pdf": true, "pages": 2, "pt": [252, 144] },
     { "skill": "brand-identity", "file": "brand-identity/avatar.html", "width": 400, "height": 400, "mode": "graphic", "fixedFrame": true },
     { "skill": "directions", "file": "directions/a-query-headline.html", "width": 1440, "height": 900, "mode": "graphic", "fixedFrame": true },
     { "skill": "directions", "file": "directions/b-log-wall.html", "width": 1440, "height": 900, "mode": "graphic", "fixedFrame": true },

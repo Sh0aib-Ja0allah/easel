@@ -34,4 +34,6 @@ animated icons, accessibility, common UI icons).
 5. **Fix** the worst failure (a muddy detail at 16 px, an optical size mismatch), re-render; at
    most three passes.
 6. **Check** an icon-and-label row with `mcp__plugin_easel-core_easel__qa` (`mode: "ui"`, `checks: ["contrast"]`).
-7. **Deliver** the SVGs, the sprite, the review sheet, and usage notes (labels, `aria-hidden`).
+7. **Critique:** `easel-core:critique` with the **design** rubric on the review sheet. Fix
+   blocking findings and anything below 7, re-render.
+8. **Deliver** the SVGs, the sprite, the review sheet, and usage notes (labels, `aria-hidden`).

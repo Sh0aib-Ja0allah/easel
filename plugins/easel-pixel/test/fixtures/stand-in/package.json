@@ -1,0 +1,7 @@
+{
+  "name": "@pebbly/aseprite-ai-artist",
+  "version": "0.8.0",
+  "description": "Easel test stand-in (not the real package): echoes what the launcher passes it.",
+  "type": "module",
+  "bin": { "aseprite-ai-artist": "dist/cli.js" }
+}

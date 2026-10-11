@@ -39,7 +39,8 @@ photos or logo as `refs` rather than describing them.
 ## 3. Price, then generate
 
 1. `mcp__plugin_easel-ai-media_media__generate` without `confirm`: a dry run with the provider, model, the estimate and the
-   request. Show the user the prompt and the price in one short message.
+   request. Show the user the prompt and the price in one short message. Pass `slug` (the job
+   folder) and a `name` (`hero`, `hero-v2`); a used name gets `-2`, never an overwrite.
 2. When they agree, call again with `confirm: true` (and `approvedUsd` if the estimate is above
    the limit). Pick the provider with `mcp__plugin_easel-ai-media_media__providers` or let the tool choose one with a key.
 3. Several sizes: generate one master at the largest aspect, then crop each size in an HTML page

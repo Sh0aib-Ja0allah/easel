@@ -1,11 +1,11 @@
 // estimate / generate / providers: the provider layer's behaviour (architecture §6, decision D3).
 // Nothing is spent without confirm: true; above the user's limit an approved amount is also needed.
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync, appendFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PROVIDERS } from '../providers/index.mjs';
+import { PROVIDERS, atlasSeconds, falSeconds } from '../providers/index.mjs';
 import { keyFor, keyStatus, maskSecrets } from './keys.mjs';
-import { request } from './http.mjs';
+import { download } from './http.mjs';
 import { checkConsent, logConsent } from './consent.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -13,9 +13,22 @@ export const PRICES = JSON.parse(readFileSync(join(ROOT, 'prices.json'), 'utf8')
 export const KINDS = ['image', 'video', 'tts', 'music', 'voice-clone'];
 const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'media';
 
-export function jobDir(args) {
-  if (args.outDir) return resolve(args.outDir);
-  return resolve(process.cwd(), 'easel-out', slugOf(args.slug || 'media'));
+// The job folder: ./easel-out/<slug>/, or an outDir inside the project folder (never elsewhere:
+// paid files, the consent statement and its log all live here).
+export function jobDir(args, cwd = process.cwd()) {
+  const root = resolve(cwd);
+  if (args.outDir) {
+    const dir = resolve(root, args.outDir);
+    if (dir !== root && !dir.startsWith(root + sep)) throw new Error(`outDir must be inside the project folder (${root}); got ${dir}`);
+    return dir;
+  }
+  return join(root, 'easel-out', slugOf(args.slug || 'media'));
+}
+// A file name that is not taken yet: paid results are never overwritten.
+export function freePath(dir, base, ext) {
+  let p = join(dir, `${base}${ext}`);
+  for (let i = 2; existsSync(p); i++) p = join(dir, `${base}-${i}${ext}`);
+  return p;
 }
 export function limitUsd(env = process.env) {
   const raw = String(env.EASEL_MEDIA_MAX_USD ?? '').trim();
@@ -70,7 +83,7 @@ export function estimate(args, env = process.env) {
     usd = each * n; basis = `${n} x ${each} USD (${tier}, ${size})`;
   } else if (pr.unit === 'image') { const each = (pr.per_resolution && args.resolution && pr.per_resolution[args.resolution]) || pr.usd; usd = each * n; basis = `${n} x ${each} USD per image`; }
   else if (pr.unit === 'megapixel') { const [w, h] = (args.size || '1024x1024').split('x').map(Number); const mp = (w * h) / 1e6; usd = pr.usd * mp * n; basis = `${n} x ${mp.toFixed(2)} MP x ${pr.usd} USD`; }
-  else if (pr.unit === 'second') { const s = Math.max(args.seconds || 5, pr.min_seconds || 0); usd = pr.usd * s * n; basis = `${n} x ${s} s x ${pr.usd} USD`; }
+  else if (pr.unit === 'second') { const s = provider === 'fal' ? falSeconds(args.seconds) : provider === 'atlas' ? atlasSeconds(args.seconds, pr.min_seconds) : Math.max(args.seconds || 5, pr.min_seconds || 0); usd = pr.usd * s * n; basis = `${n} x ${s} s x ${pr.usd} USD (the clip length the provider is asked for)`; }
   else if (pr.unit === 'minute') { const chars = (args.text || '').length; const min = chars / 900; usd = pr.usd * Math.max(min, 1 / 60); basis = `about ${min.toFixed(2)} min of speech (${chars} characters at about 150 words a minute) x ${pr.usd} USD`; }
   else if (pr.unit === '1k_chars') { const chars = (args.text || '').length; usd = (pr.usd * chars) / 1000; basis = `${chars} characters x ${pr.usd} USD per 1,000`; }
   else { usd = pr.usd * n; basis = `${n} x ${pr.usd} USD per request`; }
@@ -89,6 +102,10 @@ export async function generate(args, env = process.env) {
   if (args.kind === 'tts' && !args.text) throw new Error('tts needs text');
   const est = estimate(args, env);
   const { provider, model } = est;
+  // requests the provider would reject or ignore after charging are refused here, before any spend
+  if (args.kind === 'video' && !(args.refs && args.refs.length)) throw new Error('video is image-to-video: give the keyframe image in refs');
+  if (provider === 'fal' && /z-image/.test(model) && args.refs && args.refs.length) throw new Error(`${model} takes no reference images; use fal-ai/nano-banana (edit) or another provider`);
+  if (provider === 'replicate' && args.refs && args.refs.length) throw new Error('the Replicate model takes no reference images; use openai, gemini or fal');
   const out = jobDir(args);
   let consent = null;
   if (args.kind === 'voice-clone') {
@@ -103,30 +120,50 @@ export async function generate(args, env = process.env) {
       next: 'Show the user the estimate and the request. Call again with confirm: true only after they agree' + (est.usd !== null && est.usd > limit ? `, and with approvedUsd >= ${est.usd} (above the ${limit} USD limit)` : '') + '.' };
   }
   if (!key) throw new Error(`no ${provider} key: set ${keyStatus(env)[provider].env.join(' or ')} in the environment or the easel-ai-media plugin settings (/plugin configure easel-ai-media)`);
-  if ((est.usd === null || est.usd > limit) && !(typeof args.approvedUsd === 'number' && (est.usd === null || args.approvedUsd >= est.usd))) {
+  const approved = typeof args.approvedUsd === 'number' && (est.usd === null ? args.approvedUsd > 0 : args.approvedUsd >= est.usd);
+  if ((est.usd === null || est.usd > limit) && !approved) {
     return { refused: true, reason: est.usd === null ? 'no price is listed for this model, so the spend cannot be estimated' : `the estimate (${est.usd} USD) is above the limit (${limit} USD)`, fix: 'ask the user, then call again with approvedUsd set to the amount they approved' };
   }
-  let outputs;
-  try { outputs = await PROVIDERS[provider].run(args.kind, model, { ...args, voiceName: args.voiceName }, key.value); }
-  catch (e) { throw new Error(maskSecrets(e.message, env)); }
+  // every paid job is recorded in jobs.jsonl before polling, so a failure after the provider has
+  // charged leaves its id (to fetch the result from the provider instead of paying again)
   mkdirSync(out, { recursive: true });
+  const jobLog = (rec) => appendFileSync(join(out, 'jobs.jsonl'), JSON.stringify({ at: new Date().toISOString(), provider, model, kind: args.kind, ...rec }) + '\n');
+  let outputs, submitted = null;
+  const onSubmit = (info) => { submitted = { ...submitted, ...info }; jobLog({ status: 'submitted', ...info, estimateUsd: est.usd }); };
+  try { outputs = await PROVIDERS[provider].run(args.kind, model, { ...args, voiceName: args.voiceName, onSubmit }, key.value); }
+  catch (e) { const msg = maskSecrets(e.message, env); jobLog({ status: 'failed', error: msg.slice(0, 300) }); throw new Error(msg + (submitted && submitted.id ? ` (job ${submitted.id} is recorded in ${join(out, 'jobs.jsonl')}; check the provider's dashboard before paying again)` : '')); }
   const name = slugOf(args.name || args.kind);
   const files = [];
-  for (const [i, o] of outputs.entries()) {
-    const file = join(out, `${name}${outputs.length > 1 ? `-${i + 1}` : ''}${o.ext}`);
-    if (o.json) writeFileSync(file, JSON.stringify(o.json, null, 2) + '\n');
-    else if (o.bytes) writeFileSync(file, o.bytes);
-    else {
-      const r = await request(provider, { url: o.url });
-      if (!r.ok || !r.buffer.length) throw new Error(`download failed (HTTP ${r.status}) for the ${provider} result`);
-      writeFileSync(file, r.buffer);
+  try {
+    for (const [i, o] of outputs.entries()) {
+      const file = freePath(out, `${name}${outputs.length > 1 ? `-${i + 1}` : ''}`, o.ext);
+      if (o.json) writeFileSync(file, JSON.stringify(o.json, null, 2) + '\n');
+      else if (o.bytes) writeFileSync(file, o.bytes);
+      else writeFileSync(file, (await download(provider, o.url)).buffer);
+      files.push({ file, bytes: statSync(file).size, ...(o.words ? { words: o.words } : {}) });
+      if (o.words && o.words.length) writeFileSync(file.replace(/\.[^.]+$/, '.words.json'), JSON.stringify(o.words, null, 2) + '\n');
     }
-    files.push({ file, bytes: statSync(file).size, ...(o.words ? { words: o.words } : {}) });
-    if (o.words && o.words.length) writeFileSync(file.replace(/\.[^.]+$/, '.words.json'), JSON.stringify(o.words, null, 2) + '\n');
+  } catch (e) {
+    const msg = maskSecrets(e.message, env);
+    jobLog({ status: 'paid-not-saved', error: msg.slice(0, 300), urls: outputs.filter((o) => o.url).map((o) => String(o.url).slice(0, 300)) });
+    throw new Error(`${msg} (the generation succeeded and was charged; its result URLs are in ${join(out, 'jobs.jsonl')})`);
   }
+  jobLog({ status: 'saved', files: files.map((f) => relative(out, f.file).split(sep).join('/')) });
   if (consent) logConsent(args, out, consent, outputs[0] && outputs[0].json && outputs[0].json.voice_id);
   appendProvenance(out, files.map((f) => f.file), { provider, model, prompt: args.prompt || args.text, costEstimateUsd: est.usd, refs: args.refs, tool: `easel-ai-media:${args.kind === 'tts' || args.kind === 'voice-clone' ? 'voice' : args.kind === 'video' || args.kind === 'music' ? 'ai-video' : 'image'}` });
   return { files, provider, model, estimate: est, ms: Date.now() - t0 };
+}
+
+export function readProvenanceFiles(out) {
+  const pf = join(out, 'provenance.json');
+  try { return JSON.parse(readFileSync(pf, 'utf8')).assets.map((a) => a.file); } catch { return []; }
+}
+export function appendAsset(out, asset) {
+  const pf = join(out, 'provenance.json');
+  const doc = existsSync(pf) ? JSON.parse(readFileSync(pf, 'utf8')) : { version: 1, assets: [] };
+  doc.assets.push({ file: asset.file, created: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'), tool: asset.tool, method: asset.method, inputs: asset.inputs, ...(asset.notes ? { notes: asset.notes } : {}) });
+  writeFileSync(pf, JSON.stringify(doc, null, 2) + '\n');
+  return pf;
 }
 
 export function appendProvenance(out, files, { provider, model, prompt, costEstimateUsd, refs = [], tool }) {

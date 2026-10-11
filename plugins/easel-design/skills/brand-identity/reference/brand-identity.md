@@ -92,7 +92,7 @@ A brand color system is more than a palette. Structure it as:
 }
 ```
 
-Convert every final color to hex for the guidelines page and `.easel/brand.md` (`node "${CLAUDE_PLUGIN_ROOT}/tools/palette.mjs" --from "#2563eb"` prints hex scales), and verify each text/background pair with `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast", "text_clipping"]`).
+Convert every final color to hex for the guidelines page and `.easel/brand.md` (the palette tool, `palette.mjs --from "#2563eb"`, prints hex scales; the command with its full path is in the brand-identity skill), and verify each text/background pair with `mcp__plugin_easel-core_easel__qa` (`checks: ["contrast", "text_clipping"]`).
 
 ---
 

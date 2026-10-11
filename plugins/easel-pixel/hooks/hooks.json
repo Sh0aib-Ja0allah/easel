@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/session-status.mjs"], "timeout": 10 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__plugin_easel-pixel_aseprite__draw|mcp__plugin_easel-pixel_aseprite__recolor|mcp__plugin_easel-pixel_aseprite__transform",
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/look-nudge.mjs"], "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

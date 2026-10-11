@@ -11,7 +11,7 @@ import { maskSecrets } from './lib/keys.mjs';
 import { tools } from './tools.mjs';
 
 export function startServer({ input = process.stdin, output = process.stdout } = {}) {
-  for (const k of ['log', 'info', 'debug', 'warn']) console[k] = (...a) => process.stderr.write(maskSecrets(format(...a)) + '\n');
+  for (const k of ['log', 'info', 'debug', 'warn', 'error']) console[k] = (...a) => process.stderr.write(maskSecrets(format(...a)) + '\n');
   const pending = new Set();
   const send = (msg) => output.write(maskSecrets(JSON.stringify(msg)) + '\n');
   const rl = createInterface({ input, crlfDelay: Infinity });

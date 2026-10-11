@@ -1,29 +1,27 @@
 # Easel
 
-> **Status: planning.** There's no installable plugin yet. This repo currently holds only the planning docs.
+> **Status: in development toward v1.0.0.** `easel-core` and `easel-motion` work today; the other
+> plugins are built and tested and are being released phase by phase (see
+> [the roadmap](docs/roadmap.md) and [CHANGELOG.md](CHANGELOG.md)).
 
-Easel is a Claude Code plugin marketplace for visual and creative work:
+Easel is a Claude Code plugin marketplace for visual and creative work: animation, illustration,
+drawing, video and design. It brings together and adapts the best open-source Claude Code plugins
+and skills into one set: every skill renders its work offline, looks at it, measures it and has it
+critiqued before calling it finished, and credits its sources. It runs on Windows, macOS and
+Linux.
 
-- Animation
-- Illustration
-- Drawing
-- Video creation
-- Design
-
-It brings together and adapts the best open-source Claude Code plugins and skills into one set. Every skill follows the same structure and quality bar, and credits its sources.
-
-## Planned plugins
+## Plugins
 
 | Plugin | What it does | Needs |
 | --- | --- | --- |
-| `easel-core` | Planning, brand context, render engine, audio, critic, craft rules, AI provider layer | Node, Playwright, ffmpeg |
-| `easel-motion` | Code-drawn animation and video, style catalog, explainer formats, UI motion | `easel-core` |
-| `easel-design` | Graphics, UI, social, posters, decks, design systems, logos and icons | `easel-core` |
-| `easel-illustrate` | SVG illustration and characters, concept illustrations, generative art | `easel-core` |
-| `easel-ai-media` | AI-generated images, video and voice, using your own API key | API key(s) |
-| `easel-pixel` | Pixel art in Aseprite | Aseprite (paid) |
+| `easel-core` | Planning check-ins, brand context, the offline render engine (MCP server), music and sound, the critic agent and craft rules | Node 20+, ffmpeg; Chromium is installed on first use |
+| `easel-motion` | Code-drawn animation and video in every format, a style catalog, explainer grammars, style matching, UI motion | `easel-core` |
+| `easel-design` | Graphics, posters, social, ads, infographics, decks, UI, landing pages, design systems, brand identities, logos, icons | `easel-core` |
+| `easel-illustrate` | SVG for UI and charts, lit SVG illustration, concept sketches with a mascot, p5.js generative art | `easel-core` |
+| `easel-ai-media` | AI images, narrated AI video and voice through your own provider keys, with a cost estimate before anything is spent | `easel-core`, your API key(s), ffmpeg |
+| `easel-pixel` | Pixel art in your own Aseprite: draw, shade, animate, export | `easel-core`, Aseprite (paid) |
 
-Once released, installing will look like this:
+## Install
 
 ```text
 /plugin marketplace add Sh0aib-Ja0allah/easel
@@ -31,24 +29,56 @@ Once released, installing will look like this:
 /plugin install easel-motion@easel
 ```
 
-## Planning docs
+Then run `/easel-core:setup` once: it checks Node and ffmpeg and installs the render engine's
+browser into the plugin's data folder. Each plugin's README says what else it needs.
 
-- **[Handoff](docs/HANDOFF.md): start here if you're picking up the work.** It covers current state, decisions, hard rules, verified plugin facts and the next tasks.
-- [Vision](docs/vision.md): what Easel is, who it's for, goals and non-goals.
-- [Sources](docs/sources.md): every repo we draw from, with its license and how we plan to use it. One detailed note per repo is in [docs/sources/](docs/sources/).
-- [Findings and decisions](docs/findings-and-decisions.md): overlaps between sources, gaps, legal items, and the decisions made so far.
-- [Skill catalog](docs/skill-catalog.md): every planned skill, agent and shared library for each plugin, with its sources.
-- [Architecture](docs/architecture.md): repo layout, manifests, how plugins share code, the render engine, the provider layer, data formats, and Windows requirements.
-- [Roadmap](docs/roadmap.md): phases 0–5, from foundations and spikes to v1.0.0.
-- [Tasks](docs/tasks.md): tasks for each phase, with IDs, completion checks and dependencies.
-- [Third-party notices (draft)](docs/third-party-notices-draft.md): copyright lines and obligations for each source.
+## Docs
+
+- [Handoff](docs/HANDOFF.md): current state, decisions, hard rules, verified plugin facts.
+- [Vision](docs/vision.md), [Roadmap](docs/roadmap.md), [Tasks](docs/tasks.md).
+- [Architecture](docs/architecture.md): repo layout, how plugins share code, the render engine,
+  the provider layer, data formats, Windows requirements.
+- [Skill catalog](docs/skill-catalog.md): every skill and agent, with its sources.
+- [Sources](docs/sources.md) and [findings and decisions](docs/findings-and-decisions.md).
 
 ## Credits
 
-Easel adapts work from several open-source projects. Each one is listed with its license in [docs/sources.md](docs/sources.md). Full copyright notices will be in `THIRD_PARTY_NOTICES.md` once code is added.
+Easel adapts the work of these authors and projects (exact files, commits and licence texts are in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and each plugin's `NOTICE.md`):
+
+- cth9191, [animate](https://github.com/cth9191/animate): the animate kit, styles, story grammars
+  and check-ins.
+- alchaincyf, [huashu-art-motion](https://github.com/alchaincyf/huashu-art-motion): explainer
+  grammars, style recipes, film gates.
+- Vincentwei1021, [mg-styles-15](https://github.com/Vincentwei1021/mg-styles-15): rubric ideas and
+  four screen-style looks.
+- GreenSock, [gsap-skills](https://github.com/greensock/gsap-skills): the official GSAP skills.
+- Arnav Puri, [designskills](https://github.com/ArnavPuri/designskills): design references, the
+  palette tool, critique and motion ideas.
+- Anthropic, [skills](https://github.com/anthropics/skills) (Apache-2.0): canvas-design,
+  theme-factory, algorithmic-art.
+- Open Design contributors, [open-design](https://github.com/nexu-io/open-design) (Apache-2.0):
+  the craft rulebooks; Refero, [refero_skill](https://github.com/referodesign/refero_skill).
+- Will Curran (Code Katz), [claude-illustrate-skill](https://github.com/code-katz/claude-illustrate-skill):
+  the logo method and illustration routing.
+- svg-skill contributors, [svg-skill](https://github.com/linyaosky/svg-skill), and SVG Creator
+  Skill Contributors, [svg-creator-skill](https://github.com/upbrew-tech/svg-creator-skill)
+  (Apache-2.0): the SVG skills.
+- Aishwarya Ashok, [Peanut Illustrations](https://github.com/aishwaryaashok14/peanut-illustrations),
+  and Ian, [ian-xiaohei-illustrations](https://github.com/helloianneo/ian-xiaohei-illustrations):
+  the concept-illustration method (their characters are not used).
+- Alisa Qian, [vox-director](https://github.com/Alisa0808/vox-director): the AI video pipeline.
+- with-pebbly, [aseprite-ai-artist](https://github.com/with-pebbly/aseprite-ai-artist): the pixel
+  skills, agents and the Aseprite bridge.
+- HeyGen, [HyperFrames](https://github.com/heygen-com/hyperframes): the composition format the
+  renderer reads (no code included).
+- Fonts under the SIL Open Font License, listed in THIRD_PARTY_NOTICES.md.
+
+Easel is not affiliated with Aseprite or Igara Studio, with any AI provider, or with any of the
+projects above.
 
 ## License
 
-Easel's own code and docs are released under the [MIT License](LICENSE).
-
-Adapted third-party material keeps its original license. Apache-2.0 material, for example, will ship with its license text and notices, as listed in [docs/third-party-notices-draft.md](docs/third-party-notices-draft.md).
+Easel's own code and docs are released under the [MIT License](LICENSE). Adapted third-party
+material keeps its original license: Apache-2.0 material ships with its license text, its notices
+and a "Modified by Easel" header in every changed file.

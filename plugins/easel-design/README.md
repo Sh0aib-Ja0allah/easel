@@ -46,4 +46,7 @@ painting) is only used when the user asks for one and `easel-ai-media` is instal
 On Claude Code older than 2.1.275, add the marketplace first:
 `/plugin marketplace add Sh0aib-Ja0allah/easel`, then `/plugin install easel-design@easel`.
 
+Credits: reference material adapted from Arnav Puri's designskills, Anthropic's skills
+(canvas-design, theme-factory; Apache-2.0) and Will Curran's claude-illustrate-skill (Code Katz).
+
 Licences: MIT; adapted material is listed in [NOTICE.md](NOTICE.md).

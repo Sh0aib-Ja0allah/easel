@@ -16,7 +16,7 @@
     },
     {
       "name": "doctor",
-      "description": "Check what the Easel engine needs: Node, Playwright and Chromium (in the plugin data folder), ffmpeg and ffprobe, plus optional Python, Aseprite and provider API keys (names only). With install: true it installs the pinned npm packages and the Chromium headless shell (about 110 MB) into the plugin data folder; tell the user before doing that. For setup questions use the easel-core:setup skill, which runs this and gives the install command for each OS.",
+      "description": "Check what the Easel engine needs: Node, Playwright and Chromium (in the plugin data folder), ffmpeg and ffprobe, plus optional Python, Aseprite and provider API keys (names only). With install: true it installs the pinned npm packages and the Chromium headless shell (about 120 MB) into the plugin data folder; tell the user before doing that. For setup questions use the easel-core:setup skill, which runs this and gives the install command for each OS.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -146,7 +146,7 @@
     },
     {
       "name": "render_pdf",
-      "description": "Render a page (.html or .svg, or inline html) to a print PDF: posters, flyers, business cards, printable guides, slide decks (one page per CSS page or per slide with page breaks). Size from the page's own @page rule by default, or format (A4, Letter, ...) or width and height with units (\"8.5in\", \"210mm\", \"1280px\"); backgrounds are printed; no margins (put bleed and margins in the page). Offline, with the bundled fonts. Check the pages with render_still before sending to print.",
+      "description": "Render a page (.html or .svg, or inline html) to a print PDF: posters, flyers, business cards, printable guides, slide decks (one page per CSS page or per slide with page breaks). Size from the page's own @page rule by default (an SVG prints at its own width and height, else its viewBox, in CSS px), or format (A4, Letter, ...) or width and height with units (\"8.5in\", \"210mm\", \"1280px\"); backgrounds are printed; no margins (put bleed and margins in the page). Offline, with the bundled fonts. Check the pages with render_still before sending to print.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -322,7 +322,7 @@
     },
     {
       "name": "render_video",
-      "description": "Render an animated page to MP4 (H.264, yuv420p). The page animates through window.renderAt(t), window.renderFrame(t) (animate-kit canvas pieces), a paused GSAP timeline at window.__timelines[<data-composition-id>] (HyperFrames format), or CSS animations; every frame is seeked to t = n / fps, so output is deterministic. Duration, fps and size default to the composition root (data-duration, data-fps, data-width, data-height) or window.TIMELINE / window.__composition. aspects renders extra formats (16:9, 9:16, 1:1, 4:5) from the same page, which lays itself out responsively or reads window.__easel.aspect. audio muxes a track; audio \"page\" uses the page's own score (window.renderAudioWav), mastered to -14 LUFS and also saved as <name>.wav. Review the result with filmstrip.",
+      "description": "Render an animated page to MP4 (H.264, yuv420p). The page animates through window.renderAt(t), window.renderFrame(t) (animate-kit canvas pieces), a paused GSAP timeline at window.__timelines[<data-composition-id>] (HyperFrames format), or CSS animations; every frame is seeked to t = n / fps, so output is deterministic. Duration, fps and size default to the composition root (data-duration, data-fps, data-width, data-height) or window.TIMELINE / window.__composition; for a plain page or SVG, the duration is measured from its CSS animations (one loop of an infinite one). aspects renders extra formats (16:9, 9:16, 1:1, 4:5) from the same page, which lays itself out responsively or reads window.__easel.aspect. audio muxes a track; audio \"page\" uses the page's own score (window.renderAudioWav), mastered to -14 LUFS and also saved as <name>.wav. Review the result with filmstrip.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -415,7 +415,7 @@
     },
     {
       "name": "filmstrip",
-      "description": "Capture an animated page at several times and lay the frames out on one sheet with timestamps, so you can look at the motion before or after rendering video. Give times (seconds) or count (evenly spaced over the duration).",
+      "description": "Capture an animated page at several times and lay the frames out on one sheet with timestamps, so you can look at the motion before or after rendering video. Give times (seconds) or count (evenly spaced over the duration: the duration argument, the duration the page declares, or for a plain page or SVG its CSS animations).",
       "inputSchema": {
         "type": "object",
         "properties": {

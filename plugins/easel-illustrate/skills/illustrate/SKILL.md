@@ -37,6 +37,10 @@ and free.
 | A photo-like or painted image | raster | `easel-ai-media:image` when installed (the user's own key, a cost estimate first); otherwise say so and offer a vector route |
 | Moving pictures with a story | video | `easel-motion:animate` |
 
+Whichever skill makes it, the picture is rendered, looked at and critiqued with
+`easel-core:critique` (**illustration** rubric; **design** for UI graphics) before it is called
+finished.
+
 If two fit, take the one closest to where the picture will be used and say so in one line. Never
 copy a well-known character or another artist's work, and never name a living artist or studio
 as a style: describe the look instead.

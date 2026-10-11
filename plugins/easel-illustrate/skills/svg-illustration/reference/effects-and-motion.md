@@ -257,7 +257,8 @@ This jumps CSS animations to their end state, so make sure the end state is a go
 SMIL motion small and slow, or build the motion in CSS when it must stop for reduced motion.
 
 ### Checking animation with the Easel engine
-- `mcp__plugin_easel-core_easel__filmstrip` with `file` and `count: 6` (or `times`): one sheet
+- `mcp__plugin_easel-core_easel__filmstrip` with `file` and `count: 6` (or `times`; the length comes
+  from the CSS animation, or pass `duration`): one sheet
   of frames with timestamps. Look for jumps, parts that drift apart, loops that do not close.
 - `mcp__plugin_easel-core_easel__render_still` with `t` for a single moment, and with
   `reducedMotion: "reduce"` for the reduced-motion still.
@@ -461,6 +462,7 @@ renders all see the exact pose:
     set('elbowJ', { cx: elbow.x, cy: elbow.y });
   };
   window.renderAt(0);
+  window.__composition = { width: 400, height: 400, duration: 1.2, fps: 30 }; // one wave cycle: filmstrip count and render_video read it
   // live playback in a browser; reduced motion keeps the first pose. Read performance.now(),
   // not the rAF timestamp: the engine pins performance.now() to the seeked time, so the loop
   // cannot overwrite the pose it is capturing.
@@ -475,7 +477,7 @@ renders all see the exact pose:
 Key principles: **bone lengths** are constants and **joint angles** are the animated values;
 compute EVERY joint from its parent with `fk()`; interpolate ANGLES, never positions; draw with
 `<line>` + round caps + `<circle>` joint covers. Check it with `filmstrip` (`file` = the HTML page, `count: 8`, `width`/`height` at the viewBox
-aspect). The SVG in the page is the static deliverable at any pose; for a video, hand the rig
+aspect); `count` spreads the frames over `window.__composition.duration`. The SVG in the page is the static deliverable at any pose; for a video, hand the rig
 to easel-motion:animate.
 
 ### Proportions (8-head system)

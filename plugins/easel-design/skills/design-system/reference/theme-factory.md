@@ -2,7 +2,7 @@
      (github.com/anthropics/skills, skills/theme-factory/SKILL.md and themes/*.md), Apache License 2.0,
      Copyright 2026 Anthropic, PBC; license text in licenses/Apache-2.0.txt, see NOTICE.md.
      Modified by Easel (2026-10-11): one reference file instead of a skill plus ten theme files; the
-     showcase PDF is replaced by a rendered swatch sheet; system fonts mapped to Easel's bundled faces. -->
+     showcase PDF is replaced by a rendered swatch sheet; system fonts mapped to Easel's bundled faces. The theme upstream named after a film title is renamed Dusk Avenue. -->
 
 # Theme factory
 
@@ -123,7 +123,7 @@ A professional and calming maritime theme that evokes the serenity of deep ocean
 - Type: headers Inter 700, body Inter 400
 - Best for: Corporate presentations, financial reports, professional consulting decks, trust-building content.
 
-### Sunset Boulevard
+### Dusk Avenue
 
 A warm and vibrant theme inspired by golden hour sunsets, perfect for energetic and creative presentations.
 

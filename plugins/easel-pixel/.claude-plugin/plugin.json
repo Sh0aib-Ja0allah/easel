@@ -15,6 +15,24 @@
     "aseprite"
   ],
   "dependencies": [
-    "easel-core"
-  ]
+    {
+      "name": "easel-core",
+      "version": ">=0.2.0"
+    }
+  ],
+  "userConfig": {
+    "aseprite_path": {
+      "type": "file",
+      "title": "Aseprite program (optional)",
+      "description": "Only needed for headless mode, or if Aseprite is not found: the full path to Aseprite.exe (or the aseprite program). Leave empty otherwise.",
+      "required": false
+    },
+    "headless": {
+      "type": "boolean",
+      "title": "Headless mode",
+      "description": "Draw with a batch Aseprite and no window (saves files only). Off by default: you watch the sprite in your open Aseprite window.",
+      "default": false,
+      "required": false
+    }
+  }
 }

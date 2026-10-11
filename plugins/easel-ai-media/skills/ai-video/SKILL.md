@@ -38,6 +38,10 @@ prices, what goes wrong), and `easel-ai-media:voice` for narration.
 
 ## 0. Rules
 
+- Every call passes `slug` (the film's folder) and a `name` for the asset (`look-<theme>`,
+  `key-b1-s1`, `clip-b1-s1`, `vo-b1`), so every file lands in `./easel-out/<slug>/` under a name
+  you can find; a name already used gets `-2`, never an overwrite. Paid jobs are logged in
+  `jobs.jsonl` there.
 - Every `mcp__plugin_easel-ai-media_media__generate` call is a dry run first. Before each batch (keyframes, clips, voice,
   music) show the user the total estimate and get a yes; then call with `confirm: true` (and
   `approvedUsd` for amounts above the limit). Keep a running total in `LOG.md`.

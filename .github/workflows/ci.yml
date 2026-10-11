@@ -97,6 +97,11 @@ jobs:
           npm --prefix plugins/easel-ai-media test 2>&1 | tee media-test.txt
           test "${PIPESTATUS[0]}" -eq 0
           grep -q 'skipped 0' media-test.txt
+      - name: easel-pixel tests (launcher with a stand-in package, hooks, skills and settings; no Aseprite; must not be skipped)
+        run: |
+          npm --prefix plugins/easel-pixel test 2>&1 | tee pixel-test.txt
+          test "${PIPESTATUS[0]}" -eq 0
+          grep -q 'skipped 0' pixel-test.txt
       - name: MCP smoke (initialize + tools/list over stdio)
         run: |
           printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \

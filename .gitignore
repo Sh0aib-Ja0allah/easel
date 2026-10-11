@@ -3,6 +3,8 @@ easel-out/
 spikes/**/out/
 evals/results/
 *.log
+# wrapper pages the engine writes beside an image or SVG while rendering (removed after each call)
+.easel-wrap-*
 .DS_Store
 Thumbs.db
 spikes/hyperframes/comp-*/gsap.min.js

@@ -145,6 +145,9 @@ Gates - run before every commit, never commit red:
   provider responses (no network, fake keys that must never appear in output), the spending
   limit, the voice-clone consent gate and its refusals, assembly with ffmpeg, and the skills,
   attribution and settings. Never run live paid calls from the tests.
+- `npm --prefix plugins/easel-pixel test` (since T4.5): the launcher for the pinned
+  `@pebbly/aseprite-ai-artist` (a stand-in package, no network), the hooks, and the skills,
+  agents, settings and attribution. Drawing with a real Aseprite is the owner's end-to-end check.
 - CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`

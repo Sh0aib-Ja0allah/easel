@@ -20,7 +20,7 @@ Called by skills as `mcp__plugin_easel-core_easel__<tool>`, or from a terminal w
 `node engine/cli.mjs <tool> --json @args.json`:
 
 `doctor`, `render_still`, `contact_sheet`, `render_video`, `filmstrip`, `qa`, `validate`,
-`audio_score`, `mux_audio`, `measure_image`, `compare_images`, `craft`, `ping`. Renders are offline and
+`audio_score`, `mux_audio`, `render_pdf`, `measure_image`, `compare_images`, `craft`, `ping`. Renders are offline and
 deterministic: bundled OFL fonts, seeded randomness, every frame seeked to `t = n / fps`. Pages
 can be HTML/SVG/CSS, GSAP timelines (HyperFrames format), `renderAt(t)` or animate-kit canvas
 pieces (`renderFrame(t)`).
@@ -29,8 +29,10 @@ pieces (`renderFrame(t)`).
 
 - Node.js 20 or newer
 - ffmpeg and ffprobe on PATH (Windows: `winget install --id Gyan.FFmpeg -e`)
-- Playwright's Chromium headless shell and pinned npm packages: installed by
-  `/easel-core:setup` into the plugin's data folder (about 120 MB, asked first)
+- Playwright's Chromium headless shell and pinned npm packages (playwright-core, GSAP, p5.js
+  1.11.13 for generative art): installed by `/easel-core:setup` into the plugin's data folder
+  (about 120 MB, asked first). Pages that load GSAP or p5.js from a CDN get these local copies;
+  nothing is fetched at render time.
 
 ## Install
 

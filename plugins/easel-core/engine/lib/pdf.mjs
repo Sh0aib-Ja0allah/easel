@@ -26,9 +26,10 @@ export async function renderPdf(args) {
   const name = slugOf(args.name || 'print');
   const src = resolveSource(args, out, name);
   if (src.kind === 'image' && !/\.svg$/i.test(src.wrapperFor)) { rmSync(src.path, { force: true }); throw new Error('render_pdf takes a page (.html or .svg); place an image in an HTML page first'); }
-  const browser = await openBrowser();
+  let browser = null;
   const warnings = [];
   try {
+    browser = await openBrowser();
     const { page, context, blocked, errors } = await newPage(browser, { width: args.viewportWidth || 1280, height: args.viewportHeight || 720, seed: args.seed ?? 1, colorScheme: args.theme || 'light' });
     try {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
@@ -50,7 +51,7 @@ export async function renderPdf(args) {
       await context.close();
     }
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
     if (src.kind === 'image') rmSync(src.path, { force: true });
   }
 }

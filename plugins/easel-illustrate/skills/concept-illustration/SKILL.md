@@ -13,7 +13,7 @@ when_to_use: >-
   illustration use easel-illustrate:svg-illustration; for icons, charts or UI graphics use
   easel-illustrate:svg; for an infographic with data use easel-design:infographic.
 argument-hint: "[the idea in one sentence] [the mascot, if any]"
-allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep
+allowed-tools: mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__contact_sheet mcp__plugin_easel-core_easel__qa Read Write Edit Glob Grep mcp__plugin_easel-core_easel__craft
 ---
 
 <!-- Easel: the method (compose first, one idea per image, structure types, fresh metaphors, the
@@ -68,6 +68,10 @@ Wrap it in a page (`<html>` with the SVG at 1600 x 900) if you want CSS.
 (a 400 px wide copy). Run `mcp__plugin_easel-core_easel__qa` (`checks: ["text_clipping",
 "contrast"]`, `fixedFrame: true`) and the QA checklist, including the removal test. Fix the
 single worst failure and re-render; at most three passes.
+
+Then `easel-core:critique` with the **illustration** rubric on the PNG (the cold read must name
+the idea; if it does not, the metaphor failed: recompose). Fix blocking findings and anything
+below 7, re-render.
 
 ## 5. Deliver
 

@@ -33,6 +33,19 @@ test('thirteen skills, each with a matching name, routing text under the 1,536-c
   }
 });
 
+test('every skill ends in a critique by easel-core:critique with a named rubric', () => {
+  for (const s of SKILLS) assert.match(readFileSync(join(PLUGIN, 'skills', s, 'SKILL.md'), 'utf8'), /easel-core:critique[\s\S]{0,80}\*\*(design|social|illustration)\*\* rubric/, s);
+});
+
+test('plugin paths only in SKILL.md bodies (Claude Code substitutes them there, not in references)', () => {
+  const walkAll = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walkAll(join(d, e.name)) : [join(d, e.name)]));
+  for (const f of walkAll(join(PLUGIN, 'skills')).filter((x) => !x.endsWith('SKILL.md'))) assert.doesNotMatch(readFileSync(f, 'utf8'), /\$\{CLAUDE_PLUGIN_(ROOT|DATA)\}/, f);
+  for (const s of SKILLS) {
+    const t = readFileSync(join(PLUGIN, 'skills', s, 'SKILL.md'), 'utf8');
+    if (/node "\$\{CLAUDE_PLUGIN_ROOT\}/.test(t)) assert.match(t, /^allowed-tools: .*Bash\(node:\*\)/m, `${s} runs node but cannot`);
+  }
+});
+
 test('every relative link and plugin path in the skills and references exists', () => {
   for (const s of SKILLS) {
     const dir = join(PLUGIN, 'skills', s);

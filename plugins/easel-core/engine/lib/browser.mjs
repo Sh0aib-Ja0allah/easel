@@ -17,11 +17,28 @@ const CDN_PATTERNS = [
   /^https:\/\/cdn\.jsdelivr\.net\/npm\/gsap@[^/]+\/dist\/([\w.-]+\.js)$/,
   /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/gsap\/[^/]+\/([\w.-]+\.js)$/,
   /^https:\/\/unpkg\.com\/gsap@[^/]+\/dist\/([\w.-]+\.js)$/,
-  // p5.js (easel-illustrate:generative-art): served from the copy doctor installed, whatever version the page names
-  /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/p5\.js\/[^/]+\/(p5(?:\.min)?\.js)$/,
-  /^https:\/\/cdn\.jsdelivr\.net\/npm\/p5@[^/]+\/lib\/(p5(?:\.min)?\.js)$/,
-  /^https:\/\/unpkg\.com\/p5@[^/]+\/lib\/(p5(?:\.min)?\.js)$/,
 ];
+// p5.js (easel-illustrate:generative-art): served from the copy doctor installed (1.11.13) for any
+// p5 1.x the page names; a 2.x or "latest" URL is refused (p5 2 changed its API), as is p5.sound.
+// Groups: version, file (bare jsdelivr/unpkg URLs mean p5.min.js).
+const P5_PATTERNS = [
+  /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/p5\.js\/([^/]+)\/(p5(?:\.min)?\.js)$/,
+  /^https:\/\/cdn\.jsdelivr\.net\/npm\/p5@([^/]+)\/lib\/(p5(?:\.min)?\.js)$/,
+  /^https:\/\/unpkg\.com\/p5@([^/]+)\/lib\/(p5(?:\.min)?\.js)$/,
+  /^https:\/\/(?:cdn\.jsdelivr\.net\/npm|unpkg\.com)\/p5(?:@([^/]+))?\/?()$/,
+];
+export function p5Request(url) {
+  const u = url.split(/[?#]/)[0];
+  for (const re of P5_PATTERNS) {
+    const m = u.match(re);
+    if (!m) continue;
+    const version = m[1] || 'latest';
+    if (!/^1(\.|$)/.test(version)) return { error: `p5.js ${version} requested: Easel serves p5.js 1.x offline (1.11.13). Load https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.13/p5.min.js and use the 1.x API.` };
+    return { lib: m[2] || 'p5.min.js' };
+  }
+  if (/\/p5(?:@[^/]+)?\/lib\/addons\/|\/p5\.js\/[^/]+\/addons\//.test(u)) return { error: 'p5.js add-ons (p5.sound) are not available offline; Easel sketches draw only.' };
+  return null;
+}
 
 function libraryPath(file) {
   if (Object.hasOwn(LIBRARIES, file)) {
@@ -129,7 +146,12 @@ export async function newPage(browser, { width, height, scale = 1, colorScheme =
       return p ? route.fulfill({ path: p, contentType: MIME[extname(p)] || 'application/octet-stream', headers: { 'access-control-allow-origin': '*' } }) : route.fulfill({ status: 404, body: 'font not found' });
     }
     let lib = url.startsWith(`${LOCAL_ORIGIN}/lib/`) ? basename(url.split('?')[0]) : null;
-    if (!lib) for (const re of CDN_PATTERNS) { const m = url.match(re); if (m) { lib = m[1]; break; } }
+    if (!lib) {
+      const p5 = p5Request(url);
+      if (p5 && p5.error) { blocked.push(url); return route.fulfill({ status: 404, contentType: 'text/plain', body: p5.error }); }
+      if (p5) lib = p5.lib;
+    }
+    if (!lib) { const bare = url.split(/[?#]/)[0]; for (const re of CDN_PATTERNS) { const m = bare.match(re); if (m) { lib = m[1]; break; } } }
     if (lib) {
       const p = libraryPath(lib);
       return p ? route.fulfill({ path: p, contentType: 'text/javascript', headers: { 'access-control-allow-origin': '*' } }) : route.fulfill({ status: 404, body: `library ${lib} not installed; run doctor with install: true` });

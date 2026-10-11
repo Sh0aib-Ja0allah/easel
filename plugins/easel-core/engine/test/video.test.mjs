@@ -3,7 +3,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,6 +75,19 @@ test('filmstrip lays out evenly spaced frames that differ', { skip }, async () =
   assert.deepEqual(r.frames.map((f) => f.label), ['t = 0.63 s', 't = 1.88 s', 't = 3.13 s', 't = 4.38 s']);
   const browser = await m.openBrowser();
   try { assert.equal((await m.compareImages(browser, r.frames[0].file, r.frames[3].file)).identical, false); } finally { await browser.close(); }
+});
+
+test('an SVG with CSS animation: filmstrip count and render_video take the CSS length; no wrapper file is left beside the SVG', { skip }, async () => {
+  const dir = join(out, 'svg-src'); mkdirSync(dir, { recursive: true });
+  const svg = join(dir, 'spin.svg');
+  writeFileSync(svg, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="200" height="200" aria-hidden="true"><style>g{transform-origin:50px 50px;animation:s 2s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style><g><rect x="10" y="45" width="80" height="10" fill="#222"/></g></svg>');
+  const r = await m.filmstrip({ file: svg, outDir: join(out, 'svg-strip'), count: 4, width: 200, height: 200 });
+  assert.deepEqual(r.frames.map((f) => f.label), ['t = 0.25 s', 't = 0.75 s', 't = 1.25 s', 't = 1.75 s']);
+  const v = await m.renderVideo({ file: svg, outDir: join(out, 'svg-video'), preset: 'ultrafast', width: 200, height: 200 });
+  assert.ok(Math.abs(m.probe(v.videos[0].file).duration - 2) < 0.1);
+  assert.deepEqual(readdirSync(dir), ['spin.svg'], 'wrapper files removed');
+  await assert.rejects(m.filmstrip({ file: svg, outDir: join(out, 'svg-strip2'), times: [0], aspect: 'not-a-format' }));
+  assert.deepEqual(readdirSync(dir), ['spin.svg'], 'wrapper removed on error too');
 });
 
 test('a page without a duration is refused with a clear message', { skip }, async () => {

@@ -31,6 +31,9 @@ pieces.forEach((p, i) => {
       const r = await m.renderPdf({ file, outDir: join(out, `pdf-${i}`) });
       assert.equal(r.warnings, undefined, JSON.stringify(r.warnings));
       assert.equal(r.pages, p.pages);
+      const boxes = [...readFileSync(r.file, 'latin1').matchAll(/\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/g)].map((x) => [Math.round(+x[1]), Math.round(+x[2])]);
+      assert.equal(boxes.length, p.pages);
+      for (const b of boxes) assert.ok(Math.abs(b[0] - p.pt[0]) <= 1 && Math.abs(b[1] - p.pt[1]) <= 1, `page ${JSON.stringify(b)} pt, want ${JSON.stringify(p.pt)}`);
     });
     return;
   }
@@ -42,4 +45,15 @@ pieces.forEach((p, i) => {
     const contrast = q.checks.find((c) => c.name === 'contrast');
     assert.equal(contrast.findings.length, 0, `contrast below AA: ${JSON.stringify(contrast.findings)}`);
   });
+});
+
+test('logo: every concept and export renders on the size ladder (16-512 px) in light and dark, with ink in every cell', { skip }, async () => {
+  const { contactSheet } = await eng('contact.mjs');
+  const { measureImage } = await eng('refs.mjs');
+  const files = ['concepts/a-letterform.svg', 'concepts/b-vial.svg', 'concepts/c-grid.svg', 'export/logo.svg', 'export/logo-mono.svg'].map((f) => join(PLUGIN, 'examples', 'logo', f));
+  const r = await contactSheet({ items: files.map((file) => ({ file })), sizes: [16, 32, 64, 128, 512], themes: ['light', 'dark'], outDir: join(out, 'logo-ladder') });
+  assert.equal(r.cells.length, files.length * 5 * 2);
+  // every cell has a mark in it (the trimmed content box is not empty), smallest and largest alike
+  const { images } = await measureImage({ images: r.cells.filter((x) => /· (16|512) ·/.test(x.label)).map((c) => c.file) });
+  for (const im of images) assert.ok(im.box[2] >= 2 && im.box[3] >= 2, `${im.file}: ${JSON.stringify(im.box)}`);
 });

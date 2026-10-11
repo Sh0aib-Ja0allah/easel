@@ -1,0 +1,8 @@
+{
+  "name": "easel-pixel-tests",
+  "private": true,
+  "description": "Tests for easel-pixel (the launcher with a stand-in package and no network, the hooks, the skills, agents and settings). No dependencies; no Aseprite needed.",
+  "scripts": {
+    "test": "node --test --test-reporter=spec \"test/*.test.mjs\""
+  }
+}

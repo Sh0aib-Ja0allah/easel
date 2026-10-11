@@ -33,16 +33,23 @@ a board, carried in a stack. That keeps the metaphors physical and low-tech.
 ## Drawing it in SVG
 
 ```svg
-<g id="card" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="-36" y="-48" width="72" height="96" rx="8" fill="#fff"/>
-  <path d="M-24 12h48M-24 24h48M-24 36h32" stroke-width="1.5" opacity=".5"/>
-  <circle cx="-12" cy="-22" r="3.5" fill="#111" stroke="none"/>
-  <circle cx="12" cy="-22" r="3.5" fill="#111" stroke="none"/>
-  <path d="M-36 0l-26 18M36 0l26 -14"/>   <!-- arms: change per pose -->
-  <path d="M-14 48l-4 30M14 48l4 30"/>    <!-- legs -->
+<defs>
+  <g id="card" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-36" y="-48" width="72" height="96" rx="8" fill="#fff"/>
+    <path d="M-24 12h48M-24 24h48M-24 36h32" stroke-width="1.5" opacity=".5"/>
+    <circle cx="-12" cy="-22" r="3.5" fill="#111" stroke="none"/>
+    <circle cx="12" cy="-22" r="3.5" fill="#111" stroke="none"/>
+  </g>
+</defs>
+<g transform="translate(400 300)">
+  <use href="#card"/>
+  <g fill="none" stroke="#111" stroke-width="3" stroke-linecap="round">
+    <path d="M-36 0l-26 18M36 0l26 -14"/>   <!-- arms: this pose only -->
+    <path d="M-14 48l-4 30M14 48l4 30"/>    <!-- legs: this pose only -->
+  </g>
 </g>
 ```
 
-Place it with `<use href="#card" transform="translate(x y) rotate(a)"/>` and redraw the arms and
-legs per pose (pushing, pulling, carrying, holding up). Keep the body and face identical across
-images.
+`#card` is the body and face only; reuse it with `<use href="#card"/>` inside a group placed
+with `transform="translate(x y) rotate(a)"`, and draw the arms and legs in that group for each pose
+(pushing, pulling, carrying, holding up). Keep the body and face identical across images.

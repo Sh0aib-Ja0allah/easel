@@ -53,12 +53,17 @@ test('adapted files name their source, commit and licence; Apache sources say wh
 
 test('no source characters, branded styling, external URLs, Python or shell-only steps in the skills', () => {
   for (const f of SKILLS.flatMap((s) => walk(join(PLUGIN, 'skills', s)))) {
-    const body = read(f).replace(/^(---\n[\s\S]*?\n---\n)?\s*<!--[\s\S]*?-->/, '');
+    // only the attribution comment is skipped (it must name its source); the frontmatter is scanned too
+    const body = read(f).replace(/<!--\s*Easel[\s\S]*?-->/, '');
     assert.doesNotMatch(body, NAMES, f);
     for (const m of body.match(/https?:\/\/[^\s"'<>)]+/g) || []) assert.match(m, /^http:\/\/www\.w3\.org\/|^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/p5\.js\/1\.11\.13\/p5\.min\.js$|example\.com/, `${f}: ${m}`);
     assert.doesNotMatch(body, /python3? |pip install|svg_loop\.py|validate\.sh|xmllint|\/tmp\/|\/usr\/bin|\/home\/claude|\/mnt\/user-data/, f);
   }
   assert.doesNotMatch(read(join(PLUGIN, 'skills', 'concept-illustration', 'reference', 'mascot.md')), /peanut|xiaohei/i);
+});
+
+test('every skill ends in a critique by easel-core:critique with a named rubric', () => {
+  for (const s of SKILLS) assert.match(read(join(PLUGIN, 'skills', s, 'SKILL.md')), /easel-core:critique[\s\S]{0,80}\*\*(illustration|design)\*\* rubric/, s);
 });
 
 test('the corrected bar chart: every bar on the baseline, heights proportional to the data', () => {
@@ -91,6 +96,9 @@ test('svg-check: good files pass, broken ones fail with the reason, and the comm
   ];
   for (const [svg, re] of cases) { const r = checkSvg(svg); assert.equal(r.pass, false, svg); assert.match(r.problems.join(' | '), re, svg); }
   assert.match(checkSvg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" aria-hidden="true"><style>a{}</style></svg>', { email: true }).problems.join(), /email/);
+  // a sprite sheet: the symbols carry the viewBox, the root needs none
+  assert.deepEqual(checkSvg('<svg xmlns="http://www.w3.org/2000/svg"><symbol id="a" viewBox="0 0 24 24"><path d="M2 2h20"/></symbol></svg>').problems, []);
+  assert.match(checkSvg('<svg xmlns="http://www.w3.org/2000/svg"><symbol id="a"><path d="M2 2h20"/></symbol></svg>').problems.join(), /#a\) has no viewBox/);
   const dir = mkdtempSync(join(tmpdir(), 'easel-svgcheck-'));
   try {
     writeFileSync(join(dir, 'good.svg'), ok);
@@ -116,4 +124,20 @@ test('examples: every skill but the entry has one; every SVG passes svg-check; o
     assert.doesNotMatch(t, /Arial|Helvetica|Segoe|Georgia|Times New Roman|Consolas|Menlo|Comic Sans|DejaVu|Poppins|Lora\b|system-ui/, f);
     assert.doesNotMatch(t, NAMES, f);
   }
+});
+
+test('every complete SVG in the references and in easel-design\'s examples passes svg-check, as the skills promise', async () => {
+  const { checkSvg } = await import(pathToFileURL(join(PLUGIN, 'tools', 'svg-check.mjs')).href);
+  let n = 0;
+  for (const f of SKILLS.flatMap((s) => walk(join(PLUGIN, 'skills', s))).filter((x) => x.endsWith('.md'))) {
+    for (const [, code] of read(f).matchAll(/```(?:svg|xml)\n([\s\S]*?)```/g)) {
+      const t = code.trim();
+      if (!/^(<\?xml[^>]*>\s*)?<svg\b[\s\S]*<\/svg>$/.test(t)) continue; // fragments are not files
+      n++;
+      assert.deepEqual(checkSvg(t).problems, [], `${f}: ${t.slice(0, 80)}`);
+    }
+  }
+  assert.ok(n >= 10, `${n} complete SVGs in the references`);
+  const DESIGN = join(PLUGIN, '..', 'easel-design', 'examples');
+  for (const f of walk(DESIGN).filter((x) => x.endsWith('.svg'))) assert.deepEqual(checkSvg(read(f)).problems, [], f);
 });
