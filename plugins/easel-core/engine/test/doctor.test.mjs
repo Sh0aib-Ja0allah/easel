@@ -46,3 +46,30 @@ test('optional checks do not affect ok', () => {
   const required = r.checks.filter((c) => c.required);
   assert.equal(r.ok, required.every((c) => c.ok));
 });
+
+test('chromium counts as installed only with Playwright\'s INSTALLATION_COMPLETE marker (not a half-downloaded folder)', async () => {
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  const data = scratch();
+  const pw = join(data, 'node_modules', 'playwright-core');
+  mkdirSync(pw, { recursive: true });
+  writeFileSync(join(pw, 'package.json'), JSON.stringify({ name: 'playwright-core', version: '0.0.0' }));
+  writeFileSync(join(pw, 'browsers.json'), JSON.stringify({ browsers: [{ name: 'chromium-headless-shell', revision: '9999' }] }));
+  const shell = join(data, 'ms-playwright', 'chromium_headless_shell-9999');
+  mkdirSync(join(shell, 'chrome-headless-shell-linux64'), { recursive: true });
+  writeFileSync(join(shell, 'chrome-headless-shell-linux64', 'partial.bin'), 'x');
+  const chromium = (env) => doctorReport(env).checks.find((c) => c.name === 'chromium');
+  const env = { ...process.env, EASEL_DATA: data, PLAYWRIGHT_BROWSERS_PATH: '' };
+  assert.equal(chromium(env).ok, false);
+  assert.match(chromium(env).detail, /incomplete install/);
+  writeFileSync(join(shell, 'INSTALLATION_COMPLETE'), '');
+  assert.equal(chromium(env).ok, true);
+  assert.equal(chromium({ ...env, PLAYWRIGHT_BROWSERS_PATH: '0' }).ok, true, '"0" means the data dir, as for the launch');
+});
+
+test('GOOGLE_API_KEY (accepted by easel-ai-media) is a provider key', () => {
+  const r = doctorReport({ EASEL_DATA: scratch(), GOOGLE_API_KEY: 'g-secret-value' });
+  const keys = r.checks.find((c) => c.name === 'provider keys (optional)');
+  assert.equal(keys.ok, true);
+  assert.match(keys.detail, /GOOGLE_API_KEY/);
+  assert.ok(!JSON.stringify(r).includes('g-secret-value'));
+});

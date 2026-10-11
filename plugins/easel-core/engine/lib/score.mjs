@@ -17,6 +17,9 @@ import { validateData } from './schemas.mjs';
 const SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 export const PALETTES = ['warm', 'bright', 'retro'];
 const SFX = ['whoosh', 'swish', 'pop', 'click', 'tick', 'chime', 'riser', 'impact', 'blip'];
+// The page hands the WAV back as one base64 string; past about 2000 s (48 kHz 16-bit stereo) that string
+// is longer than the browser allows. 30 minutes is the cap.
+export const MAX_SCORE_SEC = 1800;
 
 export function parseKey(key = 'D major') {
   const m = /^([A-G])(#|b)?(?: ?(major|minor|maj|min|m))?$/.exec(String(key).trim());
@@ -158,6 +161,7 @@ export async function audioScore(args) {
   if (!cues) throw new Error('Give a cue sheet: file (a cues.json path) or cues (the object).');
   const problems = validateData('cues', cues);
   if (problems.length) throw new Error(`The cue sheet is not valid: ${problems.slice(0, 5).join('; ')}`);
+  if (cues.durationSec > MAX_SCORE_SEC) throw new Error(`durationSec ${cues.durationSec} is too long for one score: audio_score renders at most ${MAX_SCORE_SEC} s (30 minutes). Split the piece into parts and score each one.`);
   const palette = args.palette || 'warm';
   if (!PALETTES.includes(palette)) throw new Error(`palette must be one of ${PALETTES.join(', ')}`);
   const plan = planScore(cues, { palette });

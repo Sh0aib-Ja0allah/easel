@@ -27,8 +27,9 @@ export async function loadPlaywright(env = process.env) {
   if (playwright) return playwright;
   const found = findPackage('playwright-core', env);
   if (!found) throw new Error('playwright-core is not installed. Run the Easel doctor tool with install: true (or /easel-core:setup).');
-  // Playwright reads PLAYWRIGHT_BROWSERS_PATH when it is imported.
-  if (!env.PLAYWRIGHT_BROWSERS_PATH) process.env.PLAYWRIGHT_BROWSERS_PATH = browsersPath(env);
+  // Playwright reads PLAYWRIGHT_BROWSERS_PATH when it is imported. Always the folder doctor checks and
+  // installs into (browsersPath), so "0", a relative path or an unsubstituted ${...} cannot split them.
+  process.env.PLAYWRIGHT_BROWSERS_PATH = browsersPath(env);
   playwright = await import(pathToFileURL(join(found.dir, 'index.mjs')).href);
   return playwright;
 }

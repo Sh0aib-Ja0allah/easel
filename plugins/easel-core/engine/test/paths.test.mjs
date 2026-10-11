@@ -33,3 +33,7 @@ test('job dirs stay inside easel-out', () => {
     assert.ok(d.startsWith(base + sep), `${evil} -> ${d}`);
   }
 });
+
+test('PLAYWRIGHT_BROWSERS_PATH=0 (Playwright\'s "inside the package") counts as unset: the data dir is used', () => {
+  assert.equal(browsersPath({ EASEL_DATA: '/d', PLAYWRIGHT_BROWSERS_PATH: '0' }), join(resolve('/d'), 'ms-playwright'));
+});

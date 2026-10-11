@@ -1,7 +1,8 @@
 // Composes images into one sheet (contact sheet, logo size ladder, filmstrip) by laying them out
-// in an HTML grid next to the images and screenshotting it. No image library needed.
+// in an HTML grid next to the images and screenshotting it. No image library needed. Images are
+// referenced by file URL, so names with "#", "?", "%" or spaces (and other drives) load.
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, relative } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { newPage } from './browser.mjs';
 
@@ -26,7 +27,7 @@ export async function composeSheet(browser, { cells, out, columns, title, maxCel
     img{display:block;image-rendering:auto}
     figcaption{padding:6px 8px;border-top:1px solid #e6e2da;background:#faf9f6;font-size:12px;overflow-wrap:anywhere}
   </style></head><body>${title ? `<h1>${esc(title)}</h1>` : ''}<div class="grid">${shown
-    .map((c) => `<figure><div class="well" style="background:${BG[c.background] || c.background || BG.light}"><img src="${esc(relative(dirname(out), c.file).split('\\').join('/'))}" width="${c.w}" height="${c.h}" alt=""></div><figcaption>${esc(c.label)}</figcaption></figure>`)
+    .map((c) => `<figure><div class="well" style="background:${BG[c.background] || c.background || BG.light}"><img src="${esc(pathToFileURL(c.file).href)}" width="${c.w}" height="${c.h}" alt=""></div><figcaption>${esc(c.label)}</figcaption></figure>`)
     .join('')}</div></body></html>`;
   const htmlPath = join(dirname(out), `.${basename(out)}.html`);
   writeFileSync(htmlPath, html);

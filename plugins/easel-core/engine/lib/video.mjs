@@ -1,13 +1,14 @@
 // render_video: seek a page frame by frame (t = n / fps) and pipe PNG frames into ffmpeg.
 // filmstrip: a few frames at chosen times on one sheet, so a vision model can review motion.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
+import { randomBytes } from 'node:crypto';
 import { ASPECTS, newPage, openBrowser, waitReady } from './browser.mjs';
 import { masterWav, writeBase64 } from './audio.mjs';
 import { requireBinary } from './binaries.mjs';
 import { outputDir } from './render.mjs';
-import { resolveSource } from './source.mjs';
+import { releaseSource, resolveSource } from './source.mjs';
 import { composeSheet } from './sheet.mjs';
 
 const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'video';
@@ -33,6 +34,21 @@ export async function compositionInfo(page) {
     }
     return css > 0 ? { duration: +(css / 1000).toFixed(3), fromCss: true } : {};
   });
+}
+
+// The bounds of the render_video arguments. What a page declares (data-*, TIMELINE, __composition, or
+// the length of its CSS animations) must meet them too, or a page could ask for a day-long or a
+// 20000 px render that the arguments would refuse.
+export const LIMITS = { duration: [0.04, 600, ' s'], fps: [1, 120, ' fps'], width: [16, 7680, ' px'], height: [16, 7680, ' px'] };
+export function checkDeclared(info, keys) {
+  for (const k of keys) {
+    const v = info[k];
+    if (v === undefined) continue;
+    const [lo, hi, unit] = LIMITS[k];
+    if (v >= lo && v <= hi) continue;
+    if (k === 'duration' && info.fromCss) throw new Error(`the page's CSS animations last ${v} s (every iteration counted); the duration must be ${lo} to ${hi} s: pass duration, or shorten the animation (an infinite one counts one loop)`);
+    throw new Error(`the page declares ${k} ${v} (data-${k} on the composition root, or TIMELINE / __composition); it must be ${lo} to ${hi}${unit}: fix the page or pass ${k}`);
+  }
 }
 
 function encoder(ffmpeg, { fps, file, crf, audio, duration, preset }) {
@@ -61,7 +77,15 @@ function encoder(ffmpeg, { fps, file, crf, audio, duration, preset }) {
     proc.stdin.once('drain', onDrain);
     proc.once('close', onClose);
   });
-  return { write, end: async () => { proc.stdin.end(); await done; } };
+  // abort: stop ffmpeg without letting it finish the file (a failed render must not look playable)
+  const abort = async () => { if (!closed) { proc.stdin.destroy(); proc.kill('SIGKILL'); } await done.catch(() => {}); };
+  return { write, end: async () => { proc.stdin.end(); await done; }, abort };
+}
+
+// Windows can hold a file a moment after the process that wrote it exits: retry, and never let the
+// cleanup hide the error that caused it.
+function removePartial(file) {
+  try { rmSync(file, { force: true, recursive: true, maxRetries: 5, retryDelay: 100 }); } catch { /* the render error matters more */ }
 }
 
 async function renderOne(browser, src, opts) {
@@ -70,20 +94,33 @@ async function renderOne(browser, src, opts) {
     await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
     await waitReady(page);
     const info = await compositionInfo(page);
+    checkDeclared(info, [...(opts.fps ? [] : ['fps']), ...(opts.duration ? [] : ['duration'])]);
     const fps = opts.fps || info.fps || 30;
     const duration = opts.duration || info.duration;
     if (!duration) throw new Error('No duration: pass duration (seconds) or set data-duration on the [data-composition-id] root (CSS animations are measured when there is neither).');
     const frames = Math.round(duration * fps);
     let audio = opts.audio;
     if (audio === 'page') audio = await opts.pageAudio(page);
-    const enc = encoder(opts.ffmpeg, { fps, file: opts.file, crf: opts.crf, audio, duration, preset: opts.preset });
+    // Encode to a partial file and move it into place only when every frame is in: a render that fails
+    // half way leaves no truncated (but playable) MP4 behind, and never replaces a good earlier one.
+    const partial = join(dirname(opts.file), `.${basename(opts.file, '.mp4')}-${process.pid}-${randomBytes(4).toString('hex')}.partial.mp4`);
+    const enc = encoder(opts.ffmpeg, { fps, file: partial, crf: opts.crf, audio, duration, preset: opts.preset });
     try {
       for (let n = 0; n < frames; n++) {
         await page.evaluate((t) => window.__easelSeek(t), n / fps);
         await enc.write(await page.screenshot({ type: 'png', animations: 'allow' }));
       }
-    } finally {
       await enc.end();
+    } catch (err) {
+      await enc.abort();
+      removePartial(partial);
+      throw err;
+    }
+    try {
+      renameSync(partial, opts.file);
+    } catch (err) {
+      removePartial(partial);
+      throw new Error(`could not write ${opts.file} (${err.code || err.message}); is it open in another program?`);
     }
     return { file: opts.file, width: opts.width + (opts.width % 2), height: opts.height + (opts.height % 2), fps, duration, frames, bytes: statSync(opts.file).size, ...(opts.aspect ? { aspect: opts.aspect } : {}), ...(audio ? { audio } : {}), blocked: [...new Set(blocked)], errors: [...new Set(errors)] };
   } finally {
@@ -94,9 +131,11 @@ async function renderOne(browser, src, opts) {
 export async function renderVideo(args) {
   const t0 = Date.now();
   const ffmpeg = requireBinary('ffmpeg');
-  if (args.audio !== undefined && args.audio !== 'page') {
-    // Renders are offline: ffmpeg would happily fetch a URL, so only local files are accepted.
-    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(args.audio) || !existsSync(args.audio)) throw new Error(`audio must be a local file that exists (or "page"): ${args.audio}`);
+  let audio = args.audio;
+  if (audio !== undefined && audio !== 'page') {
+    // Renders are offline: ffmpeg would happily fetch a URL, so only local files are accepted (by absolute path).
+    audio = resolve(String(args.audio));
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(args.audio) || !existsSync(audio) || !statSync(audio).isFile()) throw new Error(`audio must be a local file that exists (or "page"): ${args.audio}`);
   }
   const out = outputDir(args);
   mkdirSync(out, { recursive: true });
@@ -120,20 +159,25 @@ export async function renderVideo(args) {
     browser = await openBrowser();
     // Default size: the composition's data-width/height, else 1920x1080.
     let base = { width: args.width, height: args.height };
-    if (!base.width || !base.height) {
+    if ((!base.width || !base.height) && !(args.aspects && args.aspects.length)) {
       const { page, context } = await newPage(browser, { width: 1920, height: 1080 });
-      try { await page.goto(src.url, { waitUntil: 'load' }); const info = await compositionInfo(page); base = { width: base.width || info.width || 1920, height: base.height || info.height || 1080 }; } finally { await context.close(); }
+      try {
+        await page.goto(src.url, { waitUntil: 'load' });
+        const info = await compositionInfo(page);
+        checkDeclared(info, ['width', 'height'].filter((k) => !base[k]));
+        base = { width: base.width || info.width || 1920, height: base.height || info.height || 1080 };
+      } finally { await context.close(); }
     }
     const targets = args.aspects && args.aspects.length
       ? args.aspects.map((a) => ({ tag: a.replace(':', 'x'), aspect: a, width: ASPECTS[a][0], height: ASPECTS[a][1] }))
       : [{ tag: '', ...base }];
     for (const tg of targets) {
       const file = join(out, `${name}${tg.tag ? `-${tg.tag}` : ''}.mp4`);
-      results.push(await renderOne(browser, src, { ...args, ...tg, file, ffmpeg, pageAudio, seed: args.seed ?? 1, crf: args.crf ?? 18, preset: args.preset || 'medium', theme: args.theme || 'light' }));
+      results.push(await renderOne(browser, src, { ...args, ...tg, audio, file, ffmpeg, pageAudio, seed: args.seed ?? 1, crf: args.crf ?? 18, preset: args.preset || 'medium', theme: args.theme || 'light' }));
     }
   } finally {
     if (browser) await browser.close();
-    if (src.kind === 'image') rmSync(src.path, { force: true });
+    releaseSource(src);
   }
   const warnings = [];
   for (const r of results) {
@@ -161,10 +205,14 @@ export async function filmstrip(args) {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
       await waitReady(page);
       const info = await compositionInfo(page);
-      if ((!args.width || !args.height) && !args.aspect && info.width && info.height) await page.setViewportSize({ width: args.width || info.width, height: args.height || info.height });
+      if ((!args.width || !args.height) && !args.aspect && info.width && info.height) {
+        checkDeclared(info, ['width', 'height'].filter((k) => !args[k]));
+        await page.setViewportSize({ width: args.width || info.width, height: args.height || info.height });
+      }
       const duration = args.duration || info.duration;
       let times = args.times;
       if (!times || !times.length) {
+        if (!args.duration) checkDeclared(info, ['duration']);
         if (!duration) throw new Error('Give times (seconds) or a duration (or data-duration on the composition root; CSS animations are measured when there is neither).');
         const count = args.count || 8;
         times = Array.from({ length: count }, (_, i) => +((duration * i) / count + duration / (2 * count)).toFixed(3));
@@ -183,6 +231,6 @@ export async function filmstrip(args) {
     return { filmstrip: sheet.file, frames: cells.map((c) => ({ file: c.file, label: c.label })), ms: Date.now() - t0 };
   } finally {
     if (browser) await browser.close();
-    if (src.kind === 'image') rmSync(src.path, { force: true });
+    releaseSource(src);
   }
 }

@@ -8,14 +8,21 @@ import { pathToFileURL } from 'node:url';
 import { tools } from './tools.mjs';
 import { validateArgs } from './lib/validate.mjs';
 
-function coerce(v) {
+// A flag's value is a string. With the tool's schema it becomes what the schema asks for: a number
+// only for number/integer keys (so --slug 007 stays "007"), a boolean for boolean keys, parsed JSON
+// for object/array keys. Without a schema (an unknown key or tool) it is guessed as before.
+function coerce(v, type) {
   if (v === undefined) return true;
-  if (v === 'true') return true;
-  if (v === 'false') return false;
-  if (/^-?\d+(\.\d+)?$/.test(v)) return Number(v);
-  if (/^[[{]/.test(v)) { try { return JSON.parse(v); } catch { /* keep as string */ } }
+  const types = type === undefined ? null : [].concat(type);
+  const can = (t) => !types || types.includes(t);
+  if (can('boolean') && (v === 'true' || v === 'false')) return v === 'true';
+  if ((can('number') || can('integer')) && /^-?\d+(\.\d+)?$/.test(v)) return Number(v);
+  if ((can('object') || can('array')) && /^[[{]/.test(v)) { try { return JSON.parse(v); } catch { /* keep as string */ } }
   return v;
 }
+
+// Keys that would reach Object.prototype instead of the arguments (and so skip validation).
+const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype']);
 
 function parseJson(value) {
   const text = typeof value === 'string' && value.startsWith('@') ? readFileSync(value.slice(1), 'utf8').replace(/^\uFEFF/, '') : value;
@@ -40,15 +47,23 @@ export function coerceToSchema(schema, args) {
 
 export function parseArgs(argv) {
   const [name, ...rest] = argv;
-  let args = {};
+  const props = (Object.hasOwn(tools, name || '') && tools[name].inputSchema.properties) || null;
+  const args = {};
+  const set = (k, v) => { if (FORBIDDEN.has(k)) throw new Error(`Argument name not allowed: ${k}`); args[k] = v; };
   for (let i = 0; i < rest.length; i++) {
     const a = rest[i];
     if (!a.startsWith('--')) throw new Error(`Unexpected argument: ${a}`);
     const key = a.slice(2);
     const next = rest[i + 1];
     const value = next !== undefined && !next.startsWith('--') ? (i++, next) : undefined;
-    if (key === 'json') args = { ...args, ...parseJson(value) };
-    else args[key.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = coerce(value);
+    if (key === 'json') {
+      const j = parseJson(value);
+      if (!j || typeof j !== 'object' || Array.isArray(j)) throw new Error('--json must be a JSON object');
+      for (const [k, v] of Object.entries(j)) set(k, v);
+    } else {
+      const k = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+      set(k, coerce(value, props && Object.hasOwn(props, k) ? props[k].type : undefined));
+    }
   }
   return { name, args };
 }

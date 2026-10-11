@@ -101,7 +101,7 @@ step('easel-core: doctor --install into an empty data folder', () => {
   if (bad.length) throw new Error(`doctor still reports: ${bad.join(', ')}`);
   return { checks: r.checks.length };
 });
-step('easel-core: MCP server (installed copy)', () => mcp([join(core(), 'engine', 'server.mjs')], engineEnv(), ['render_still', 'render_video', 'qa', 'render_pdf', 'mux_audio']));
+step('easel-core: MCP server (installed copy)', () => mcp([join(core(), 'engine', 'server.mjs')], engineEnv(), ['render_still', 'render_video', 'qa', 'render_pdf', 'mux_audio', 'embed_fonts']));
 step('easel-core: render_still offline with bundled fonts', () => {
   const r = cli('render_still', { html: '<html><body style="margin:0;font:700 64px Inter;background:#fff;color:#111">Easel</body></html>', width: 400, height: 200, outDir: join(out, 'core') });
   if (r.warnings) throw new Error(JSON.stringify(r.warnings));

@@ -46,3 +46,16 @@ test('cli reads --json @file (UTF-8 BOM tolerated) and explains bad JSON', () =>
     rmSync(d, { recursive: true, force: true });
   }
 });
+
+test('flags become numbers only where the schema wants a number: --slug 007 stays "007"', () => {
+  assert.deepEqual(parseArgs(['render_still', '--slug', '007', '--width', '640', '--name', 'true', '--transparent', 'false']).args, { slug: '007', width: 640, name: 'true', transparent: false });
+  assert.deepEqual(parseArgs(['render_still', '--sizes', '[{"width":20,"height":20}]']).args, { sizes: [{ width: 20, height: 20 }] });
+});
+
+test('cli refuses argument names that would reach Object.prototype and skip validation', () => {
+  for (const args of [['--__proto__', '{"message":"via proto"}'], ['--constructor', 'x'], ['--json', '{"__proto__":{"message":"via proto"}}']]) {
+    const r = run('ping', ...args);
+    assert.equal(r.status, 2, `${args.join(' ')}: ${r.stdout}`);
+    assert.doesNotMatch(r.stdout, /via proto/);
+  }
+});

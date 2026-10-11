@@ -90,3 +90,11 @@ test('audio_score: effects on frame 0 (whoosh, swish, riser) render instead of f
   assert.equal(r.pass, true, JSON.stringify(r));
   assert.ok(Math.abs(m.probe(r.file).duration - 3) < 0.05);
 });
+
+test('audio_score refuses a cue sheet longer than 1800 s with a clear message (not "the page returned no audio")', async () => {
+  const { audioScore, MAX_SCORE_SEC } = await import('../lib/score.mjs');
+  assert.equal(MAX_SCORE_SEC, 1800);
+  // the cue sheet schema caps durationSec at 1800 too (so `validate` agrees); either refusal names
+  // the limit, and neither is the misleading "the page returned no audio"
+  await assert.rejects(audioScore({ cues: { version: 1, fps: 30, durationSec: 2000, cues: [] } }), (e) => /durationSec/.test(e.message) && /1800/.test(e.message) && !/no audio/.test(e.message));
+});

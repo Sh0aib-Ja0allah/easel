@@ -1,7 +1,7 @@
 // doctor: checks (and optionally installs) everything the engine needs.
 // Never prints secret values: provider keys are reported by name only.
 import { spawnSync } from 'node:child_process';
-import { accessSync, constants, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { platform, arch } from 'node:os';
 import { browsersPath, dataDir } from './paths.mjs';
@@ -9,7 +9,7 @@ import { findPackage, pinnedVersions } from './deps.mjs';
 import { findBinary, installHint } from './binaries.mjs';
 import { ENGINE_VERSION } from './version.mjs';
 
-export const PROVIDER_KEYS = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'FAL_KEY', 'REPLICATE_API_TOKEN', 'ATLASCLOUD_API_KEY', 'ELEVENLABS_API_KEY'];
+export const PROVIDER_KEYS = ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'OPENAI_API_KEY', 'FAL_KEY', 'REPLICATE_API_TOKEN', 'ATLASCLOUD_API_KEY', 'ELEVENLABS_API_KEY'];
 const MIN_NODE = 20;
 
 function headlessShellRevision(pwDir) {
@@ -63,8 +63,10 @@ export function doctorReport(env = process.env, os = platform()) {
   const pw = findPackage('playwright-core', env);
   const rev = pw && headlessShellRevision(pw.dir);
   const shellDir = rev ? join(browsers, `chromium_headless_shell-${rev}`) : null;
-  const shellOk = !!shellDir && existsSync(shellDir) && readdirSync(shellDir).length > 0;
-  add('chromium', shellOk, true, shellOk ? shellDir : `missing (expected in ${browsers})`, 'Run doctor with install: true. It downloads Chromium headless shell (about 110 MB) into the plugin data folder.');
+  // Playwright writes INSTALLATION_COMPLETE last: a folder without it is an interrupted download.
+  const shellOk = !!shellDir && existsSync(join(shellDir, 'INSTALLATION_COMPLETE'));
+  const partial = !!shellDir && !shellOk && existsSync(shellDir);
+  add('chromium', shellOk, true, shellOk ? shellDir : partial ? `incomplete install in ${shellDir} (no INSTALLATION_COMPLETE)` : `missing (expected in ${browsers})`, 'Run doctor with install: true. It downloads Chromium headless shell (about 110 MB) into the plugin data folder.');
 
   for (const bin of ['ffmpeg', 'ffprobe']) {
     const b = findBinary(bin, env, os);

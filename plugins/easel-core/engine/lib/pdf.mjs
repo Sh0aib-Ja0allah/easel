@@ -1,10 +1,10 @@
 // render_pdf: a page (HTML or SVG) -> a print PDF (posters, flyers, business cards, decks), with
 // the same offline page setup as render_still (bundled fonts, seeded random, no network).
-import { mkdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { newPage, openBrowser, waitReady } from './browser.mjs';
 import { outputDir } from './render.mjs';
-import { resolveSource } from './source.mjs';
+import { releaseSource, resolveSource } from './source.mjs';
 
 const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'print';
 export const PAPER = ['Letter', 'Legal', 'Tabloid', 'Ledger', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6'];
@@ -25,7 +25,7 @@ export async function renderPdf(args) {
   mkdirSync(out, { recursive: true });
   const name = slugOf(args.name || 'print');
   const src = resolveSource(args, out, name);
-  if (src.kind === 'image' && !/\.svg$/i.test(src.wrapperFor)) { rmSync(src.path, { force: true }); throw new Error('render_pdf takes a page (.html or .svg); place an image in an HTML page first'); }
+  if (src.kind === 'image' && !/\.svg$/i.test(src.wrapperFor)) { releaseSource(src); throw new Error('render_pdf takes a page (.html or .svg); place an image in an HTML page first'); }
   let browser = null;
   const warnings = [];
   try {
@@ -52,6 +52,6 @@ export async function renderPdf(args) {
     }
   } finally {
     if (browser) await browser.close();
-    if (src.kind === 'image') rmSync(src.path, { force: true });
+    releaseSource(src);
   }
 }

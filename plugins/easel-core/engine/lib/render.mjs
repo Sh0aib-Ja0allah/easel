@@ -1,12 +1,13 @@
 // render_still: a page (HTML, SVG or image) -> PNG at one or more sizes, light and/or dark.
-import { mkdirSync, rmSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { jobDir } from './paths.mjs';
 import { ASPECTS, newPage, openBrowser, waitReady } from './browser.mjs';
-import { resolveSource } from './source.mjs';
+import { releaseSource, resolveSource } from './source.mjs';
 import { pngSize } from './image.mjs';
 
-const slugOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'still';
+const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const slugOf = (s) => slug(s) || 'still';
 
 export function outputDir(args) {
   return args.outDir ? resolve(args.outDir) : jobDir(args.slug || 'render');
@@ -21,10 +22,12 @@ export async function renderStill(args, { browser: shared } = {}) {
   const sizes = args.sizes && args.sizes.length ? args.sizes : [{ width: args.width || aw || 1200, height: args.height || ah || 630 }];
   const themes = args.theme === 'both' ? ['light', 'dark'] : [args.theme || 'light'];
   const src = resolveSource(args, out, name);
-  const browser = shared || (await openBrowser());
+  let browser = shared || null;
   const files = [];
   const warnings = [];
   try {
+    // inside the try: a browser that fails to launch must not leave the page or wrapper behind
+    if (!browser) browser = await openBrowser();
     for (const theme of themes) {
       for (const size of sizes) {
         const { page, context, blocked, errors } = await newPage(browser, { width: size.width, height: size.height, scale: args.scale || 1, colorScheme: theme, seed: args.seed ?? 1, transparent: !!args.transparent, aspect: args.aspect || null, reducedMotion: args.reducedMotion });
@@ -33,7 +36,9 @@ export async function renderStill(args, { browser: shared } = {}) {
           await waitReady(page);
           // Stills are the state at t (default 0), never whatever wall-clock time the capture lands on.
           await page.evaluate((t) => window.__easelSeek(t), typeof args.t === 'number' ? args.t : 0);
-          const suffix = `${sizes.length > 1 || size.name ? `-${size.name || `${size.width}x${size.height}`}` : ''}${themes.length > 1 || args.theme === 'dark' ? `-${theme}` : ''}`;
+          // a size name is part of a file name: slugged like name, so it can never leave the job folder
+          const sizeName = size.name ? slug(size.name) : '';
+          const suffix = `${sizes.length > 1 || size.name ? `-${sizeName || `${size.width}x${size.height}`}` : ''}${themes.length > 1 || args.theme === 'dark' ? `-${theme}` : ''}`;
           const file = join(out, `${name}${suffix}.png`);
           const target = args.selector ? page.locator(args.selector).first() : page;
           await target.screenshot({ path: file, omitBackground: !!args.transparent, ...(args.selector ? {} : { fullPage: !!args.fullPage }), animations: 'allow' });
@@ -48,8 +53,8 @@ export async function renderStill(args, { browser: shared } = {}) {
       }
     }
   } finally {
-    if (!shared) await browser.close();
-    if (src.kind === 'image') rmSync(src.path, { force: true });
+    if (!shared && browser) await browser.close();
+    releaseSource(src);
   }
   return { files, ms: Date.now() - t0, ...(warnings.length ? { warnings: [...new Set(warnings)] } : {}) };
 }

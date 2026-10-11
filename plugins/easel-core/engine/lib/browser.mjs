@@ -1,7 +1,8 @@
 // Browser sessions for rendering. Every page is offline: file:, data: and blob: load normally,
 // https://easel.local/... is served from the plugin (fonts) and the data dir (libraries), known
 // CDN URLs for GSAP are mapped to the local copy, and every other network request is blocked.
-// An init script makes Math.random seeded and Date/performance clocks follow the render time.
+// An init script makes Math.random and crypto random values seeded and Date/performance clocks follow
+// the render time; every context runs in UTC with the en-US locale, whatever the machine's settings.
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
 import { loadPlaywright, findPackage } from './deps.mjs';
@@ -73,6 +74,34 @@ const INIT_SCRIPT = ({ seed, css, aspect }) => {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+  // crypto.getRandomValues and crypto.randomUUID follow the seed as well, from a stream of their own
+  // (Math.random gives the same numbers as before). The real call runs first, so bad arguments throw
+  // exactly as they would; its random bytes are then overwritten.
+  let cs = (Math.imul(seed >>> 0 || 1, 0x9e3779b1) ^ 0x85ebca6b) >>> 0 || 1;
+  const next32 = () => {
+    cs = (cs + 0x6d2b79f5) | 0;
+    let t = Math.imul(cs ^ (cs >>> 15), 1 | cs);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return (t ^ (t >>> 14)) >>> 0;
+  };
+  if (window.crypto && typeof crypto.getRandomValues === 'function') {
+    const real = crypto.getRandomValues.bind(crypto);
+    const getRandomValues = (arr) => {
+      real(arr);
+      const b = new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
+      for (let i = 0; i < b.length; i += 4) { const v = next32(); for (let k = 0; k < 4 && i + k < b.length; k++) b[i + k] = (v >>> (8 * k)) & 255; }
+      return arr;
+    };
+    crypto.getRandomValues = getRandomValues;
+    if (typeof crypto.randomUUID === 'function') {
+      crypto.randomUUID = () => {
+        const b = getRandomValues(new Uint8Array(16));
+        b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;   // version 4, RFC 4122 variant
+        const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+        return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+      };
+    }
+  }
   const EPOCH = Date.UTC(2026, 0, 1);
   // aspect: the format being rendered ('16:9', '9:16', '1:1', '4:5'), for pages that lay themselves
   // out per format (the animate kit reads it); null when the caller did not ask for one.
@@ -136,7 +165,8 @@ export const ASPECTS = { '16:9': [1920, 1080], '9:16': [1080, 1920], '1:1': [108
 
 export async function newPage(browser, { width, height, scale = 1, colorScheme = 'light', seed = 1, transparent = false, fonts = true, allowNetwork = false, aspect = null, reducedMotion = 'no-preference' } = {}) {
   // reducedMotion 'reduce' renders the page's prefers-reduced-motion path (render_still, filmstrip, render_video, qa)
-  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, colorScheme, reducedMotion: reducedMotion === 'reduce' ? 'reduce' : 'no-preference' });
+  // UTC and en-US: dates, number formats and Intl output must not depend on the machine rendering them.
+  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, colorScheme, reducedMotion: reducedMotion === 'reduce' ? 'reduce' : 'no-preference', timezoneId: 'UTC', locale: 'en-US' });
   const blocked = [];
   await context.route('**/*', async (route) => {
     const url = route.request().url();
@@ -171,13 +201,24 @@ export async function newPage(browser, { width, height, scale = 1, colorScheme =
 }
 
 // Wait until the page says it is ready (window.__ready, if the page uses it; window.ASSETS_READY,
-// the animate kit's promise for embedded images), fonts are loaded and images are decoded.
+// the animate kit's promise for embedded images), fonts are loaded and images are decoded. Every wait
+// is bounded by timeoutMs, so a page that never gets ready fails with a message instead of hanging.
 export async function waitReady(page, timeoutMs = 30000) {
   await page.waitForLoadState('load');
-  const usesReady = await page.evaluate(() => [...document.scripts].some((s) => s.textContent.includes('__ready')));
-  if (usesReady) await page.waitForFunction(() => window.__ready === true, null, { timeout: timeoutMs });
+  // __ready is used when an inline script names it or any script (inline or external) has set it by
+  // load (typically to false, flipped to true later); a page that never mentions it is not slowed down.
+  const usesReady = await page.evaluate(() => window.__ready !== undefined || [...document.scripts].some((s) => s.textContent.includes('__ready')));
+  if (usesReady) {
+    try {
+      await page.waitForFunction(() => !!window.__ready, null, { timeout: timeoutMs });
+    } catch (err) {
+      if (/timeout/i.test(String(err && err.message))) throw new Error(`the page set window.__ready but it did not become true within ${timeoutMs / 1000} s`);
+      throw err;
+    }
+  }
   if (await page.evaluate(() => !!window.ASSETS_READY)) {
-    await page.evaluate(() => window.ASSETS_READY);
+    const settled = await page.evaluate((ms) => Promise.race([Promise.resolve(window.ASSETS_READY).then(() => true), new Promise((r) => setTimeout(() => r(false), ms))]), timeoutMs);
+    if (!settled) throw new Error(`window.ASSETS_READY did not settle within ${timeoutMs / 1000} s: an embedded image or font never loaded (renders are offline; check the asset paths)`);
     await page.waitForFunction(() => typeof window.renderFrame === 'function' || typeof window.renderAt === 'function', null, { timeout: timeoutMs });
   }
   await page.evaluate(async () => {

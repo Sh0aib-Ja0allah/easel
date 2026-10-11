@@ -7,11 +7,11 @@
 //   colour_cast    (video/image) share of frames dominated by blue-purple hues
 //   loudness       (audio/video) integrated loudness in LUFS (ffmpeg ebur128)
 import { spawnSync } from 'node:child_process';
-import { rmSync } from 'node:fs';
-import { extname } from 'node:path';
+import { existsSync, statSync } from 'node:fs';
+import { extname, resolve } from 'node:path';
 import { newPage, openBrowser, waitReady } from './browser.mjs';
 import { requireBinary } from './binaries.mjs';
-import { resolveSource } from './source.mjs';
+import { releaseSource, resolveSource } from './source.mjs';
 import { outputDir } from './render.mjs';
 import { canvasChecks } from './canvastext.mjs';
 
@@ -22,27 +22,85 @@ const VIDEO = new Set(['.mp4', '.mov', '.webm', '.mkv', '.gif']);
 function pageScan() {
   const W = innerWidth, H = innerHeight;
   const scrolls = document.documentElement.scrollHeight > H + 1 && !document.querySelector('[data-composition-id]');
+  // Any colour the browser can paint (rgb(), and the CSS Color 4 forms Chromium computes modern colours
+  // to: oklch(), lab(), color(srgb ...), color-mix() ...) as sRGB [r, g, b, alpha]. Painted over black
+  // and over white on a 2x1 canvas, which gives both the colour and its alpha. null when the browser
+  // cannot resolve it: never assumed to be black.
+  const cv = document.createElement('canvas'); cv.width = 2; cv.height = 1;
+  const g = cv.getContext('2d', { willReadFrequently: true });
+  const takes = (s) => { g.fillStyle = '#000'; g.fillStyle = s; if (g.fillStyle !== '#000000') return true; g.fillStyle = '#fff'; g.fillStyle = s; return g.fillStyle !== '#ffffff'; };
+  const memo = new Map();
   const parse = (s) => {
-    const m = String(s).match(/rgba?\(([^)]+)\)/);
-    if (!m) return null;
-    const p = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
-    return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    s = String(s || '').trim();
+    if (!memo.has(s)) {
+      let c = null;
+      const m = s.match(/^rgba?\(([^)]+)\)$/);
+      const p = m ? m[1].split(/[\s,/]+/).filter(Boolean).map(Number) : [];
+      if (p.length >= 3 && p.every(Number.isFinite)) c = [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+      else if (s && s !== 'none' && !s.startsWith('url(') && takes(s)) {
+        g.fillStyle = '#000'; g.fillRect(0, 0, 1, 1); g.fillStyle = '#fff'; g.fillRect(1, 0, 1, 1);
+        g.fillStyle = s; g.fillRect(0, 0, 2, 1);
+        const d = g.getImageData(0, 0, 2, 1).data;
+        const a = Math.min(1, Math.max(0, 1 - (d[4] - d[0] + d[5] - d[1] + d[6] - d[2]) / 765));
+        c = a < 0.004 ? [0, 0, 0, 0] : [0, 1, 2].map((k) => Math.min(255, Math.round(d[k] / a))).concat(a);
+      }
+      memo.set(s, c);
+    }
+    const c = memo.get(s);
+    return c ? [...c] : null;
   };
   const label = (el) => { let s = el.tagName.toLowerCase(); if (el.id) s += `#${el.id}`; else if (el.classList.length) s += `.${[...el.classList].slice(0, 2).join('.')}`; return s; };
   const visible = (el) => { for (let e = el; e && e.nodeType === 1; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return false; } return true; };
   const opacityOf = (el) => { let o = 1; for (let e = el; e && e.nodeType === 1; e = e.parentElement) o *= Number(getComputedStyle(e).opacity); return o; };
   const clipping = (cs) => /(hidden|clip|scroll|auto)/.test(cs.overflow + cs.overflowX + cs.overflowY);
+  // Visually hidden on purpose (the sr-only pattern, text for screen readers): clipped to nothing by
+  // clip or clip-path, or inside a box of 1px or less that hides its overflow. Neither check applies.
+  const srOnly = (el) => {
+    for (let e = el; e && e.nodeType === 1 && e !== document.body; e = e.parentElement) {
+      const cs = getComputedStyle(e), r = e.getBoundingClientRect();
+      if (/^rect\(/.test(cs.clip) && /^(absolute|fixed)$/.test(cs.position)) {
+        const [t, rt, b, l] = cs.clip.slice(5, -1).split(/\s*,\s*|\s+/).map((v, i) => (v === 'auto' ? [0, r.width, r.height, 0][i] : parseFloat(v)));
+        if (b - t <= 1 || rt - l <= 1) return true;
+      }
+      const cp = cs.clipPath || 'none';
+      const inset = cp.match(/^inset\(\s*([\d.]+)%/);
+      const pts = cp.startsWith('polygon(') ? cp.slice(8, -1).split(',').map((p) => p.trim()) : [];
+      if ((inset && Number(inset[1]) >= 50) || /^(circle|ellipse)\(\s*0(px|%)?[\s)]/.test(cp) || (pts.length && new Set(pts).size === 1)) return true;
+      if (/(hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY) && (r.width <= 1 || r.height <= 1)) return true;
+    }
+    return false;
+  };
+  // A focus target parked off-screen (a skip link at left:-9999px) that comes into view when focused:
+  // focus it, look, and put focus back. Transitions started by the focus change are finished at once,
+  // so the page is captured as it was.
+  const FOCUSABLE = 'a[href],button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"])';
+  const showsOnFocus = (el) => {
+    const f = el.closest(FOCUSABLE);
+    if (!f || typeof f.focus !== 'function') return false;
+    const prev = document.activeElement, before = new Set(document.getAnimations());
+    const settle = () => { for (const a of document.getAnimations()) if (!before.has(a)) a.finish(); };
+    f.focus({ preventScroll: true }); settle();
+    const r = el.getBoundingClientRect();
+    const shown = document.activeElement === f && r.right > 0 && r.left < W && r.bottom > 0 && (scrolls || r.top < H);
+    f.blur();
+    if (prev && prev !== document.body && typeof prev.focus === 'function') prev.focus({ preventScroll: true });
+    settle();
+    return shown;
+  };
 
   const clip = [], texts = [];
   const els = [...document.body.querySelectorAll('*')].filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()));
   for (const el of els) {
-    if (!visible(el)) continue;
-    const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ').trim().replace(/\s+/g, ' ');
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+    if (!visible(el) || srOnly(el)) continue;
+    // The element's own text only: a child (a badge, a link) is measured on its own, against its own background.
+    const own = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim());
+    const text = own.map((n) => n.textContent).join(' ').trim().replace(/\s+/g, ' ');
+    const rects = own.flatMap((n) => { const range = document.createRange(); range.selectNodeContents(n); return [...range.getClientRects()]; }).filter((r) => r.width > 0 && r.height > 0);
     if (!rects.length) continue;
     const box = rects.reduce((a, r) => ({ left: Math.min(a.left, r.left), top: Math.min(a.top, r.top), right: Math.max(a.right, r.right), bottom: Math.max(a.bottom, r.bottom) }), { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
+    // Sideways overflow is always wrong; below the fold is only wrong for fixed-size frames.
+    const offFrame = box.left < -1 || box.right > W + 1 || (!scrolls && (box.top < -1 || box.bottom > H + 1));
+    if (offFrame && showsOnFocus(el)) continue;
     const cs = getComputedStyle(el);
     const what = `${label(el)} "${text.slice(0, 40)}"`;
     if (clipping(cs) && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)) clip.push({ element: what, reason: cs.textOverflow === 'ellipsis' ? 'truncated with an ellipsis' : 'overflows its box and is clipped' });
@@ -51,21 +109,24 @@ function pageScan() {
       const r = a.getBoundingClientRect();
       if (box.left < r.left - 1 || box.right > r.right + 1 || box.top < r.top - 1 || box.bottom > r.bottom + 1) { clip.push({ element: what, reason: `cut off by ${label(a)}` }); break; }
     }
-    // Sideways overflow is always wrong; below the fold is only wrong for fixed-size frames.
-    if (box.left < -1 || box.right > W + 1 || (!scrolls && (box.top < -1 || box.bottom > H + 1))) clip.push({ element: what, reason: `outside the ${W}x${H} frame` });
+    if (offFrame) clip.push({ element: what, reason: `outside the ${W}x${H} frame` });
 
-    // SVG text paints with fill (and maybe fill-opacity), not with CSS color.
+    // The paint the glyphs really get: SVG text paints with fill (and fill-opacity); HTML text with
+    // -webkit-text-fill-color, which is the CSS color unless a page sets it (transparent for gradient text).
     const isSvg = typeof SVGElement !== 'undefined' && el instanceof SVGElement;
-    const svgFill = isSvg ? parse(cs.fill) : null;
-    if (svgFill) svgFill[3] *= Number(cs.fillOpacity || 1);
-    const fg = svgFill || parse(cs.color) || [0, 0, 0, 1];
-    const fill = isSvg ? null : parse(cs.webkitTextFillColor);
-    const alpha = (fill ? fill[3] : fg[3]) * opacityOf(el);
+    const paint = String((isSvg ? cs.fill : cs.webkitTextFillColor || cs.color) || '');
+    const server = paint === 'none' || paint.startsWith('url(');
+    const fg = server ? null : parse(paint);
+    if (fg && isSvg) fg[3] *= Number(cs.fillOpacity || 1);
+    const alpha = fg ? fg[3] * opacityOf(el) : 0;
     const size = parseFloat(cs.fontSize), bold = Number(cs.fontWeight) >= 700;
     texts.push({
-      element: what, fg: (fill && fill[3] > 0 ? fill : fg).slice(0, 3), fgAlpha: alpha,
-      // Transparent fill (gradient or image text via background-clip) cannot be measured this way.
-      unmeasured: alpha === 0 || (fill && fill[3] === 0) ? 'transparent text fill (gradient or image text); check by eye' : null,
+      element: what, fg: fg ? fg.slice(0, 3) : [0, 0, 0], fgAlpha: alpha,
+      // Gradient or image text, outlined SVG text and colours the browser cannot resolve are not measured this way.
+      unmeasured: paint === 'none' ? 'no fill (outlined text); check by eye'
+        : server ? 'gradient or pattern fill; check by eye'
+          : !fg ? `colour "${paint}" could not be resolved to sRGB; check by eye`
+            : alpha === 0 ? 'transparent text fill (gradient or image text); check by eye' : null,
       required: size >= 24 || (bold && size >= 18.66) ? 3 : 4.5,
       box: [box.left, box.top, box.right, box.bottom].map((v) => Math.round(v)),
     });
@@ -102,9 +163,10 @@ const HIDE_TEXT = '*,*::before,*::after{color:transparent!important;-webkit-text
 
 async function pageChecks(args, out) {
   const src = resolveSource(args, out, 'qa-page');
-  const browser = await openBrowser();
+  let browser = null;
   const clip = [], contrast = [], unmeasured = [], overflow = [];
   try {
+    browser = await openBrowser();
     const { page, context } = await newPage(browser, { width: args.width || 1200, height: args.height || 630, colorScheme: args.theme || 'light', reducedMotion: args.reducedMotion });
     try {
       await page.goto(src.url, { waitUntil: 'load', timeout: 60000 });
@@ -145,8 +207,8 @@ async function pageChecks(args, out) {
       await context.close();
     }
   } finally {
-    await browser.close();
-    if (src.kind === 'image') rmSync(src.path, { force: true });
+    if (browser) await browser.close();
+    releaseSource(src);
   }
   const fails = contrast.filter((c) => c.ratio < c.required);
   return [
@@ -233,12 +295,35 @@ function hasAudio(file) {
   return /Stream #\d+:\d+.*: Audio:/.test(r.stderr || '');
 }
 
+// ffmpeg would read a URL (or a protocol such as concat:) as happily as a file: qa checks local files
+// only, by absolute path (the same rule as render_video's audio).
+function localFile(p, what) {
+  const abs = resolve(String(p));
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(String(p)) || !existsSync(abs) || !statSync(abs).isFile()) throw new Error(`${what} must be a local file that exists: ${p}`);
+  return abs;
+}
+
+// Callers may tighten the media gates, never loosen them past these: loudness stays inside -18 to -10
+// LUFS (Easel masters to -14 and delivers -16 to -12), and a still stretch is at most 5 s.
+export const GATE_LIMITS = { lufsMin: -18, lufsMax: -10, stillSeconds: 5 };
+// What each check needs; a check the caller names that cannot run fails instead of being left out.
+const NEEDS = {
+  text_clipping: 'a page (html or file)', contrast: 'a page (html or file)',
+  canvas_text: 'a canvas piece (html or file with window.renderFrame and window.TIMELINE)', beat_grid: 'a canvas piece with TIMELINE.bpm',
+  stillness: 'a video', colour_cast: 'a video or an image', loudness: 'an audio file, or a video with an audio track',
+};
+const cannotRun = (name, why) => ({ name, pass: false, hard: true, value: null, threshold: `needs ${NEEDS[name] || 'a known check name'}`, findings: [{ fix: why }] });
+
 export async function qa(args) {
   const t0 = Date.now();
   if (!args.html && !args.file && !args.video && !args.audio && !args.image) throw new Error('Give a page (html or file) and/or a video, audio or image file to check.');
+  const video = args.video ? localFile(args.video, 'video') : null;
+  const audio = args.audio ? localFile(args.audio, 'audio') : null;
+  const image = args.image ? localFile(args.image, 'image') : null;
   const want = (n) => !args.checks || !args.checks.length || args.checks.includes(n);
   const checks = [];
   const explicit = (n) => !!(args.checks && args.checks.includes(n));
+  const lufs = { min: Math.max(GATE_LIMITS.lufsMin, args.lufsMin ?? -16), max: Math.min(GATE_LIMITS.lufsMax, args.lufsMax ?? -12) };
   if ((args.html || args.file) && (want('text_clipping') || want('contrast'))) {
     const out = outputDir(args);
     checks.push(...(await pageChecks({ ...args, wantContrast: want('contrast') }, out)).filter((c) => want(c.name) || c.name === 'frame_overflow'));
@@ -251,15 +336,21 @@ export async function qa(args) {
       const cs = await canvasChecks(args, src, want);
       if (cs) checks.push(...cs);
       else for (const n of ['canvas_text', 'beat_grid'].filter(explicit)) checks.push({ name: n, pass: false, hard: true, value: null, threshold: 'a canvas piece', findings: [{ fix: `${n} needs a page with window.renderFrame(t) and window.TIMELINE (an animate piece)` }] });
-    } finally { if (src.kind === 'image') rmSync(src.path, { force: true }); }
+    } finally { releaseSource(src); }
   }
-  if (args.video) {
-    if (want('stillness')) checks.push(stillness(args.video, { seconds: args.stillSeconds ?? 2 }));
-    if (want('colour_cast')) checks.push(colourCast(args.video, { maxRatio: args.castMaxRatio ?? 0.3 }));
-    if (want('loudness') && hasAudio(args.video)) checks.push(loudness(args.video, { min: args.lufsMin ?? -16, max: args.lufsMax ?? -12 }));
+  if (video) {
+    if (want('stillness')) checks.push(stillness(video, { seconds: Math.min(GATE_LIMITS.stillSeconds, args.stillSeconds ?? 2) }));
+    if (want('colour_cast')) checks.push(colourCast(video, { maxRatio: args.castMaxRatio ?? 0.3 }));
+    if (want('loudness')) {
+      if (hasAudio(video)) checks.push(loudness(video, { min: lufs.min, max: lufs.max }));
+      else if (explicit('loudness') && !audio) checks.push(cannotRun('loudness', 'the video has no audio track: add one (render_video audio, or mux_audio) or leave loudness out'));
+    }
   }
-  if (args.image && want('colour_cast')) checks.push(colourCast(args.image, { maxRatio: args.castMaxRatio ?? 0.3 }));
-  if (args.audio && want('loudness')) checks.push(loudness(args.audio, { min: args.lufsMin ?? -16, max: args.lufsMax ?? -12 }));
+  if (image && want('colour_cast')) checks.push(colourCast(image, { maxRatio: args.castMaxRatio ?? 0.3 }));
+  if (audio && want('loudness')) checks.push(loudness(audio, { min: lufs.min, max: lufs.max }));
+  for (const n of args.checks || []) if (!checks.some((c) => c.name === n)) checks.push(cannotRun(n, `${n} was asked for but could not run: it needs ${NEEDS[n] || 'a known check name'}`));
+  // Nothing measured is not a pass.
+  if (!checks.length) return { pass: false, deliver: 'refused: no check ran; give a page, video, audio or image the checks apply to', hardFailures: [], checks, ms: Date.now() - t0 };
   const hardFailures = checks.filter((c) => c.hard && !c.pass).map((c) => c.name);
   return { pass: hardFailures.length === 0, deliver: hardFailures.length === 0 ? 'ok' : `refused: fix ${hardFailures.join(', ')} first`, hardFailures, checks, ms: Date.now() - t0 };
 }

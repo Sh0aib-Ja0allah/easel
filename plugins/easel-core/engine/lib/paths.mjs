@@ -22,8 +22,10 @@ export function dataDir(env = process.env, os = platform()) {
   return defaultDataDir(env, os);
 }
 
+// Chromium lives in the data dir unless PLAYWRIGHT_BROWSERS_PATH names a folder. "0" (Playwright's
+// "inside the package" setting) counts as unset: doctor installs and the engine launches from one place.
 export function browsersPath(env = process.env, os = platform()) {
-  if (usable(env.PLAYWRIGHT_BROWSERS_PATH)) return resolve(env.PLAYWRIGHT_BROWSERS_PATH);
+  if (usable(env.PLAYWRIGHT_BROWSERS_PATH) && env.PLAYWRIGHT_BROWSERS_PATH.trim() !== '0') return resolve(env.PLAYWRIGHT_BROWSERS_PATH);
   return join(dataDir(env, os), 'ms-playwright');
 }
 

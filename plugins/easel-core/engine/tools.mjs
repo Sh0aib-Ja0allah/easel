@@ -11,6 +11,7 @@ import { measureImage, compareSheet } from './lib/refs.mjs';
 import { audioScore, PALETTES } from './lib/score.mjs';
 import { muxAudio } from './lib/audio.mjs';
 import { renderPdf, PAPER } from './lib/pdf.mjs';
+import { embedFonts } from './lib/embed.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -149,13 +150,13 @@ export const tools = {
   qa: {
     description:
       'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images); for canvas pieces (window.renderFrame + window.TIMELINE, e.g. animate pieces) canvas_text traces every string drawn on sampled frames: cut off by the frame or overlapping other text fails, under the phone UI on portrait formats warns (pass aspect to check one format), and beat_grid checks that TIMELINE.cuts and TIMELINE.morphs land on the 8th-note grid of TIMELINE.bpm (16ths inside TIMELINE.fastFrom to fastTo); named in checks on a piece without TIMELINE.bpm it fails. Pass reducedMotion "reduce" to check a page\'s reduced-motion path. ' +
-      'Media checks: stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
-      'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. Contrast is a hard gate when mode is "ui". fixedFrame: true adds frame_overflow (content past the frame) for fixed-size graphics.',
+      'Media checks (local files only): stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
+      'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. A check named in checks that cannot run (e.g. loudness on a video with no audio track) fails, and so does a call where no check ran. Contrast is a hard gate when mode is "ui". fixedFrame: true adds frame_overflow (content past the frame) for fixed-size graphics.',
     inputSchema: {
       type: 'object',
       properties: {
         html: { type: 'string' }, file: { type: 'string', description: 'Page to check (.html or .svg).' },
-        video: { type: 'string' }, audio: { type: 'string' }, image: { type: 'string' },
+        video: { type: 'string', description: 'Path to a local video file.' }, audio: { type: 'string', description: 'Path to a local audio file.' }, image: { type: 'string', description: 'Path to a local image file.' },
         width: { type: 'integer', minimum: 16, maximum: 7680 }, height: { type: 'integer', minimum: 16, maximum: 7680 },
         times: { type: 'array', maxItems: 24, items: { type: 'number', minimum: 0 }, description: 'For animated pages: check at these times.' },
         mode: { enum: ['ui', 'graphic', 'video'] }, theme: { enum: ['light', 'dark'] },
@@ -164,8 +165,10 @@ export const tools = {
         aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'canvas_text: the format to check a format-aware piece in.' },
         every: { type: 'integer', minimum: 1, maximum: 48, description: 'canvas_text: sample every Nth frame (default 6), plus the first and last frame of each shot.' },
         textIgnore: { type: 'array', maxItems: 32, items: { type: 'array', minItems: 2, maxItems: 3 }, description: 'canvas_text: [[t0, t1, "why"], ...] windows where crowded or cropped text is deliberate.' },
-        stillSeconds: { type: 'number', minimum: 0.1 }, castMaxRatio: { type: 'number', minimum: 0, maximum: 1 },
-        lufsMin: { type: 'number' }, lufsMax: { type: 'number' }, slug: { type: 'string' }, outDir: { type: 'string' },
+        stillSeconds: { type: 'number', minimum: 0.1, maximum: 5, description: 'stillness: the longest still stretch allowed (default 2 s, at most 5).' }, castMaxRatio: { type: 'number', minimum: 0, maximum: 1 },
+        lufsMin: { type: 'number', minimum: -18, maximum: -10, description: 'loudness: lowest integrated LUFS allowed (default -16; -18 to -10).' },
+        lufsMax: { type: 'number', minimum: -18, maximum: -10, description: 'loudness: highest integrated LUFS allowed (default -12; -18 to -10).' },
+        slug: { type: 'string' }, outDir: { type: 'string' },
         reducedMotion: { enum: ['no-preference', 'reduce'], description: 'Emulate prefers-reduced-motion (default no-preference); "reduce" renders the page\'s reduced-motion path.' },
       },
       additionalProperties: false,
@@ -201,7 +204,7 @@ export const tools = {
     inputSchema: {
       type: 'object',
       properties: {
-        file: { type: 'string', description: 'Path to a cues.json.' },
+        file: { type: 'string', description: 'Path to a cues.json (durationSec at most 1800).' },
         cues: { type: 'object', description: 'The cue sheet itself (instead of file).' },
         palette: { enum: PALETTES, description: 'warm (soft triangle pads; default), bright (saw pads, brighter plucks) or retro (square waves).' },
         lufs: { type: 'number', minimum: -24, maximum: -9, description: 'Integrated loudness target (default -14).' },
@@ -255,7 +258,7 @@ export const tools = {
       type: 'object',
       required: ['reference', 'ours'],
       properties: {
-        reference: { type: 'string' }, ours: { type: 'string' },
+        reference: { type: 'string', description: 'One reference image (PNG, JPG or WEBP).' }, ours: { type: 'string', description: 'One image of our frame.' },
         crop: { type: 'array', minItems: 4, maxItems: 4, items: { type: 'integer', minimum: 0 } },
         cropOurs: { type: 'array', minItems: 4, maxItems: 4, items: { type: 'integer', minimum: 0 } },
         autoTrim: { type: 'boolean' }, grid: { type: 'boolean' }, height: { type: 'integer', minimum: 120, maximum: 2160 },
@@ -265,6 +268,22 @@ export const tools = {
       additionalProperties: false,
     },
     run: (args) => compareSheet(args),
+  },
+  embed_fonts: {
+    description:
+      'Make an SVG carry its fonts. Text that names a bundled family (e.g. <text font-family="Space Grotesk">) looks right in Easel renders, which inject the bundled faces, but falls back to a default serif in a browser, Figma or slides. ' +
+      'This writes a copy with the faces its text really uses (family, weight, style) embedded as base64 WOFF2 @font-face rules: <name> (default "<stem>-embedded").svg in outDir (default the SVG\'s own folder). Never overwrites the input. Refuses a family that is not bundled (Inter, Newsreader, JetBrains Mono, Space Grotesk, Caveat, STIX Two Text, Noto Sans Math); generic fallbacks such as sans-serif are fine. Reports the families and faces embedded and the size. Deliver the -embedded.svg.',
+    inputSchema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: { type: 'string', description: 'Path to the .svg.' },
+        outDir: { type: 'string', description: 'Folder for the copy (default the SVG\'s own folder).' },
+        name: { type: 'string', description: 'File name of the copy without .svg (default "<stem>-embedded").' },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => embedFonts(args),
   },
   craft: {
     description:

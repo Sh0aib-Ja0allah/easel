@@ -11,7 +11,7 @@
 // Modified by Easel (2026-10-11): runs inside the engine's offline page (newPage/waitReady), takes the
 // format from window.__easel.aspect, returns a qa check object instead of printing.
 import { newPage, openBrowser, waitReady, ASPECTS } from './browser.mjs';
-import { compositionInfo } from './video.mjs';
+import { checkDeclared, compositionInfo } from './video.mjs';
 
 const DEFAULT_SAFE = { top: 240, bottom: 420, right: 140 };   // 9:16 phone UI (caption bar, side buttons)
 
@@ -126,6 +126,7 @@ export async function canvasChecks(args, src, want = () => true, { browser: shar
       }
       if (!want('canvas_text')) return checks;
       const info = await compositionInfo(page);
+      checkDeclared(info, ['duration', 'fps']);   // the frames sampled are duration x fps: the render_video bounds apply
       const safe = info.height > info.width ? (await page.evaluate(() => window.TIMELINE.safe || null)) || DEFAULT_SAFE : null;
       const r = await page.evaluate(scan, { every: args.every || 6, safe });
       const ignore = args.textIgnore || [];

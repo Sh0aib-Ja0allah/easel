@@ -115,9 +115,16 @@ function sheetInPage({ a, b, height, grid, labels }) {
   })();
 }
 
+// compare_images takes exactly one image on each side: a folder is accepted only when it holds one image.
+function oneImage(p, what) {
+  const files = listImages([p]);
+  if (files.length !== 1) throw new Error(`${what} must be one PNG, JPG or WEBP image; ${p} is a folder with ${files.length} images (give the image file itself)`);
+  return files[0];
+}
+
 export async function compareSheet(args) {
   const t0 = Date.now();
-  const [ref, ours] = listImages([args.reference, args.ours]);
+  const ref = oneImage(args.reference, 'reference'), ours = oneImage(args.ours, 'ours');
   const out = outputDir(args);
   mkdirSync(out, { recursive: true });
   const name = String(args.name || 'compare').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^[.-]+|[.-]+$/g, '') || 'compare';

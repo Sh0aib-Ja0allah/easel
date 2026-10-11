@@ -20,7 +20,8 @@ Called by skills as `mcp__plugin_easel-core_easel__<tool>`, or from a terminal w
 `node engine/cli.mjs <tool> --json @args.json`:
 
 `doctor`, `render_still`, `contact_sheet`, `render_video`, `filmstrip`, `qa`, `validate`,
-`audio_score`, `mux_audio`, `render_pdf`, `measure_image`, `compare_images`, `craft`, `ping`. Renders are offline and
+`audio_score`, `mux_audio`, `render_pdf`, `measure_image`, `compare_images`, `embed_fonts` (inlines
+the bundled fonts an SVG's text uses, so it looks the same outside Easel), `craft`, `ping`. Renders are offline and
 deterministic: bundled OFL fonts, seeded randomness, every frame seeked to `t = n / fps`. Pages
 can be HTML/SVG/CSS, GSAP timelines (HyperFrames format), `renderAt(t)` or animate-kit canvas
 pieces (`renderFrame(t)`).

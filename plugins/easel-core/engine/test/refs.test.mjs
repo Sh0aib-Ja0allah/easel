@@ -64,3 +64,19 @@ test('compare_images: both pictures at one height on a 10% grid, with both palet
   const again = await m.measureImage({ images: [shelf], trim: false });
   assert.deepEqual(again.images.map((i) => i.file.split(/[\\/]/).pop()), ['ref.png']);
 });
+
+test('compare_images takes one image on each side: a folder of references is refused, not compared with itself', { skip }, async () => {
+  const shelf = join(out, 'two-refs');
+  mkdirSync(shelf, { recursive: true });
+  copyFileSync(ref, join(shelf, 'a.png'));
+  copyFileSync(ours, join(shelf, 'b.png'));
+  await assert.rejects(m.compareSheet({ reference: shelf, ours, outDir: join(out, 'c2') }), /reference must be one PNG, JPG or WEBP image; .* is a folder with 2 images/);
+  await assert.rejects(m.compareSheet({ reference: ref, ours: shelf, outDir: join(out, 'c2') }), /ours must be one/);
+  // a folder holding exactly one image is that image
+  const one = join(out, 'one-ref');
+  mkdirSync(one, { recursive: true });
+  copyFileSync(ref, join(one, 'ref.png'));
+  const r = await m.compareSheet({ reference: one, ours, outDir: join(out, 'c2') });
+  assert.equal(r.reference.file, join(one, 'ref.png'));
+  assert.equal(r.ours.file, ours);
+});
