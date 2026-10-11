@@ -13,6 +13,22 @@ export const falSeconds = (s) => ((s || 5) > 5 ? 10 : 5);
 // Atlas video: whole seconds, at least the model minimum (the estimate uses the same value)
 export const atlasSeconds = (s, min = 3) => Math.max(min, Math.round(s || 5));
 const sizeToAspect = (size) => { if (!size) return undefined; const [w, h] = size.split('x').map(Number); const g = (a, b) => (b ? g(b, a % b) : a); const d = g(w, h); return `${w / d}:${h / d}`; };
+const ratio = (s) => { const [w, h] = String(s).split(/[x:]/).map(Number); return w / h; };
+
+// What each adapter sends (takes: the request arguments it puts in the provider's request, per kind
+// and model; anything else given is refused before any spend, so nothing quoted is dropped), and the
+// values it sends in another form (shape: { sent, notes }), which are priced and shown as sent.
+export const REQUEST_ARGS = ['prompt', 'text', 'refs', 'count', 'size', 'aspect', 'quality', 'resolution', 'seconds', 'voice', 'language', 'instructions', 'voiceName', 'samples'];
+// gpt-image-1 makes three sizes: an aspect goes as the nearest one
+export const OPENAI_SIZES = ['1024x1024', '1024x1536', '1536x1024'];
+const nearestSize = (aspect, sizes) => sizes.reduce((best, s) => (Math.abs(Math.log(ratio(s) / ratio(aspect))) < Math.abs(Math.log(ratio(best) / ratio(aspect))) ? s : best));
+// models that take an aspect ratio, not pixels: a size goes as its ratio, and the provider picks the pixels
+const asRatio = (who) => (a) => {
+  if (!a.size) return {};
+  const aspect = sizeToAspect(a.size);
+  if (a.aspect && Math.abs(ratio(a.aspect) / ratio(a.size) - 1) > 0.01) throw new Error(`give size or aspect, not both: ${who} takes an aspect ratio, and size ${a.size} is ${aspect}, not ${a.aspect}`);
+  return { sent: { aspect: a.aspect || aspect }, notes: [`size ${a.size} is sent as aspect ratio ${a.aspect || aspect}: ${who} picks the pixel size`] };
+};
 
 // count > 1 as one call per image (the estimate charges count images). When call k fails, the k-1
 // results already made (and paid for) go back with the error, to be saved before it is reported.
@@ -38,6 +54,13 @@ async function pollUntil(get, { done, failed, interval = 3000, timeoutMs = 90000
 export const PROVIDERS = {
   openai: {
     label: 'OpenAI', kinds: { image: ['gpt-image-1'], tts: ['gpt-4o-mini-tts'] },
+    takes: (kind) => (kind === 'image' ? ['prompt', 'refs', 'count', 'size', 'aspect', 'quality'] : ['text', 'voice', 'instructions']),
+    shape(kind, model, a) {
+      if (kind !== 'image' || !a.aspect) return {};
+      const size = nearestSize(a.aspect, OPENAI_SIZES);
+      if (a.size && a.size !== size) throw new Error(`give size or aspect, not both: ${model} makes ${OPENAI_SIZES.join(', ')}, and aspect ${a.aspect} is sent as ${size}`);
+      return { sent: { size }, notes: [`aspect ${a.aspect} is sent as size ${size}${Math.abs(ratio(size) / ratio(a.aspect) - 1) > 0.01 ? ` (${sizeToAspect(size)}), the nearest size ${model} makes` : ''}`] };
+    },
     async run(kind, model, a, key) {
       const auth = { Authorization: `Bearer ${key}` };
       if (kind === 'image') {
@@ -58,6 +81,8 @@ export const PROVIDERS = {
   },
   gemini: {
     label: 'Google Gemini', kinds: { image: ['gemini-2.5-flash-image'] },
+    takes: () => ['prompt', 'refs', 'count', 'size', 'aspect'],
+    shape: (kind, model, a) => asRatio(model)(a),
     async run(kind, model, a, key) {
       if (kind !== 'image') throw new Error(`gemini does not do ${kind}`);
       const parts = [{ text: a.prompt }, ...(a.refs || []).map((f) => ({ inlineData: { mimeType: MIME[extname(f).toLowerCase()] || 'image/png', data: readFileSync(f).toString('base64') } }))];
@@ -73,6 +98,12 @@ export const PROVIDERS = {
   },
   fal: {
     label: 'fal.ai', kinds: { image: ['fal-ai/nano-banana', 'fal-ai/nano-banana-2', 'fal-ai/z-image/turbo'], video: ['fal-ai/kling-video/v2.5-turbo/pro/image-to-video', 'fal-ai/kling-video/v3/pro/image-to-video'] },
+    // Kling image-to-video takes the shape of its start image (no aspect); z-image takes pixels
+    takes: (kind, model) => (kind === 'video' ? ['prompt', 'refs', 'seconds'] : /nano-banana/.test(model) ? ['prompt', 'refs', 'count', 'size', 'aspect'] : ['prompt', 'count', 'size']),
+    shape(kind, model, a) {
+      if (kind === 'video') { const s = falSeconds(a.seconds); return { sent: { seconds: s }, notes: a.seconds && a.seconds !== s ? [`seconds ${a.seconds} is sent as ${s}: ${model} makes 5 or 10 s clips`] : [] }; }
+      return /nano-banana/.test(model) ? asRatio(model)(a) : {};
+    },
     async run(kind, model, a, key) {
       const auth = { Authorization: `Key ${key}` };
       let endpoint = model, input;
@@ -97,6 +128,8 @@ export const PROVIDERS = {
   },
   replicate: {
     label: 'Replicate', kinds: { image: ['black-forest-labs/flux-schnell'] },
+    takes: () => ['prompt', 'count', 'size', 'aspect'],
+    shape: (kind, model, a) => asRatio(model)(a),
     async run(kind, model, a, key) {
       if (kind !== 'image') throw new Error(`replicate adapter does images only in v1 (asked for ${kind})`);
       const auth = { Authorization: `Bearer ${key}` };
@@ -108,6 +141,12 @@ export const PROVIDERS = {
   },
   atlas: {
     label: 'Atlas Cloud', kinds: { image: ['google/nano-banana-2/text-to-image'], video: ['google/gemini-omni-flash/image-to-video'], tts: ['xai/tts-v1'], music: ['minimax/music-2.6'] },
+    // the image model is text-to-image (no references); music is instrumental, at the model's length
+    takes: (kind) => ({ image: ['prompt', 'count', 'size', 'aspect', 'resolution'], video: ['prompt', 'refs', 'seconds', 'aspect'], tts: ['text', 'voice', 'language'], music: ['prompt'] }[kind] || []),
+    shape(kind, model, a) {
+      if (kind === 'video') { const s = atlasSeconds(a.seconds); return { sent: { seconds: s }, notes: a.seconds && a.seconds !== s ? [`seconds ${a.seconds} is sent as ${s}: ${model} takes whole seconds, at least 3`] : [] }; }
+      return kind === 'image' ? asRatio(model)(a) : {};
+    },
     async run(kind, model, a, key) {
       const base = 'https://api.atlascloud.ai/api/v1', auth = { Authorization: `Bearer ${key}` };
       const upload = async (file) => { const r = await requestJson('atlas', { method: 'POST', url: `${base}/model/uploadMedia`, headers: auth, form: { file: blobOf(file) } }); return r.data.download_url || r.data.url; };
@@ -131,6 +170,8 @@ export const PROVIDERS = {
   },
   elevenlabs: {
     label: 'ElevenLabs', kinds: { tts: ['eleven_multilingual_v2', 'eleven_flash_v2_5'], 'voice-clone': ['voice-clone'] },
+    // the language comes from the text; a clone takes a name and the samples
+    takes: (kind) => (kind === 'tts' ? ['text', 'voice'] : ['voiceName', 'samples']),
     async run(kind, model, a, key) {
       const auth = { 'xi-api-key': key };
       if (kind === 'tts') {

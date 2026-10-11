@@ -258,7 +258,8 @@ test('voice cloning: refused without a real consent statement and recording in t
   const ok = await paid({ ...base, consentFile: cf });
   assert.equal(JSON.parse(readFileSync(ok.files[0].file, 'utf8')).voice_id, 'v_123');
   const reqs = sent();
-  assert.deepEqual(reqs[0].form, ['name', 'description', 'files'], 'ElevenLabs takes the samples as "files"');
+  assert.deepEqual(Object.keys(reqs[0].form), ['name', 'description', 'files'], 'ElevenLabs takes the samples as "files"');
+  assert.deepEqual([reqs[0].form.name, reqs[0].form.files.map((f) => f.file)], [['Narrator A'], ['sample-1.wav']]);
   const log = readFileSync(join(job, 'consent-log.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
   assert.deepEqual([log.length, log[0].speaker, log[0].voiceId, log[0].consentFile, log[0].recording, log[0].samples], [1, 'Dana Reyes', 'v_123', 'consent.json', 'consent.wav', ['sample-1.wav']]);
 });
@@ -523,14 +524,17 @@ test('the MCP server lists five tools, answers a dry run, a confirmed call and a
   assert.deepEqual(msgs[1].result.tools.map((t) => t.name), ['providers', 'estimate', 'generate', 'assemble', 'consent_template']);
   assert.match(msgs[2].result.content[0].text, /"dryRun": true/);
   noSecrets(r.stdout + r.stderr);
-  // a confirmed call (its quote from a dry run in this process: quotes are stateless), a provider
-  // error that echoes the key back, and a confirm without a quote, all over stdio
+  // a confirmed call (its quote from a dry run in this process: the quote's key is in the shared data
+  // folder, so it survives a restart), a provider error that echoes the key back, and a confirm
+  // without a quote, all over stdio
   const fx = fixtures({ 'gemini.json': readFileSync(join(FIX, 'gemini.json')), 'openai.json': { routes: [{ method: 'POST', match: '/v1/images/generations', status: 401, json: { error: { message: `Incorrect API key provided: ${KEYS.OPENAI_API_KEY}` } } }] } });
+  const data = mkdtempSync(join(tmpdir(), 'easel-data-'));
+  process.env.EASEL_MEDIA_DATA = data;
   try {
     const job = join(root, 'srv2'), kite = { kind: 'image', provider: 'gemini', prompt: 'a kite', outDir: job }, boat = { kind: 'image', provider: 'openai', prompt: 'a boat', outDir: job };
     const call = (id, args) => JSON.stringify({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'generate', arguments: args } });
     const input = [call(1, { ...kite, confirm: true, quote: await quoteOf(kite) }), call(2, { ...boat, confirm: true, quote: await quoteOf(boat) }), call(3, { ...kite, name: 'again', confirm: true })].join('\n') + '\n';
-    const r2 = spawnSync(process.execPath, [SERVER], { input, encoding: 'utf8', env: { ...env, EASEL_MEDIA_FIXTURES: fx }, windowsHide: true });
+    const r2 = spawnSync(process.execPath, [SERVER], { input, encoding: 'utf8', env: { ...env, EASEL_MEDIA_FIXTURES: fx, EASEL_MEDIA_DATA: data }, windowsHide: true });
     const res = Object.fromEntries(r2.stdout.trim().split('\n').map((l) => JSON.parse(l)).map((x) => [x.id, x.result]));
     assert.equal(res[1].isError, false, res[1].content[0].text);
     assert.match(res[1].content[0].text, /"files"/);
@@ -539,5 +543,5 @@ test('the MCP server lists five tools, answers a dry run, a confirmed call and a
     assert.match(res[3].content[0].text, /"refused": true[\s\S]*needs the quote/);
     noSecrets(r2.stdout + r2.stderr);
     for (const f of readdirSync(job)) noSecrets(readFileSync(join(job, f)).toString('latin1'));
-  } finally { rmSync(fx, { recursive: true, force: true }); }
+  } finally { delete process.env.EASEL_MEDIA_DATA; for (const d of [fx, data]) rmSync(d, { recursive: true, force: true }); }
 });

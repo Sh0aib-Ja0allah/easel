@@ -98,7 +98,9 @@ async function exchange(provider, { method = 'GET', url, headers = {}, body, for
   const record = process.env.EASEL_MEDIA_RECORD;
   if (process.env.EASEL_MEDIA_FIXTURES) {
     const { route, dir } = fixtureRoute(provider, method, url);
-    if (record) appendFileSync(record, JSON.stringify({ provider, method, url, headers: Object.fromEntries(Object.entries(headers).map(([k, v]) => [k, maskSecrets(v)])), body: body === undefined ? undefined : body, form: form ? Object.keys(form) : undefined }) + '\n');
+    // a form is recorded field by field: text as it is, a file by its name and size
+    const fields = form && Object.fromEntries(Object.entries(form).map(([k, v]) => [k, [].concat(v).map((x) => (x && x.blob ? { file: x.name, bytes: x.blob.size } : maskSecrets(x)))]));
+    if (record) appendFileSync(record, JSON.stringify({ provider, method, url: maskSecrets(url), headers: Object.fromEntries(Object.entries(headers).map(([k, v]) => [k, maskSecrets(v)])), body: body === undefined ? undefined : body, form: fields || undefined }) + '\n');
     const status = route.status || 200;
     const buf = route.file ? readFileSync(join(dir, route.file)) : Buffer.from(route.json !== undefined ? JSON.stringify(route.json) : route.text || '');
     return { status, ok: status < 400, location: route.location, contentType: route.contentType || (route.json !== undefined ? 'application/json' : 'application/octet-stream'), buffer: buf, json: () => JSON.parse(buf.toString('utf8')) };
