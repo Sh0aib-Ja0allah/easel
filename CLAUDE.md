@@ -134,6 +134,10 @@ Gates - run before every commit, never commit red:
   in `test/golden/`), checks the page score's loudness and style mixing. Same data dir and
   0-skipped rule as the engine tests. `EASEL_MOTION_FULL=1` renders the demos at full length (CI
   on Linux does).
+- `npm --prefix plugins/easel-design test` (since T3.1): the skills (names, routing length, engine
+  tools, links, attribution headers), the generic design systems (valid DESIGN.md, AA text,
+  bundled faces, no brand names), the palette tool, and every example in `examples/manifest.json`
+  rendered and checked through the engine. Same data dir and 0-skipped rule.
 - CI (`.github/workflows/ci.yml`): `validate plugins` + `engine` on ubuntu, windows and macos.
 
 After every push (once CI exists): `gh run list --branch main --limit 3`, then `gh run view <id>`

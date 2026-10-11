@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Pellwater business card</title>
+<style>
+  /* Easel example (MIT): the Pellwater business card, front and back, 3.5 x 2 in (US) on the calm-care system. */
+  @page { size: 3.5in 2in; margin: 0 }
+  html, body { margin: 0; background: #F7FAF9 }
+  .card { width: 336px; height: 192px; box-sizing: border-box; position: relative; overflow: hidden; break-after: page; font-family: "Inter"; color: #16302E }
+  .front { background: #F7FAF9; padding: 22px 24px }
+  .front svg { width: 34px; height: 34px; fill: #20706B; position: absolute; left: 24px; top: 22px }
+  .name { position: absolute; left: 24px; top: 86px; font: 600 15px/1.2 "Space Grotesk" }
+  .role { position: absolute; left: 24px; top: 106px; font: 400 9.5px/1.3 "Inter"; color: #4C6260 }
+  .lines { position: absolute; left: 24px; bottom: 20px; font: 400 8.5px/1.55 "Inter" }
+  .lines b { font-weight: 600; color: #20706B }
+  .rule { position: absolute; right: 24px; top: 22px; bottom: 22px; width: 3px; background: #20706B; border-radius: 2px }
+  .back { background: #20706B; color: #F7FAF9; display: flex; align-items: center; justify-content: center; gap: 12px }
+  .back svg { width: 46px; height: 46px; fill: #F7FAF9 }
+  .back span { font: 600 26px/1 "Space Grotesk"; letter-spacing: -0.02em }
+</style></head>
+<body>
+  <section class="card front">
+    <svg viewBox="0 0 512 512" aria-hidden="true"><path fill-rule="evenodd" d="M112 64H272A136 136 0 0 1 272 336H208V448H112ZM272 108C272 108 204 180 204 220A68 68 0 0 0 340 220C340 180 272 108 272 108Z"/></svg>
+    <div class="rule"></div>
+    <div class="name">Mira Okafor</div>
+    <div class="role">Field chemist, private wells</div>
+    <div class="lines"><b>Pellwater</b> drinking-water testing<br>mira@pellwater.example &nbsp;&middot;&nbsp; 01632 960 418</div>
+  </section>
+  <section class="card back">
+    <svg viewBox="0 0 512 512" aria-hidden="true"><path fill-rule="evenodd" d="M112 64H272A136 136 0 0 1 272 336H208V448H112ZM272 108C272 108 204 180 204 220A68 68 0 0 0 340 220C340 180 272 108 272 108Z"/></svg><span>Pellwater</span>
+  </section>
+</body></html>

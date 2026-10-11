@@ -109,3 +109,13 @@ test('contact_sheet: existing PNGs are laid out as-is', { skip }, async () => {
   assert.equal(r.cells.length, 2);
   assert.ok(existsSync(r.sheet));
 });
+
+test('an SVG drawn in currentColor follows the theme: dark ink on light, light ink on dark', { skip }, async () => {
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  const dir = join(out, 'cc'); mkdirSync(dir, { recursive: true });
+  const svg = join(dir, 'icon.svg');
+  writeFileSync(svg, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="0" y="0" width="24" height="24" fill="currentColor"/></svg>');
+  const r = await mod.renderStill({ file: svg, outDir: dir, name: 'cc', width: 24, height: 24, theme: 'both' }, { browser });
+  const px = await mod.withPixels(browser, r.files.map((f) => f.file), (imgs) => imgs.map((i) => Array.from(i.data.slice(0, 3))));
+  assert.deepEqual(px, [[17, 17, 17], [242, 242, 242]]);
+});

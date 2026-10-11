@@ -103,7 +103,7 @@ const HIDE_TEXT = '*,*::before,*::after{color:transparent!important;-webkit-text
 async function pageChecks(args, out) {
   const src = resolveSource(args, out, 'qa-page');
   const browser = await openBrowser();
-  const clip = [], contrast = [], unmeasured = [];
+  const clip = [], contrast = [], unmeasured = [], overflow = [];
   try {
     const { page, context } = await newPage(browser, { width: args.width || 1200, height: args.height || 630, colorScheme: args.theme || 'light', reducedMotion: args.reducedMotion });
     try {
@@ -113,6 +113,11 @@ async function pageChecks(args, out) {
         await page.evaluate((tt) => window.__easelSeek(tt), t);
         const scan = await page.evaluate(pageScan);
         const at = args.times && args.times.length ? { t } : {};
+        // a fixed-size graphic (a post, a poster, a slide) must not grow past its frame: below the fold is not allowed
+        if (args.fixedFrame) {
+          const o = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight, vw: window.innerWidth, vh: window.innerHeight }));
+          if (o.w > o.vw + 1 || o.h > o.vh + 1) overflow.push({ element: 'page', content: `${o.w}x${o.h}`, frame: `${o.vw}x${o.vh}`, fix: 'the content runs past the fixed frame: tighten the layout or fix the root size', ...at });
+        }
         clip.push(...scan.clip.map((c) => ({ ...c, ...at })));
         const measurable = scan.texts.filter((c) => !c.unmeasured);
         unmeasured.push(...scan.texts.filter((c) => c.unmeasured).map((c) => ({ element: c.element, reason: c.unmeasured, ...at })));
@@ -145,6 +150,7 @@ async function pageChecks(args, out) {
   }
   const fails = contrast.filter((c) => c.ratio < c.required);
   return [
+    ...(args.fixedFrame ? [{ name: 'frame_overflow', pass: overflow.length === 0, hard: true, value: overflow.length, threshold: 'content fits the frame (fixedFrame)', findings: overflow }] : []),
     { name: 'text_clipping', pass: clip.length === 0, hard: true, value: clip.length, threshold: 0, findings: clip.slice(0, 20) },
     {
       name: 'contrast', pass: fails.length === 0, hard: args.mode === 'ui', value: contrast.length ? +Math.min(...contrast.map((c) => c.ratio)).toFixed(2) : null, threshold: 'WCAG AA (4.5, large text 3), 10th percentile of the pixels behind each text run',
@@ -235,7 +241,7 @@ export async function qa(args) {
   const explicit = (n) => !!(args.checks && args.checks.includes(n));
   if ((args.html || args.file) && (want('text_clipping') || want('contrast'))) {
     const out = outputDir(args);
-    checks.push(...(await pageChecks({ ...args, wantContrast: want('contrast') }, out)).filter((c) => want(c.name)));
+    checks.push(...(await pageChecks({ ...args, wantContrast: want('contrast') }, out)).filter((c) => want(c.name) || c.name === 'frame_overflow'));
   }
   // Canvas pieces (window.renderFrame + window.TIMELINE): asked for by name, or found when no checks are named.
   if ((args.html || args.file) && (want('canvas_text') || want('beat_grid'))) {

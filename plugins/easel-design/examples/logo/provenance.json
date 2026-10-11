@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "file": "concepts/a-letterform.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        }
+      ],
+      "notes": "Concept A, kept. Hand-authored SVG path; pass 1 enlarged the drop counter so it stays open at 16 px."
+    },
+    {
+      "file": "concepts/b-vial.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        }
+      ],
+      "notes": "Concept B, killed: the rim detaches and the vial reads as a U at 16 px."
+    },
+    {
+      "file": "concepts/c-grid.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        }
+      ],
+      "notes": "Concept C, killed: ink tiles disappear on dark grounds and the drop is lost below 32 px."
+    },
+    {
+      "file": "export/logo.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        }
+      ],
+      "notes": "Full colour, teal #20706B."
+    },
+    {
+      "file": "export/logo-mono.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        }
+      ],
+      "notes": "One colour, fill currentColor."
+    },
+    {
+      "file": "export/logo-reversed.svg",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        }
+      ],
+      "notes": "For dark grounds, #7FC9C1."
+    },
+    {
+      "file": "lockup.html",
+      "created": "2026-10-11T12:00:00Z",
+      "tool": "easel-design:logo",
+      "method": "procedural",
+      "inputs": [
+        {
+          "kind": "user",
+          "name": "Brief: Pellwater (fictional) independent drinking-water testing lab; smallest use 16 px favicon; one-colour version required; calm-care palette #20706B / #16302E / #F7FAF9; avoid generic wave-and-drop marks",
+          "license": "user-owned"
+        },
+        {
+          "kind": "repo",
+          "name": "easel-design systems/calm-care/DESIGN.md",
+          "license": "MIT"
+        },
+        {
+          "kind": "font",
+          "name": "Space Grotesk 600 (bundled with Easel)",
+          "license": "OFL-1.1"
+        },
+        {
+          "kind": "font",
+          "name": "Inter (bundled with Easel)",
+          "license": "OFL-1.1"
+        },
+        {
+          "kind": "font",
+          "name": "JetBrains Mono (bundled with Easel)",
+          "license": "OFL-1.1"
+        }
+      ],
+      "notes": "Mark and wordmark lockup, 1200x630. Clear space: one stem width (96 of 512 units) on every side."
+    }
+  ]
+}

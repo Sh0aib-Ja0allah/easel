@@ -1,0 +1,52 @@
+<!--
+  Direction C: "Zero servers"
+  Breaks: the promise-headline-plus-feature-cards convention. The hero leads with one enormous figure
+  that is a design fact, not a claim (0 servers to run), hanging into the left margin, with a
+  narrow column of plain copy and a spec list instead of cards.
+  Axes: composition asymmetric, a number breaking the grid | type: huge sans numeral against small text | density: sparse, editorial.
+  System: dark-tech. Product: Grepwell (fictional).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Grepwell - direction C, zero servers</title>
+<style>
+html, body { margin:0; }
+body { background:#0E1116; }
+.page { width:1440px; height:900px; overflow:hidden; position:relative; box-sizing:border-box; background:#0E1116; color:#E6EAF0; font-family:"Inter", sans-serif; }
+nav { position:absolute; left:96px; right:96px; top:40px; display:flex; gap:32px; font-size:15px; color:#9AA4B2; }
+nav .brand { font-family:"JetBrains Mono", monospace; font-weight:700; color:#E6EAF0; font-size:17px; margin-right:auto; }
+.zero { position:absolute; left:40px; top:130px; margin:0; font-weight:700; font-size:720px; line-height:0.86; letter-spacing:-0.06em; color:#B8F25C; }
+.label { position:absolute; left:96px; top:760px; margin:0; font-size:15px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:#9AA4B2; }
+.col { position:absolute; left:640px; top:170px; width:680px; }
+.col h1 { margin:0; font-size:56px; line-height:1.03; letter-spacing:-0.03em; font-weight:600; }
+.col h1 span { color:#4CC2FF; }
+.col p { margin:28px 0 0; font-size:20px; line-height:1.6; color:#C3CAD5; max-width:34em; }
+.spec { margin:36px 0 0; padding:0; list-style:none; border-top:1px solid #2A313C; font-family:"JetBrains Mono", monospace; font-size:15px; }
+.spec li { display:grid; grid-template-columns:200px 1fr; padding:12px 0; border-bottom:1px solid #2A313C; }
+.spec li span:first-child { color:#9AA4B2; }
+.cta { margin-top:40px; display:flex; gap:12px; align-items:center; }
+.btn { font-size:15px; font-weight:500; border-radius:6px; padding:12px 20px; }
+.btn.p { background:#4CC2FF; color:#0E1116; }
+.btn.q { box-shadow:inset 0 0 0 1px #2A313C; color:#E6EAF0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <nav><span class="brand">grepwell</span><span>Docs</span><span>Changelog</span><span>Download</span></nav>
+  <p class="zero">0</p>
+  <p class="label">Servers you have to run</p>
+  <div class="col">
+    <h1>Search a week of logs<br><span>with nothing to set up.</span></h1>
+    <p>Grepwell is one binary that indexes the log files already on your laptop or a shared drive. Ask in plain words or regex; the answer comes back from your own disk.</p>
+    <ul class="spec">
+      <li><span>Runs on</span><span>macOS, Linux</span></li>
+      <li><span>Reads</span><span>plain text, JSON lines, gzip</span></li>
+      <li><span>Sends home</span><span>nothing</span></li>
+    </ul>
+    <div class="cta"><span class="btn p">Download Grepwell</span><span class="btn q">Read the docs</span></div>
+  </div>
+</div>
+</body>
+</html>

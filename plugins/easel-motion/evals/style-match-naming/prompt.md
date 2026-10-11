@@ -2,6 +2,7 @@
 description: Routing - a studio-named look is matched under a descriptive name, never the studio name.
 tags: [routing, style-match, naming]
 runs: 2
+plugins: ["../..", "../../../easel-core"]
 max_turns: 10
 allowed_tools: [Skill, Read, Glob]
 ---

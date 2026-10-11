@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Pellwater concept C: sample grid, one cell a drop</title>
+  <rect x="56" y="56" width="176" height="176" rx="28" fill="#16302E"/>
+  <rect x="56" y="280" width="176" height="176" rx="28" fill="#16302E"/>
+  <rect x="280" y="280" width="176" height="176" rx="28" fill="#16302E"/>
+  <path fill="#20706B" d="M368 56H456V144A88 88 0 0 1 368 232A88 88 0 0 1 280 144A88 88 0 0 1 368 56Z"/>
+</svg>

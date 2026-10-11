@@ -2,6 +2,7 @@
 description: Routing - mixing two styles in one piece is answered from the kit (piece.json mix and the era style).
 tags: [routing, animate]
 runs: 2
+plugins: ["../..", "../../../easel-core"]
 max_turns: 10
 allowed_tools: [Skill, Read, Glob]
 ---

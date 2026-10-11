@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kestrel Lane Bakery Cooperative: spring members' meeting</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  :root {
+    --ink: #1D3557;        /* primary: text and key shapes */
+    --accent: #C8553D;     /* terracotta: one accent per slide */
+    --paper: #F4EFE6;
+    --surface: #EBE4D8;
+    --muted: #5A6478;
+    --display: "Space Grotesk";
+    --body: "Newsreader";
+    --ui: "Inter";
+  }
+  html, body { margin: 0; background: var(--paper); }
+  * { box-sizing: border-box; }
+  .slide {
+    width: 1280px; height: 720px; position: relative; overflow: hidden;
+    background: var(--paper); color: var(--ink);
+    padding: 72px 96px 0;
+    font-family: var(--body);
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-of-type { break-after: auto; page-break-after: auto; }
+  .notes { display: none; }
+  .foot {
+    position: absolute; left: 96px; right: 96px; bottom: 40px;
+    display: flex; justify-content: space-between;
+    font-family: var(--ui); font-size: 16px; font-weight: 500; color: var(--muted);
+  }
+  .eyebrow { font-family: var(--ui); font-size: 18px; font-weight: 500; color: var(--muted); margin: 0 0 24px; letter-spacing: 0.01em; }
+  h1, h2 { font-family: var(--display); font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+  h2 { font-size: 52px; line-height: 1.08; max-width: 20ch; }
+
+  /* 1. Title */
+  .title { display: grid; grid-template-columns: 1fr 360px; column-gap: 48px; align-items: center; padding-top: 0; }
+  .title h1 { font-size: 76px; line-height: 1.02; max-width: 12ch; margin-bottom: 32px; }
+  .title p.sub { font-size: 30px; line-height: 1.35; margin: 0; max-width: 28ch; }
+  .title .loaf { width: 360px; height: auto; display: block; }
+
+  /* 2. Content */
+  .points { list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 48px; }
+  .points li { border-top: 2px solid var(--ink); padding-top: 20px; }
+  .points b { display: block; font-family: var(--display); font-weight: 600; font-size: 28px; line-height: 1.15; margin-bottom: 12px; }
+  .points span { display: block; font-size: 25px; line-height: 1.4; }
+  .points li:first-child { border-top-color: var(--accent); border-top-width: 6px; padding-top: 16px; }
+
+  /* 3. Data */
+  .data { display: grid; grid-template-columns: 1fr 300px; column-gap: 56px; }
+  .data h2 { grid-column: 1 / -1; margin-bottom: 28px; }
+  .data svg { display: block; width: 100%; height: auto; font-family: var(--ui); }
+  .callout { align-self: start; background: var(--surface); border-radius: 12px; padding: 28px 28px 32px; margin-top: 8px; }
+  .callout b { display: block; font-family: var(--display); font-weight: 600; font-size: 80px; line-height: 1; letter-spacing: -0.03em; margin-bottom: 12px; }
+  .callout > span { display: block; font-size: 24px; line-height: 1.35; }
+  .legend { display: flex; gap: 32px; margin: 16px 0 0; font-family: var(--ui); font-size: 18px; font-weight: 500; }
+  .legend span { display: inline-flex; align-items: center; gap: 10px; }
+  .legend i { width: 18px; height: 18px; display: inline-block; border: 2px solid var(--ink); background: var(--surface); }
+  .legend i.sub { background: var(--accent); border-color: var(--accent); }
+
+  /* 4. Closing */
+  .closing { background: var(--ink); color: var(--paper); display: flex; flex-direction: column; justify-content: center; padding-top: 0; }
+  .closing .eyebrow { color: #C9CFDA; }
+  .closing h2 { font-size: 72px; max-width: 16ch; margin-bottom: 40px; }
+  .closing h2 em { font-style: normal; color: #F0B4A3; }
+  .closing dl { display: grid; grid-template-columns: auto 1fr; column-gap: 32px; row-gap: 12px; margin: 0; font-size: 26px; line-height: 1.35; }
+  .closing dt { font-family: var(--ui); font-weight: 500; font-size: 18px; color: #C9CFDA; padding-top: 6px; }
+  .closing dd { margin: 0; }
+  .closing .foot { color: #C9CFDA; }
+</style>
+</head>
+<body>
+
+<section class="slide title" aria-label="Slide 1">
+  <div>
+    <p class="eyebrow">Spring members’ meeting · Saturday 14 March 2026</p>
+    <h1>Bread for the street, owned by the street.</h1>
+    <p class="sub">Kestrel Lane Bakery Cooperative: what the winter taught us, and one decision for you.</p>
+  </div>
+  <svg class="loaf" viewBox="0 0 360 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="180" cy="168" rx="164" ry="104" fill="#C8553D"/>
+    <path d="M100 128 q40 20 30 76 M168 112 q40 24 30 88 M236 118 q40 22 28 78" fill="none" stroke="#F4EFE6" stroke-width="10" stroke-linecap="round"/>
+    <rect x="16" y="268" width="328" height="8" rx="4" fill="#1D3557"/>
+  </svg>
+  <div class="foot"><span>Kestrel Lane Bakery Cooperative</span><span>1 / 4</span></div>
+  <aside class="notes">Welcome everyone. Thank the night-shift volunteers by name. Today is short: three changes, one chart, one vote.</aside>
+</section>
+
+<section class="slide" aria-label="Slide 2">
+  <p class="eyebrow">October to February</p>
+  <h2>Three changes kept the shop open all winter.</h2>
+  <ul class="points">
+    <li><b>Night baking</b><span>First loaves now leave the oven at 6:30, not 8:00, so the early commuters stay.</span></li>
+    <li><b>A sourdough subscription</b><span>120 households pay monthly and collect on Tuesdays and Fridays.</span></li>
+    <li><b>Apprentices on Saturdays</b><span>Two apprentices finished their first year and now run the weekend bake.</span></li>
+  </ul>
+  <div class="foot"><span>Kestrel Lane Bakery Cooperative</span><span>2 / 4</span></div>
+  <aside class="notes">Night baking was the hardest change for the team; say so. The subscription is what the next slide is about.</aside>
+</section>
+
+<section class="slide data" aria-label="Slide 3">
+  <h2>Subscriptions carried the quiet months.</h2>
+  <figure style="margin:0">
+    <svg id="loaves" viewBox="0 0 740 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="loaves-t">
+      <title id="loaves-t">Loaves sold per week, average by month, October 2025 to February 2026</title>
+    </svg>
+    <figcaption class="legend"><span><i class="sub"></i>Collected by subscribers</span><span><i></i>Sold over the counter</span></figcaption>
+  </figure>
+  <div class="callout"><b id="share"></b><span>of February’s loaves went to subscribers, up from <span id="share-first"></span> in October.</span></div>
+  <div class="foot"><span>Loaves sold per week, monthly average. Source: the shop’s till records.</span><span>3 / 4</span></div>
+  <aside class="notes">January dipped after the holidays, as it does every year, but much less than last year because subscribers kept collecting.</aside>
+</section>
+
+<section class="slide closing" aria-label="Slide 4">
+  <p class="eyebrow">The decision</p>
+  <h2>Vote on a <em>second oven</em> by Saturday 28 March.</h2>
+  <dl>
+    <dt>How to vote</dt><dd>Ballot box by the till, or the members’ book.</dd>
+    <dt>Questions</dt><dd>Ask Mira or Tomasz at the counter, any morning.</dd>
+    <dt>Next meeting</dt><dd>Thursday 11 June, 7 pm, upstairs at the bakery.</dd>
+  </dl>
+  <div class="foot"><span>Kestrel Lane Bakery Cooperative</span><span>4 / 4</span></div>
+  <aside class="notes">Leave this slide up for questions. The full costing for the oven is in the members' book.</aside>
+</section>
+
+<script>
+(() => {
+  // Till data: average loaves per week, and how many of those went to subscribers.
+  const DATA = [
+    { month: 'Oct', loaves: 1840, subscribers: 310 },
+    { month: 'Nov', loaves: 1910, subscribers: 520 },
+    { month: 'Dec', loaves: 2350, subscribers: 690 },
+    { month: 'Jan', loaves: 2020, subscribers: 760 },
+    { month: 'Feb', loaves: 2180, subscribers: 830 },
+  ];
+  const pct = (d) => Math.round((d.subscribers / d.loaves) * 100) + '%';
+  document.getElementById('share').textContent = pct(DATA[DATA.length - 1]);
+  document.getElementById('share-first').textContent = pct(DATA[0]);
+
+  const svg = document.getElementById('loaves');
+  const NS = svg.namespaceURI;
+  const W = 740, H = 320, padTop = 44, padBottom = 40, max = 2500;
+  const plotH = H - padTop - padBottom, gap = 28, n = DATA.length;
+  const barW = (W - gap * (n - 1)) / n;
+  const y = (v) => padTop + plotH - (v / max) * plotH;
+  const add = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; svg.appendChild(e); return e; };
+  const fmt = (v) => v.toLocaleString('en-GB');
+  DATA.forEach((d, i) => {
+    const x = i * (barW + gap);
+    // whole bar: all loaves (ink outline); filled part: subscribers (terracotta)
+    add('rect', { x, y: y(d.loaves), width: barW, height: y(0) - y(d.loaves), fill: '#EBE4D8', stroke: '#1D3557', 'stroke-width': 2 });
+    add('rect', { x, y: y(d.subscribers), width: barW, height: y(0) - y(d.subscribers), fill: '#C8553D' });
+    add('text', { x: x + barW / 2, y: y(d.loaves) - 12, 'text-anchor': 'middle', 'font-size': 24, 'font-weight': 600, fill: '#1D3557' }, fmt(d.loaves));
+    add('text', { x: x + barW / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 500, fill: '#1D3557' }, d.month);
+  });
+  add('line', { x1: 0, x2: W, y1: y(0), y2: y(0), stroke: '#1D3557', 'stroke-width': 2 });
+})();
+</script>
+</body>
+</html>

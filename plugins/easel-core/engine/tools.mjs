@@ -10,6 +10,7 @@ import { craft } from './lib/craft.mjs';
 import { measureImage, compareSheet } from './lib/refs.mjs';
 import { audioScore, PALETTES } from './lib/score.mjs';
 import { muxAudio } from './lib/audio.mjs';
+import { renderPdf, PAPER } from './lib/pdf.mjs';
 import { ENGINE_VERSION } from './lib/version.mjs';
 
 export const tools = {
@@ -27,7 +28,7 @@ export const tools = {
   doctor: {
     description:
       'Check what the Easel engine needs: Node, Playwright and Chromium (in the plugin data folder), ffmpeg and ffprobe, plus optional Python, Aseprite and provider API keys (names only). ' +
-      'With install: true it installs the pinned npm packages and the Chromium headless shell (about 110 MB) into the plugin data folder; tell the user before doing that.',
+      'With install: true it installs the pinned npm packages and the Chromium headless shell (about 110 MB) into the plugin data folder; tell the user before doing that. For setup questions use the easel-core:setup skill, which runs this and gives the install command for each OS.',
     inputSchema: {
       type: 'object',
       properties: { install: { type: 'boolean', description: 'Install missing npm packages and Chromium into the plugin data folder.' } },
@@ -63,6 +64,26 @@ export const tools = {
       additionalProperties: false,
     },
     run: (args) => renderStill(args),
+  },
+  render_pdf: {
+    description:
+      'Render a page (.html or .svg, or inline html) to a print PDF: posters, flyers, business cards, printable guides, slide decks (one page per CSS page or per slide with page breaks). ' +
+      'Size from the page\'s own @page rule by default, or format (A4, Letter, ...) or width and height with units ("8.5in", "210mm", "1280px"); backgrounds are printed; no margins (put bleed and margins in the page). Offline, with the bundled fonts. Check the pages with render_still before sending to print.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        html: { type: 'string' }, file: { type: 'string', description: 'Path to the page (.html or .svg).' },
+        name: { type: 'string' }, slug: { type: 'string' }, outDir: { type: 'string' },
+        format: { enum: PAPER },
+        width: { type: 'string', pattern: '^\\d+(\\.\\d+)?(px|in|cm|mm)$' }, height: { type: 'string', pattern: '^\\d+(\\.\\d+)?(px|in|cm|mm)$' },
+        landscape: { type: 'boolean' }, printBackground: { type: 'boolean', description: 'Print backgrounds (default true).' },
+        viewportWidth: { type: 'integer', minimum: 320, maximum: 7680, description: 'Layout viewport before printing (default 1280).' },
+        viewportHeight: { type: 'integer', minimum: 240, maximum: 7680 },
+        theme: { enum: ['light', 'dark'] }, seed: { type: 'integer' }, t: { type: 'number', minimum: 0 },
+      },
+      additionalProperties: false,
+    },
+    run: (args) => renderPdf(args),
   },
   contact_sheet: {
     description:
@@ -129,7 +150,7 @@ export const tools = {
     description:
       'Measured quality gates. Page checks (html or file): text_clipping (text cut off by its box, a clipping ancestor or the frame) and contrast (WCAG AA per text run, sampling pixels on gradients and images); for canvas pieces (window.renderFrame + window.TIMELINE, e.g. animate pieces) canvas_text traces every string drawn on sampled frames: cut off by the frame or overlapping other text fails, under the phone UI on portrait formats warns (pass aspect to check one format), and beat_grid checks that TIMELINE.cuts and TIMELINE.morphs land on the 8th-note grid of TIMELINE.bpm (16ths inside TIMELINE.fastFrom to fastTo); named in checks on a piece without TIMELINE.bpm it fails. Pass reducedMotion "reduce" to check a page\'s reduced-motion path. ' +
       'Media checks: stillness (a still or empty video stretch longer than stillSeconds), colour_cast (more than 30% of frames dominated by blue-purple), loudness (integrated LUFS outside -16 to -12). ' +
-      'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. Contrast is a hard gate when mode is "ui".',
+      'Hard gates refuse delivery: fix every hardFailure, re-render and run qa again. Contrast is a hard gate when mode is "ui". fixedFrame: true adds frame_overflow (content past the frame) for fixed-size graphics.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -139,6 +160,7 @@ export const tools = {
         times: { type: 'array', maxItems: 24, items: { type: 'number', minimum: 0 }, description: 'For animated pages: check at these times.' },
         mode: { enum: ['ui', 'graphic', 'video'] }, theme: { enum: ['light', 'dark'] },
         checks: { type: 'array', items: { enum: ['text_clipping', 'contrast', 'canvas_text', 'beat_grid', 'stillness', 'colour_cast', 'loudness'] } },
+        fixedFrame: { type: 'boolean', description: 'A fixed-size graphic (post, ad, poster, slide): content running past width x height fails (frame_overflow). Leave off for scrolling pages.' },
         aspect: { enum: ['16:9', '9:16', '1:1', '4:5'], description: 'canvas_text: the format to check a format-aware piece in.' },
         every: { type: 'integer', minimum: 1, maximum: 48, description: 'canvas_text: sample every Nth frame (default 6), plus the first and last frame of each shot.' },
         textIgnore: { type: 'array', maxItems: 32, items: { type: 'array', minItems: 2, maxItems: 3 }, description: 'canvas_text: [[t0, t1, "why"], ...] windows where crowded or cropped text is deliberate.' },
@@ -191,7 +213,7 @@ export const tools = {
   },
   mux_audio: {
     description:
-      'Put an audio track (a score from audio_score, or the user\'s own track) on a video that already exists: the video stream is copied unchanged, the audio becomes AAC, and the result is cut to the shorter of the two (shortest: false keeps the longer). master: true first masters the track to lufs (default -14). Writes <name>.mp4 (default <video name>-audio) to ./easel-out/<slug>/; never overwrites the input. For a page you are still rendering, use render_video audio instead.',
+      'Put an audio track (a score from audio_score, or the user\'s own track) on a video that already exists: the video stream is copied unchanged, the audio becomes AAC, and the result is cut to the shorter of the two (shortest: false keeps the longer). master: true first masters the track to lufs (default -14). Writes <name>.mp4 (default <video name>-audio) to ./easel-out/<slug>/; never overwrites the input. For a page you are still rendering, use render_video audio instead. The easel-core:score skill covers the whole job (which audio, mux, loudness check).',
     inputSchema: {
       type: 'object',
       required: ['video', 'audio'],

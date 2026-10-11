@@ -1,0 +1,92 @@
+<!--
+  Direction B: "Log wall"
+  Breaks: the empty, airy hero. There is no hero space at all: the whole frame is a week of log lines,
+  and the pitch is the one line that matched, opened up to headline size inside the stream.
+  Axes: composition full-bleed and dense | type: mono texture with one sans headline | imagery: the data itself.
+  System: dark-tech. Product: Grepwell (fictional).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Grepwell - direction B, log wall</title>
+<style>
+html, body { margin:0; }
+body { background:#0E1116; }
+.page { width:1440px; height:900px; overflow:hidden; box-sizing:border-box; background:#0E1116; color:#9AA4B2; font-family:"JetBrains Mono", monospace; position:relative; }
+nav { height:56px; box-sizing:border-box; padding:0 40px; display:flex; align-items:center; gap:28px; border-bottom:1px solid #2A313C; font-family:"Inter", sans-serif; font-size:14px; background:#161B22; }
+nav .brand { font-family:"JetBrains Mono", monospace; font-weight:700; color:#E6EAF0; margin-right:auto; font-size:16px; }
+nav .q { font-family:"JetBrains Mono", monospace; color:#E6EAF0; background:#0E1116; border:1px solid #2A313C; border-radius:6px; padding:6px 12px; width:420px; }
+nav .q b { color:#4CC2FF; font-weight:400; }
+nav span.l { color:#9AA4B2; }
+.wall { position:absolute; left:40px; right:40px; top:56px; bottom:0; }
+.ln { height:20px; font-size:12.5px; line-height:20px; white-space:pre; display:block; }
+.ln .t { color:#808A99; }
+.ln.warn .lv { color:#E6C86E; }
+.ln.err .lv { color:#FF8A80; }
+.match { margin:10px 0 12px; background:#161B22; border-left:3px solid #B8F25C; padding:22px 28px 26px; display:grid; grid-template-columns:1fr 360px; gap:40px; align-items:end; }
+.match .meta { white-space:pre; font-family:"JetBrains Mono", monospace !important; font-size:13px; color:#9AA4B2; margin:0 0 10px; }
+.match .meta mark { background:#B8F25C; color:#0E1116; padding:0 4px; border-radius:2px; }
+.match h1 { margin:0; font-family:"Inter", sans-serif; font-weight:600; font-size:58px; line-height:1.05; letter-spacing:-0.025em; color:#E6EAF0; }
+.match p { margin:0 0 14px; font-family:"Inter", sans-serif; font-size:17px; line-height:1.55; color:#C3CAD5; }
+.match .btn { display:inline-block; font-family:"Inter", sans-serif; font-weight:500; font-size:15px; background:#4CC2FF; color:#0E1116; border-radius:6px; padding:11px 18px; }
+.match .note { display:block; margin-top:12px; font-family:"Inter", sans-serif; font-size:13px; color:#9AA4B2; }
+</style>
+</head>
+<body>
+<div class="page">
+  <nav><span class="brand">grepwell</span><span class="q">grepwell <b>"why is this slow"</b> --since 7d</span><span class="l">Docs</span><span class="l">Download</span></nav>
+  <div class="wall" id="wall"></div>
+</div>
+<script>
+// Deterministic log texture (the engine seeds Math.random; this uses its own LCG so any viewer sees the same wall).
+// Built once the monospace face has loaded, so lines are measured in the real font on every OS (the engine waits for window.__ready).
+function buildWall() {
+  let s = 42; const r = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const pick = (a) => a[Math.floor(r() * a.length)];
+  const hosts = ['api-01', 'api-02', 'api-03', 'worker-1', 'worker-2', 'cron', 'edge-eu', 'edge-us'];
+  const msgs = [
+    ['INFO', 'GET /orders/{n} 200 in {m} ms'], ['INFO', 'POST /checkout 201 in {m} ms (order {n})'],
+    ['INFO', 'cache hit ratio 0.{d}{d} over last 60 s'], ['WARN', 'slow query on orders_by_customer: {m} ms'],
+    ['INFO', 'job nightly-invoices step {d}/9 done'], ['ERROR', 'upstream reset by peer after {m} ms (retrying)'],
+    ['INFO', 'GET /health 200 in {d} ms'], ['WARN', 'queue depth {n} above soft limit 5000'],
+    ['INFO', 'session {n} refreshed token'], ['INFO', 'PUT /customers/{n}/address 204 in {m} ms'],
+  ];
+  const hex = (k) => Array.from({ length: k }, () => '0123456789abcdef'[Math.floor(r() * 16)]).join('');
+  const tail = () => `  req=${hex(16)} trace=${hex(12)} region=${pick(['eu-west', 'us-east', 'ap-south'])} build=4.${Math.floor(r() * 9)}.${Math.floor(r() * 20)} pid=${1000 + Math.floor(r() * 8999)} bytes=${Math.floor(r() * 90000)} user=${pick(['anon', 'svc-billing', 'svc-mail', 'u' + Math.floor(r() * 99999)])}`;
+  const fill = (t) => t.replace(/\{n\}/g, () => String(10000 + Math.floor(r() * 89999))).replace(/\{m\}/g, () => String(3 + Math.floor(r() * 900))).replace(/\{d\}/g, () => String(Math.floor(r() * 9) + 1));
+  let sec = 7 * 3600 + 12 * 60;
+  const line = () => {
+    sec += 1 + Math.floor(r() * 40);
+    const hh = String(Math.floor(sec / 3600) % 24).padStart(2, '0'), mm = String(Math.floor(sec / 60) % 60).padStart(2, '0'), ss = String(sec % 60).padStart(2, '0');
+    const [lv, m] = pick(msgs);
+    const el = document.createElement('span');
+    el.className = 'ln' + (lv === 'WARN' ? ' warn' : lv === 'ERROR' ? ' err' : '');
+    el.innerHTML = `<span class="t">2026-10-0${1 + Math.floor(sec / 86400) % 7} ${hh}:${mm}:${ss}</span>  ${pick(hosts).padEnd(9)}<span class="lv">${lv.padEnd(5)}</span>  ${fill(m).padEnd(52)}<span class="t">${tail()}</span>`;
+    return el;
+  };
+  const wall = document.getElementById('wall');
+  const limit = wall.clientHeight;
+  // JetBrains Mono advances 0.6 em per character on every OS, so lines are fitted by count, not by
+  // measuring (a measurement taken before the face is applied differs between operating systems).
+  const maxChars = Math.floor((wall.clientWidth - 16) / (12.5 * 0.6));
+  const fit = (el) => { // drop trailing key=value fields until the line fits the wall width
+    const t = el.lastElementChild;
+    while (el.textContent.length > maxChars && t.textContent.includes(' ')) t.textContent = t.textContent.replace(/\s+\S+$/, '');
+  };
+  const add = (el) => { wall.appendChild(el); if (el.classList.contains('ln')) fit(el); return el; };
+  for (let i = 0; i < 7; i++) add(line());
+  const m = document.createElement('div');
+  m.className = 'match';
+  m.innerHTML = `<div><p class="meta"><span>2026-10-04 11:42:07  api-02  WARN  1 of 1 match for </span><mark>why is this slow</mark></p>
+    <h1>Every log line from the last week,<br>searchable on your laptop.</h1></div>
+    <div><p>Grepwell indexes the files already on your disk. No agent to install on servers, no cluster to run, nothing leaves the machine.</p>
+    <span class="btn">Download Grepwell</span><span class="note">macOS, Linux &middot; one binary, no account</span></div>`;
+  wall.appendChild(m);
+  while (true) { const el = add(line()); if (el.offsetTop + el.offsetHeight > limit) { el.remove(); break; } }
+}
+window.__ready = false;
+Promise.all([document.fonts.load('12.5px "JetBrains Mono"'), document.fonts.load('600 58px "Inter"')]).then(() => document.fonts.ready).then(() => { buildWall(); window.__ready = true; });
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+Landing page (hero, how it works, what a session includes, final CTA with questions) for a fictional home-physiotherapy service, in the calm-care system; responsive from 390 to 1440 wide, hero fills the first screen at each size.

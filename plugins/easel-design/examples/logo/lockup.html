@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pellwater - logo lockup</title>
+<style>
+/* calm-care system: paper #F7FAF9, text #16302E, primary #20706B; Space Grotesk 600 wordmark, Inter labels */
+html, body { margin:0; }
+body { background:#F7FAF9; }
+.page { width:1200px; height:630px; overflow:hidden; display:grid; grid-template-columns:760px 440px; font-family:"Inter", sans-serif; }
+.light { background:#F7FAF9; color:#16302E; padding:56px 64px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:space-between; }
+.dark { background:#16302E; color:#F7FAF9; padding:56px 48px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:space-between; }
+.k { margin:0; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#4C6260; }
+.dark .k { color:#A9CFCA; }
+.lockup { display:flex; align-items:center; gap:30px; }
+.lockup svg { display:block; flex-shrink:0; }
+.word { font-family:"Space Grotesk", sans-serif; font-weight:600; letter-spacing:-0.03em; line-height:1; }
+.lockup.big .word { font-size:118px; color:#16302E; }
+.lockup.big svg { width:116px; height:150px; }
+.tag { margin:18px 0 0; font-size:20px; line-height:1.4; color:#4C6260; max-width:30ch; }
+.notes { display:flex; gap:40px; font-size:13px; line-height:1.5; color:#4C6260; }
+.notes b { display:block; color:#16302E; font-weight:600; font-size:13px; }
+.lockup.small .word { font-size:52px; color:#F7FAF9; }
+.lockup.small { gap:14px; }
+.lockup.small svg { width:42px; height:54px; }
+.space { position:relative; width:186px; height:220px; align-self:flex-start; }
+.space .box { position:absolute; inset:0; border:1.5px dashed #7FC9C1; border-radius:4px; }
+.space svg { position:absolute; inset:0; width:186px; height:220px; }
+.space .u { position:absolute; left:0; top:-22px; font-size:12px; color:#A9CFCA; font-family:"JetBrains Mono", monospace; }
+.mini { display:flex; gap:20px; align-items:center; }
+.mini span { font-size:12px; color:#A9CFCA; font-family:"JetBrains Mono", monospace; }
+.mini svg { display:block; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="0 0 512 512"><path fill-rule="evenodd" d="M112 64H272A136 136 0 0 1 272 336H208V448H112ZM272 108C272 108 204 180 204 220A68 68 0 0 0 340 220C340 180 272 108 272 108Z"/></symbol>
+  <symbol id="mark-tight" viewBox="112 64 296 384"><path fill-rule="evenodd" d="M112 64H272A136 136 0 0 1 272 336H208V448H112ZM272 108C272 108 204 180 204 220A68 68 0 0 0 340 220C340 180 272 108 272 108Z"/></symbol>
+</svg>
+<div class="page">
+  <section class="light">
+    <p class="k">Pellwater &middot; primary lockup</p>
+    <div>
+      <div class="lockup big" role="img" aria-label="Pellwater">
+        <svg aria-hidden="true" style="color:#20706B"><use href="#mark-tight" fill="currentColor"/></svg>
+        <span class="word">Pellwater</span>
+      </div>
+      <p class="tag">Independent drinking-water testing for wells, schools and small towns.</p>
+    </div>
+    <div class="notes">
+      <div><b>Mark</b>Procedural SVG, one path. Teal #20706B on paper.</div>
+      <div><b>Wordmark</b>Space Grotesk 600, tracking &minus;3%. OFL-1.1.</div>
+      <div><b>Smallest use</b>16 px favicon: mark only.</div>
+    </div>
+  </section>
+  <section class="dark">
+    <p class="k">Reversed &middot; clear space</p>
+    <div class="lockup small" role="img" aria-label="Pellwater">
+      <svg aria-hidden="true" style="color:#7FC9C1"><use href="#mark-tight" fill="currentColor"/></svg>
+      <span class="word">Pellwater</span>
+    </div>
+    <div class="space">
+      <span class="u">margin = 1 stem width</span>
+      <div class="box"></div>
+      <svg aria-hidden="true" viewBox="16 -32 488 576" style="color:#7FC9C1"><use href="#mark" fill="currentColor"/></svg>
+    </div>
+    <div class="mini">
+      <svg width="16" height="16" aria-hidden="true" style="color:#7FC9C1"><use href="#mark" fill="currentColor"/></svg><span>16</span>
+      <svg width="32" height="32" aria-hidden="true" style="color:#7FC9C1"><use href="#mark" fill="currentColor"/></svg><span>32</span>
+      <svg width="48" height="48" aria-hidden="true" style="color:#F7FAF9"><use href="#mark" fill="currentColor"/></svg><span>48 mono</span>
+    </div>
+  </section>
+</div>
+</body>
+</html>

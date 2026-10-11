@@ -1,0 +1,1 @@
+Four-slide members' meeting deck (one 1280x720 `<section>` per slide, rendered to a 4-page PDF) for a fictional bakery cooperative, in the warm-minimal system; the data slide's chart and percentages are computed from the `DATA` array in the page.

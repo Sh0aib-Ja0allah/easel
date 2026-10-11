@@ -1,5 +1,5 @@
 ---
-description: Routing - an animate piece already has its own score: render with audio "page".
+description: "Routing - an animate piece already has its own score: render with audio 'page'."
 tags: [routing, score]
 runs: 2
 max_turns: 10

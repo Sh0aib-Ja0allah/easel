@@ -104,3 +104,17 @@ test('qa on a video runs stillness, colour_cast and loudness together', { skip: 
   assert.deepEqual(r.checks.map((c) => c.name).sort(), ['colour_cast', 'loudness', 'stillness']);
   assert.equal(r.pass, true, JSON.stringify(r.checks));
 });
+
+test('fixedFrame: a graphic that grows past its frame fails frame_overflow; a fitting one passes; scrolling pages are unaffected', { skip: pageSkip }, async () => {
+  const tall = '<!doctype html><style>html,body{margin:0}div{width:400px;height:900px;background:#fff;font:20px Inter;color:#111}</style><div>Event poster</div>';
+  const fit = '<!doctype html><style>html,body{margin:0}div{width:400px;height:600px;background:#fff;font:20px Inter;color:#111}</style><div>Event poster</div>';
+  const a = await qa({ html: tall, width: 400, height: 600, fixedFrame: true, checks: ['text_clipping'], outDir: join(out, 'ff1') });
+  assert.equal(a.pass, false);
+  assert.deepEqual(a.hardFailures, ['frame_overflow']);
+  assert.equal(check(a, 'frame_overflow').findings[0].content, '400x900');
+  const b = await qa({ html: fit, width: 400, height: 600, fixedFrame: true, checks: ['text_clipping'], outDir: join(out, 'ff2') });
+  assert.equal(b.pass, true, JSON.stringify(b.checks));
+  const c = await qa({ html: tall, width: 400, height: 600, checks: ['text_clipping'], outDir: join(out, 'ff3') });
+  assert.equal(c.pass, true);
+  assert.equal(check(c, 'frame_overflow'), undefined);
+});

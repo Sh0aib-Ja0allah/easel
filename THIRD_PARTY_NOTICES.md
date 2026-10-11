@@ -8,8 +8,8 @@ Apache-2.0 sources carry a "Modified by Easel" header; the Apache License 2.0 te
 Each plugin also carries its own `LICENSE` and `NOTICE.md` (with the license texts it needs), so
 the notices travel with an installed plugin.
 
-> Status: covers everything shipped up to `easel-core` v0.1.0, plus easel-motion's animate kit
-> (T2.1). Completed for v1.0.0 in task T5.1.
+> Status: covers everything shipped up to `easel-core` 0.2.0 and `easel-motion` 0.2.0. Completed
+> for v1.0.0 in task T5.1.
 
 ## Apache-2.0 sources (adapted)
 
@@ -22,6 +22,15 @@ the notices travel with an installed plugin.
   `typography.md`, `colour.md`, `accessibility.md`, `motion.md`, from open-design's `craft/`
   rulebooks. The `.easel/brand.md` section layout follows open-design's `DESIGN.md` format.
 
+### anthropics/skills
+
+- Repository: https://github.com/anthropics/skills @ `dbd4588f9e1033efb41dad4bef2f7947c8993d44`
+- Copyright 2026 Anthropic, PBC. Licensed under the Apache License, Version 2.0 (each skill's
+  `LICENSE.txt`).
+- Adapted (modified by Easel, headers in each file): `plugins/easel-design/skills/poster/reference/canvas-design.md`
+  (from `skills/canvas-design`), `plugins/easel-design/skills/design-system/reference/theme-factory.md`
+  (from `skills/theme-factory` and its themes).
+
 ## MIT sources
 
 The MIT License applies to each source below; its text is reproduced once at the end of this file.
@@ -30,10 +39,11 @@ The MIT License applies to each source below; its text is reproduced once at the
 |---|---|---|---|
 | [referodesign/refero_skill](https://github.com/referodesign/refero_skill) | Copyright (c) 2026 Refero | Reached through open-design's craft rulebooks, which adapt it | `a9b54a3e62a6391f5f5ab7a20e4ddb32fb79a27d` |
 | [alchaincyf/huashu-art-motion](https://github.com/alchaincyf/huashu-art-motion) | Copyright (c) 2026 alchaincyf (花叔 · 花生) | Ideas for the film gates in `qa` (blue-purple share, still stretches) and the motion rulebook; easel-motion's nine explainer grammars (`grammars/`) and ten style recipes (`recipes/`), translated into English and renamed (headers in each file). **Excluded:** character assets and rig, the Mario/Nintendo showcase, the Clawd fan work | `9ff59339f934e08483ba0a5b1db20f4c2c421b35` |
-| [ArnavPuri/designskills](https://github.com/ArnavPuri/designskills) | Copyright (c) 2026 Arnav Puri | Critique procedure ideas in the rubrics and the critique skill; `easel-motion/skills/ui-motion/ui-patterns.md`, adapted from its `motion-design` skill | `c7873015add8571ca95043febad0d9e6c97ee5c6` |
+| [ArnavPuri/designskills](https://github.com/ArnavPuri/designskills) | Copyright (c) 2026 Arnav Puri | Critique procedure ideas in the rubrics and the critique skill; `easel-motion/skills/ui-motion/ui-patterns.md`, adapted from its `motion-design` skill; easel-design's reference files (22 of its skills, adapted) and `tools/palette.mjs` (a Node port of its palette script); list in `plugins/easel-design/NOTICE.md` | `c7873015add8571ca95043febad0d9e6c97ee5c6` |
 | [Vincentwei1021/mg-styles-15](https://github.com/Vincentwei1021/mg-styles-15) | Copyright (c) 2026 Vincentwei1021 | Rubric ideas (independent jury, calibrated scale); the `renderAt(t)` contract and cue sheet ideas; the looks of easel-motion's synthwave, liquid, aurora-glass and hud styles (from its style prompts; Easel's own code) | `49052d80bfaf9fa8412cc9710530e5e95a3b8d8c` |
 | [with-pebbly/aseprite-ai-artist](https://github.com/with-pebbly/aseprite-ai-artist) | Copyright (c) 2026 with-pebbly | Critic agent ideas (cold read, read-only critic) | `f51fe6908223ef9ac476de1568234c699594722d` |
 | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) | Copyright (c) 2026 GreenSock | The eight official GSAP skills as references for easel-motion's `ui-motion` skill (`skills/ui-motion/gsap/`, text unchanged, header added) | `aed9cfd3277740755f6bfc1155c7aa645403b760` |
+| [code-katz/claude-illustrate-skill](https://github.com/code-katz/claude-illustrate-skill) | Copyright (c) 2026 Will Curran (Code Katz) | easel-design's `logo` method (concepts, size-ladder contact sheet, one worst failure per pass, provenance) and its IP and licensing reference | `7189cde8c29c36faf5c7fc8b57bc1b15e5ae4cbd` |
 | [cth9191/animate](https://github.com/cth9191/animate) | Copyright (c) 2026 cth9191 | The three check-ins in the brief skill; easel-motion's animate kit (`kit/`), seven styles, templates, story grammars and `tools/build.mjs` (headers in each file, list in `plugins/easel-motion/NOTICE.md`); the `renderFrame(t)` page contract the engine reads; easel-core's `canvas_text` check, `measure_image`, `compare_images` and the `audio_score` synth; the style-match procedure | `7e5eb56feb2dd573f890e1b7b34748af43d58263` |
 
 ## Ideas only (no license; nothing copied)

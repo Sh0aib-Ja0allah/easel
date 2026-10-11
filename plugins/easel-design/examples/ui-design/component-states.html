@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tallyfern components: states</title>
+<style>
+  /* ---- Tokens (clean-product system) ---- */
+  :root {
+    --primary: #2F5BEA; --primary-hover: #2449C4; --primary-press: #1E3DA6;
+    --bg: #FFFFFF; --surface: #F5F7FA; --text: #14171F; --muted: #5B6472;
+    --border: #DFE3EA; --border-strong: #8A93A3;
+    --success: #1F8A5B; --success-text: #1A7550; /* #1F8A5B is 4.3:1 on white: fine for marks, too light for small text */ --error: #C8372D; --error-bg: #FCEEEC;
+    --disabled-bg: #EEF1F5; --disabled-text: #5B6472;
+    --radius: 8px; --radius-card: 12px;
+    --sans: "Inter"; --mono: "JetBrains Mono";
+  }
+  html, body { margin: 0; background: var(--bg); }
+  * { box-sizing: border-box; }
+
+  /* ---- Components (shared with mobile-bills.html) ---- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 40px; padding: 0 16px; border-radius: var(--radius); border: 1px solid transparent;
+    font: 600 15px/1 var(--sans); white-space: nowrap; cursor: pointer;
+    transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover, .btn-primary.is-hover { background: var(--primary-hover); box-shadow: 0 2px 6px rgba(20, 23, 31, 0.16); }
+  .btn-primary:active { background: var(--primary-press); box-shadow: none; }
+  .btn:focus-visible, .btn.is-focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn:disabled { background: var(--disabled-bg); color: var(--disabled-text); border: 1px dashed var(--border-strong); cursor: not-allowed; box-shadow: none; }
+  .btn[aria-busy="true"] { cursor: progress; }
+  .btn .spin { width: 16px; height: 16px; flex: none; }
+  .btn-quiet { background: var(--bg); color: var(--text); border-color: var(--border-strong); }
+  .btn-quiet:hover, .btn-quiet.is-hover { background: var(--surface); border-color: var(--text); }
+  .btn svg { flex: none; }
+
+  .field { display: grid; gap: 6px; }
+  .field label { font: 500 14px/1.3 var(--sans); color: var(--text); }
+  .input {
+    width: 100%; height: 40px; padding: 0 12px; border-radius: var(--radius);
+    border: 1px solid var(--border-strong); background: var(--bg);
+    font: 400 16px/1 var(--sans); color: var(--text);
+  }
+  .input::placeholder { color: var(--muted); opacity: 1; }
+  .input:focus-visible { outline: 2px solid var(--primary); outline-offset: 0; border-color: var(--primary); }
+  .input[aria-invalid="true"] { border-color: var(--error); border-width: 2px; padding: 0 11px; }
+  .input:disabled { background: var(--disabled-bg); color: var(--disabled-text); border-style: dashed; cursor: not-allowed; }
+  .input-mono { font-family: var(--mono); }
+  .hint { font: 400 13px/1.4 var(--sans); color: var(--muted); margin: 0; }
+  .hint.error { color: var(--error); display: flex; gap: 6px; align-items: flex-start; font-weight: 500; }
+  .hint.error svg { flex: none; margin-top: 1px; }
+
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 20px; display: grid; gap: 16px; }
+  .card-head { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; }
+  .card-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--surface); display: grid; place-items: center; }
+  .card h3 { margin: 0; font: 600 17px/1.25 var(--sans); color: var(--text); }
+  .card .meta { margin: 2px 0 0; font: 400 14px/1.3 var(--sans); color: var(--muted); }
+  .badge { font: 600 12px/1 var(--sans); padding: 6px 8px; border-radius: 999px; background: var(--surface); color: var(--text); border: 1px solid var(--border); white-space: nowrap; }
+  .amount { display: flex; align-items: baseline; justify-content: space-between; }
+  .amount b { font: 500 28px/1 var(--mono); color: var(--text); letter-spacing: -0.02em; }
+  .amount span { font: 400 14px/1 var(--sans); color: var(--muted); }
+  .bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--success); border-radius: 3px; }
+  .people { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .people li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; font: 400 14px/1.3 var(--sans); color: var(--text); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 600 11px/1 var(--sans); background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .paid { color: var(--success-text); font-weight: 600; display: inline-flex; gap: 4px; align-items: center; }
+  .owed { color: var(--error); font-weight: 600; }
+  .card-actions { display: flex; gap: 12px; align-items: center; }
+  .link { font: 600 15px/1 var(--sans); color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+
+  .skeleton .sk { display: block; background: var(--border); border-radius: 6px; }
+  .skeleton .card-icon { background: var(--border); }
+  @media (prefers-reduced-motion: no-preference) { .skeleton .sk { animation: pulse 1.6s ease-in-out infinite; } }
+  @keyframes pulse { 50% { opacity: 0.55; } }
+
+  /* ---- Review sheet layout ---- */
+  .sheet { width: 1440px; height: 900px; padding: 56px 64px; font-family: var(--sans); color: var(--text); display: grid; grid-template-columns: 1fr 380px; grid-template-rows: auto 1fr; column-gap: 64px; }
+  .sheet > header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: end; border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 40px; }
+  .sheet h1 { margin: 0; font: 700 31px/1.15 var(--sans); letter-spacing: -0.02em; }
+  .sheet header p { margin: 6px 0 0; font-size: 16px; color: var(--muted); }
+  .sheet header code { font: 400 14px/1 var(--mono); color: var(--muted); }
+  .group + .group { margin-top: 56px; }
+  .group h2 { margin: 0 0 4px; font: 600 20px/1.25 var(--sans); }
+  .group > p { margin: 0 0 20px; font-size: 14px; color: var(--muted); }
+  .states { display: grid; gap: 24px; }
+  .states.five { grid-template-columns: repeat(5, 1fr); }
+  .states.four { grid-template-columns: repeat(4, 1fr); }
+  .state { display: grid; gap: 12px; align-content: start; }
+  .state-name { font: 500 12px/1 var(--mono); color: var(--muted); text-transform: lowercase; }
+  .state .btn { justify-self: start; }
+  aside.cards h2 { margin: 0 0 4px; font: 600 20px/1.25 var(--sans); }
+  aside.cards > p { margin: 0 0 20px; font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main class="sheet">
+  <header>
+    <div>
+      <h1>Tallyfern components</h1>
+      <p>Every state of the controls used on the Bills screen, at rest and in use.</p>
+    </div>
+    <code>v1.3 · clean-product tokens</code>
+  </header>
+
+  <section>
+    <div class="group">
+      <h2>Buttons</h2>
+      <p>One primary per view; quiet for everything else. 40px tall on desktop, 48px on touch.</p>
+      <div class="states five">
+        <div class="state"><span class="state-name">default</span><button class="btn btn-primary" type="button">Split bill</button></div>
+        <div class="state"><span class="state-name">hover</span><button class="btn btn-primary is-hover" type="button">Split bill</button></div>
+        <div class="state"><span class="state-name">focus-visible</span><button class="btn btn-primary is-focus" type="button">Split bill</button></div>
+        <div class="state"><span class="state-name">disabled</span><button class="btn btn-primary" type="button" disabled>Split bill</button></div>
+        <div class="state"><span class="state-name">loading</span>
+          <button class="btn btn-primary" type="button" aria-busy="true">
+            <svg class="spin" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2"/><path d="M8 2a6 6 0 0 1 6 6" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/></svg>
+            Splitting…
+          </button>
+        </div>
+      </div>
+      <div class="states five" style="margin-top:24px">
+        <div class="state"><span class="state-name">quiet · default</span><button class="btn btn-quiet" type="button">Remind Jonah</button></div>
+        <div class="state"><span class="state-name">quiet · hover</span><button class="btn btn-quiet is-hover" type="button">Remind Jonah</button></div>
+        <div class="state"><span class="state-name">quiet · focus-visible</span><button class="btn btn-quiet is-focus" type="button">Remind Jonah</button></div>
+        <div class="state"><span class="state-name">quiet · disabled</span><button class="btn btn-quiet" type="button" disabled>Remind Jonah</button></div>
+        <div class="state"><span class="state-name">quiet · loading</span>
+          <button class="btn btn-quiet" type="button" aria-busy="true">
+            <svg class="spin" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#14171F" stroke-opacity="0.2" stroke-width="2"/><path d="M8 2a6 6 0 0 1 6 6" fill="none" stroke="#14171F" stroke-width="2" stroke-linecap="round"/></svg>
+            Sending…
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Text input</h2>
+      <p>Label above, always visible. Errors say what to fix.</p>
+      <div class="states four">
+        <div class="state"><span class="state-name">empty</span>
+          <div class="field"><label for="i1">Amount</label><input id="i1" class="input input-mono" inputmode="decimal" placeholder="£0.00"><p class="hint">Total on the bill, before splitting.</p></div>
+        </div>
+        <div class="state"><span class="state-name">filled</span>
+          <div class="field"><label for="i2">Amount</label><input id="i2" class="input input-mono" inputmode="decimal" value="£86.40"><p class="hint">Total on the bill, before splitting.</p></div>
+        </div>
+        <div class="state"><span class="state-name">error</span>
+          <div class="field"><label for="i3">Amount</label><input id="i3" class="input input-mono" inputmode="decimal" value="86,40" aria-invalid="true" aria-describedby="i3-err">
+            <p class="hint error" id="i3-err"><svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="7" cy="7" r="6.25" fill="none" stroke="#C8372D" stroke-width="1.5"/><path d="M7 3.5v4.2" stroke="#C8372D" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10.2" r="0.9" fill="#C8372D"/></svg>Use a full stop for pence, like 86.40.</p></div>
+        </div>
+        <div class="state"><span class="state-name">disabled</span>
+          <div class="field"><label for="i4">Amount</label><input id="i4" class="input input-mono" value="£86.40" disabled><p class="hint">Locked once everyone has paid.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="cards">
+    <h2>Bill card</h2>
+    <p>Shows who still owes; the action names the person.</p>
+    <article class="card" aria-label="Electricity bill">
+      <div class="card-head">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M11.5 1.5 4 11h5l-1 7.5L15.5 9h-5z" fill="none" stroke="#14171F" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div><h3>Electricity</h3><p class="meta">March · due 28 Mar</p></div>
+        <span class="badge">2 of 3 paid</span>
+      </div>
+      <div class="amount"><b>£86.40</b><span>£28.80 each</span></div>
+      <div class="bar" role="img" aria-label="2 of 3 shares paid"><i style="width: 66.7%"></i></div>
+      <ul class="people">
+        <li><span class="avatar">AK</span><span>Ama Kessie</span><span class="paid">Paid</span></li>
+        <li><span class="avatar">SR</span><span>Sam Rowe</span><span class="paid">Paid</span></li>
+        <li><span class="avatar">JM</span><span>Jonah Mills</span><span class="owed">Owes £28.80</span></li>
+      </ul>
+      <div class="card-actions"><button class="btn btn-quiet" type="button">Remind Jonah</button><a class="link" href="#bill-electricity">View bill</a></div>
+    </article>
+    <p class="state-name" style="margin:28px 0 12px">card · loading</p>
+    <article class="card skeleton" aria-busy="true" aria-label="Loading bill">
+      <div class="card-head"><div class="card-icon"></div><div><i class="sk" style="width:120px;height:16px"></i><i class="sk" style="width:90px;height:12px;margin-top:8px"></i></div><i class="sk" style="width:72px;height:24px;border-radius:999px"></i></div>
+      <i class="sk" style="width:140px;height:28px"></i>
+      <i class="sk" style="width:100%;height:6px"></i>
+    </article>
+  </aside>
+</main>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ashby Row Bindery - design system specimen</title>
+<style>
+/* Layer 1: primitives, from tools/palette.mjs
+   accent: --from "#C8553D"   ink: --from "#1D3557"   paper: 75 0.015 (warm neutral) */
+:root {
+  --accent-50:#fef2ef; --accent-100:#fee0d9; --accent-200:#ffc4b7; --accent-300:#f39e8b; --accent-400:#dc7862;
+  --accent-500:#b94830; --accent-600:#a1311a; --accent-700:#851800; --accent-800:#610f00; --accent-900:#3f0700; --accent-950:#210100;
+  --ink-50:#f0f6fe; --ink-100:#dde9fa; --ink-200:#c7d6eb; --ink-300:#a5b9d6; --ink-400:#829abc;
+  --ink-500:#587399; --ink-600:#455f84; --ink-700:#2f486c; --ink-800:#1e3352; --ink-900:#0d1f39; --ink-950:#020d21;
+  --paper-50:#f7f5f2; --paper-100:#eae7e3; --paper-200:#d7d4cf; --paper-300:#bbb7b0; --paper-400:#9d9790;
+  --paper-500:#777068; --paper-600:#635d54; --paper-700:#4d473f; --paper-800:#37322b; --paper-900:#231f19; --paper-950:#100d08;
+
+  /* Layer 2: semantic (light) */
+  --bg-primary:#F4EFE6; --bg-secondary:#EBE4D8; --surface:#FBF8F3;
+  --text-primary:#1D3557; --text-secondary:#5A6478; --border-default:var(--paper-200);
+  --interactive-primary:#1D3557; --on-interactive:#F4EFE6; --color-accent:var(--accent-500); --focus:var(--accent-500);
+
+  /* Type: scale 1.25 from 18px body */
+  --font-display:"Space Grotesk"; --font-body:"Newsreader"; --font-ui:"Inter"; --font-mono:"JetBrains Mono";
+  --step--2:12px; --step--1:14px; --step-0:18px; --step-1:22px; --step-2:28px; --step-3:35px; --step-4:44px; --step-5:55px;
+
+  /* Space: 8px base */
+  --space-1:4px; --space-2:8px; --space-3:16px; --space-4:24px; --space-5:32px; --space-6:48px; --space-7:64px; --space-8:80px;
+  --radius-card:12px; --radius-control:8px;
+}
+.theme-dark {
+  --bg-primary:var(--ink-950); --bg-secondary:var(--ink-900); --surface:var(--ink-900);
+  --text-primary:var(--paper-50); --text-secondary:var(--ink-300); --border-default:var(--ink-700);
+  --interactive-primary:var(--accent-400); --on-interactive:var(--ink-950); --color-accent:var(--accent-400); --focus:var(--accent-300);
+}
+
+html, body { margin:0; }
+body { background:var(--bg-primary); }
+.page {
+  width:1440px; height:1800px; overflow:hidden; box-sizing:border-box;
+  padding:48px var(--space-8) 48px; background:var(--bg-primary); color:var(--text-primary);
+  font-family:var(--font-body), serif; font-size:var(--step-0); line-height:1.55;
+  display:grid; grid-template-columns:repeat(12, 1fr); column-gap:24px; align-content:start;
+}
+h1, h2, h3 { font-family:var(--font-display); font-weight:600; margin:0; letter-spacing:-0.01em; }
+.label { font-family:var(--font-ui); font-weight:500; font-size:var(--step--2); letter-spacing:0.06em; text-transform:uppercase; color:var(--text-secondary); margin:0; }
+.mono { font-family:var(--font-mono); }
+
+/* header */
+.head { grid-column:1 / 13; display:grid; grid-template-columns:7fr 5fr; column-gap:24px; align-items:end; padding-bottom:var(--space-5); border-bottom:1px solid var(--text-primary); }
+.head h1 { font-size:var(--step-5); line-height:1.05; margin-top:var(--space-3); }
+.head > p { margin:0; color:var(--text-secondary); max-width:46ch; }
+.head .accent-word { color:var(--accent-500); }
+
+section { grid-column:1 / 13; padding-top:36px; }
+.sec-title { display:flex; align-items:baseline; gap:var(--space-4); margin-bottom:var(--space-3); }
+.sec-title h2 { font-size:var(--step-2); }
+.sec-title .label { margin-left:auto; }
+
+/* colour */
+.scale { display:grid; grid-template-columns:150px repeat(11, 1fr); gap:4px; margin-bottom:var(--space-2); align-items:stretch; }
+.scale .name { font-family:var(--font-ui); font-size:var(--step--1); font-weight:500; align-self:center; }
+.scale .name small { display:block; font-weight:400; color:var(--text-secondary); font-size:var(--step--2); }
+.sw { height:70px; border-radius:6px; padding:8px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:space-between; font-family:var(--font-mono); font-size:11.5px; line-height:1.3; }
+.sw b { font-family:var(--font-ui); font-weight:600; font-size:13px; }
+.sw.d { color:#100d08; } .sw.l { color:#ffffff; }
+.sw.brand { outline:2px solid var(--text-primary); outline-offset:2px; }
+
+.pairs { display:grid; grid-template-columns:repeat(5, 1fr); gap:var(--space-3); margin-top:var(--space-3); }
+.pair { border-radius:var(--radius-control); padding:12px 14px; font-family:var(--font-ui); font-size:var(--step--1); line-height:1.35; border:1px solid var(--border-default); }
+.pair .r { font-family:var(--font-mono); font-size:var(--step--2); display:block; margin-top:6px; }
+
+/* type */
+.type { display:grid; grid-template-columns:7fr 5fr; column-gap:var(--space-6); }
+.ramp > div { display:grid; grid-template-columns:120px 1fr; align-items:baseline; padding:3px 0; border-bottom:1px solid var(--border-default); }
+.ramp .tok { font-family:var(--font-mono); font-size:var(--step--2); color:var(--text-secondary); }
+.ramp .s { white-space:nowrap; overflow:visible; }
+.ramp .disp { font-family:var(--font-display); font-weight:600; line-height:1.1; letter-spacing:-0.015em; }
+.prose p { margin:0 0 var(--space-3); }
+.prose .lede { font-size:var(--step-1); line-height:1.45; font-style:italic; }
+.faces { display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-3); margin-top:var(--space-4); }
+.face { font-family:var(--font-ui); font-size:var(--step--2); color:var(--text-secondary); line-height:1.5; }
+.face .g { display:block; font-size:40px; line-height:1.1; color:var(--text-primary); margin-bottom:4px; }
+
+/* spacing */
+.space-row { display:flex; align-items:flex-end; gap:var(--space-5); }
+.space-row div { display:flex; flex-direction:column; align-items:flex-start; gap:8px; font-family:var(--font-mono); font-size:var(--step--2); color:var(--text-secondary); }
+.space-row i { display:block; background:var(--accent-500); height:var(--space-3); }
+
+/* components */
+.comps { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.panel { background:var(--bg-primary); color:var(--text-primary); border-radius:var(--radius-card); padding:var(--space-4) var(--space-5); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3) var(--space-4); align-items:start; border:1px solid var(--border-default); }
+.panel .label { grid-column:1 / 3; }
+.btn { font-family:var(--font-ui); font-weight:500; font-size:var(--step--1); height:40px; padding:0 18px; border-radius:var(--radius-control); border:0; display:inline-flex; align-items:center; gap:8px; }
+.btn.primary { background:var(--interactive-primary); color:var(--on-interactive); }
+.btn.quiet { background:transparent; color:var(--text-primary); box-shadow:inset 0 0 0 1px var(--text-primary); }
+.btns { display:flex; gap:12px; flex-wrap:wrap; }
+.field label { display:block; font-family:var(--font-ui); font-weight:500; font-size:var(--step--1); margin-bottom:6px; }
+.field .input { font-family:var(--font-ui); font-size:15px; height:42px; box-sizing:border-box; padding:0 12px; display:flex; align-items:center; border-radius:var(--radius-control); background:var(--surface); border:1px solid var(--border-default); box-shadow:0 0 0 2px var(--bg-primary), 0 0 0 4px var(--focus); }
+.field .hint { font-family:var(--font-ui); font-size:var(--step--2); color:var(--text-secondary); margin-top:8px; }
+.card { grid-column:1 / 3; background:var(--bg-secondary); border-radius:var(--radius-card); padding:var(--space-4); display:grid; grid-template-columns:72px 1fr auto; gap:var(--space-4); align-items:center; }
+.card .spine { width:72px; height:92px; border-radius:3px 6px 6px 3px; background:var(--interactive-primary); position:relative; }
+.card .spine::after { content:""; position:absolute; left:10px; top:0; bottom:0; width:2px; background:var(--color-accent); }
+.card h3 { font-size:var(--step-1); line-height:1.2; }
+.card p { margin:4px 0 0; font-size:16px; color:var(--text-secondary); line-height:1.45; }
+.card .price { font-family:var(--font-mono); font-size:var(--step-0); text-align:right; }
+.tag { display:inline-block; margin-top:8px; font-family:var(--font-ui); font-weight:600; font-size:var(--step--2); letter-spacing:0.04em; padding:3px 8px; border-radius:4px; background:var(--accent-50); color:var(--accent-700); }
+.theme-dark .card .spine { background:var(--ink-700); }
+.theme-dark .tag { background:var(--accent-900); color:var(--accent-200); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="head">
+    <div>
+      <p class="label">Ashby Row Bindery &middot; Design system v1.0 &middot; Specimen</p>
+      <h1>Hand-sewn notebooks, set in ink and <span class="accent-word">one red thread</span>.</h1>
+    </div>
+    <p>Tokens for the bindery's order site and print catalogue. Paper ground, ink-blue text, terracotta used once per layout. Every text pair on this page is measured against WCAG AA.</p>
+  </header>
+
+  <section>
+    <div class="sec-title"><h2>Colour</h2><p class="label">OKLCH scales &middot; step, hex, contrast on white</p></div>
+
+    <div class="scale">
+      <div class="name">accent<small>from #C8553D</small></div>
+      <div class="sw d" style="background:#fef2ef"><b>50</b><span>#fef2ef<br>1.10</span></div>
+      <div class="sw d" style="background:#fee0d9"><b>100</b><span>#fee0d9<br>1.24</span></div>
+      <div class="sw d" style="background:#ffc4b7"><b>200</b><span>#ffc4b7<br>1.52</span></div>
+      <div class="sw d" style="background:#f39e8b"><b>300</b><span>#f39e8b<br>2.08</span></div>
+      <div class="sw d" style="background:#dc7862"><b>400</b><span>#dc7862<br>3.04</span></div>
+      <div class="sw l brand" style="background:#b94830"><b>500</b><span>#b94830<br>5.21</span></div>
+      <div class="sw l" style="background:#a1311a"><b>600</b><span>#a1311a<br>7.07</span></div>
+      <div class="sw l" style="background:#851800"><b>700</b><span>#851800<br>9.87</span></div>
+      <div class="sw l" style="background:#610f00"><b>800</b><span>#610f00<br>13.32</span></div>
+      <div class="sw l" style="background:#3f0700"><b>900</b><span>#3f0700<br>16.91</span></div>
+      <div class="sw l" style="background:#210100"><b>950</b><span>#210100<br>19.64</span></div>
+    </div>
+
+    <div class="scale">
+      <div class="name">ink<small>from #1D3557</small></div>
+      <div class="sw d" style="background:#f0f6fe"><b>50</b><span>#f0f6fe<br>1.09</span></div>
+      <div class="sw d" style="background:#dde9fa"><b>100</b><span>#dde9fa<br>1.23</span></div>
+      <div class="sw d" style="background:#c7d6eb"><b>200</b><span>#c7d6eb<br>1.47</span></div>
+      <div class="sw d" style="background:#a5b9d6"><b>300</b><span>#a5b9d6<br>2.00</span></div>
+      <div class="sw d" style="background:#829abc"><b>400</b><span>#829abc<br>2.88</span></div>
+      <div class="sw l" style="background:#587399"><b>500</b><span>#587399<br>4.85</span></div>
+      <div class="sw l" style="background:#455f84"><b>600</b><span>#455f84<br>6.52</span></div>
+      <div class="sw l" style="background:#2f486c"><b>700</b><span>#2f486c<br>9.27</span></div>
+      <div class="sw l brand" style="background:#1e3352"><b>800</b><span>#1e3352<br>12.72</span></div>
+      <div class="sw l" style="background:#0d1f39"><b>900</b><span>#0d1f39<br>16.51</span></div>
+      <div class="sw l" style="background:#020d21"><b>950</b><span>#020d21<br>19.41</span></div>
+    </div>
+
+    <div class="scale">
+      <div class="name">paper<small>neutral, hue 75</small></div>
+      <div class="sw d" style="background:#f7f5f2"><b>50</b><span>#f7f5f2<br>1.09</span></div>
+      <div class="sw d" style="background:#eae7e3"><b>100</b><span>#eae7e3<br>1.23</span></div>
+      <div class="sw d" style="background:#d7d4cf"><b>200</b><span>#d7d4cf<br>1.48</span></div>
+      <div class="sw d" style="background:#bbb7b0"><b>300</b><span>#bbb7b0<br>2.00</span></div>
+      <div class="sw d" style="background:#9d9790"><b>400</b><span>#9d9790<br>2.89</span></div>
+      <div class="sw l" style="background:#777068"><b>500</b><span>#777068<br>4.88</span></div>
+      <div class="sw l" style="background:#635d54"><b>600</b><span>#635d54<br>6.51</span></div>
+      <div class="sw l" style="background:#4d473f"><b>700</b><span>#4d473f<br>9.18</span></div>
+      <div class="sw l" style="background:#37322b"><b>800</b><span>#37322b<br>12.70</span></div>
+      <div class="sw l" style="background:#231f19"><b>900</b><span>#231f19<br>16.39</span></div>
+      <div class="sw l" style="background:#100d08"><b>950</b><span>#100d08<br>19.39</span></div>
+    </div>
+
+    <div class="pairs">
+      <div class="pair" style="background:#F4EFE6;color:#1D3557">--text-primary on --bg-primary<span class="r">#1D3557 / #F4EFE6 &middot; 10.9:1</span></div>
+      <div class="pair" style="background:#EBE4D8;color:#5A6478">text-secondary on bg-secondary<span class="r">#5A6478 / #EBE4D8 &middot; 4.9:1</span></div>
+      <div class="pair" style="background:#1D3557;color:#F4EFE6">--on-interactive on --interactive<span class="r">#F4EFE6 / #1D3557 &middot; 10.9:1</span></div>
+      <div class="pair" style="background:#fef2ef;color:#851800">accent-700 on accent-50 (tag)<span class="r">#851800 / #fef2ef &middot; 9.0:1</span></div>
+      <div class="pair" style="background:#0d1f39;color:#dc7862;border-color:#0d1f39">dark: accent-400 on ink-900<span class="r">#dc7862 / #0d1f39 &middot; 5.4:1</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Type</h2><p class="label">Scale 1.25 from 18 px &middot; Space Grotesk / Newsreader / Inter</p></div>
+    <div class="type">
+      <div class="ramp">
+        <div><span class="tok">step-5 &middot; 55</span><span class="s disp" style="font-size:55px">Coptic stitch, six signatures</span></div>
+        <div><span class="tok">step-4 &middot; 44</span><span class="s disp" style="font-size:44px">Field journals for wet weather</span></div>
+        <div><span class="tok">step-3 &middot; 35</span><span class="s disp" style="font-size:35px">Cloth spines in eleven colours</span></div>
+        <div><span class="tok">step-2 &middot; 28</span><span class="s disp" style="font-size:28px">Order by Thursday, posted Monday</span></div>
+        <div><span class="tok">step-1 &middot; 22</span><span class="s" style="font-size:22px;font-style:italic">Each book is folded, pierced and sewn by hand.</span></div>
+        <div><span class="tok">step-0 &middot; 18</span><span class="s" style="font-size:18px">Body text: Newsreader 400 at 18 / 1.55, 60 to 70 characters a line.</span></div>
+        <div><span class="tok">step-&minus;1 &middot; 14</span><span class="s" style="font-size:14px;font-family:var(--font-ui);font-weight:500">Interface labels: Inter 500 &middot; Add to order &middot; 120 gsm cream laid</span></div>
+        <div><span class="tok">step-&minus;2 &middot; 12</span><span class="s mono" style="font-size:12px">Data: JetBrains Mono 400 &middot; SKU ARB-A5-COP-06 &middot; 148 &times; 210 mm</span></div>
+      </div>
+      <div>
+        <div class="prose">
+          <p class="lede">A notebook should open flat on the first day and still hold together on the four-hundredth.</p>
+          <p>We sew every signature through the fold with waxed linen, so the spine bends instead of cracking. Covers are book cloth over 2 mm board; pages are 120 gsm laid paper that takes fountain-pen ink without bleed.</p>
+        </div>
+        <div class="faces">
+          <div class="face"><span class="g" style="font-family:var(--font-display);font-weight:600">Ag</span>Space Grotesk 600<br>Display, 28 px and up</div>
+          <div class="face"><span class="g" style="font-family:var(--font-body)">Ag</span>Newsreader 400<br>Body and italic ledes</div>
+          <div class="face"><span class="g" style="font-family:var(--font-ui);font-weight:500">Ag</span>Inter 500<br>Labels and controls</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Space</h2><p class="label">8 px base &middot; 12 columns, 24 px gutters, 80 px margins</p></div>
+    <div class="space-row">
+      <div><i style="width:4px"></i><span>space-1 &middot; 4</span></div>
+      <div><i style="width:8px"></i><span>space-2 &middot; 8</span></div>
+      <div><i style="width:16px"></i><span>space-3 &middot; 16</span></div>
+      <div><i style="width:24px"></i><span>space-4 &middot; 24</span></div>
+      <div><i style="width:32px"></i><span>space-5 &middot; 32</span></div>
+      <div><i style="width:48px"></i><span>space-6 &middot; 48</span></div>
+      <div><i style="width:64px"></i><span>space-7 &middot; 64</span></div>
+      <div><i style="width:80px"></i><span>space-8 &middot; 80</span></div>
+      <div><i style="width:120px;background:var(--text-primary)"></i><span>radius 8 controls &middot; 12 cards</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Components</h2><p class="label">Same markup, light and dark tokens</p></div>
+    <div class="comps">
+      <div class="panel">
+        <p class="label">Light</p>
+        <div class="btns"><span class="btn primary">Add to order</span><span class="btn quiet">Choose cloth</span></div>
+        <div class="field"><label>Name to emboss</label><div class="input">M. Okafor</div><div class="hint">Up to 18 letters, blind-stamped.</div></div>
+        <div class="card">
+          <div class="spine"></div>
+          <div><h3>A5 field journal, coptic stitch</h3><p>Six signatures, 192 pages, cream laid. Opens flat.</p><span class="tag">SEWN TO ORDER</span></div>
+          <div class="price">&pound;34.00</div>
+        </div>
+      </div>
+      <div class="panel theme-dark">
+        <p class="label">Dark</p>
+        <div class="btns"><span class="btn primary">Add to order</span><span class="btn quiet">Choose cloth</span></div>
+        <div class="field"><label>Name to emboss</label><div class="input">M. Okafor</div><div class="hint">Up to 18 letters, blind-stamped.</div></div>
+        <div class="card">
+          <div class="spine"></div>
+          <div><h3>A5 field journal, coptic stitch</h3><p>Six signatures, 192 pages, cream laid. Opens flat.</p><span class="tag">SEWN TO ORDER</span></div>
+          <div class="price">&pound;34.00</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

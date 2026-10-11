@@ -1,7 +1,8 @@
 ---
-description: Routing - matching a look from reference images starts style-match: measure first, name after the look, keep references local.
+description: "Routing - matching a look from reference images starts style-match: measure first, name after the look, keep references local."
 tags: [routing, style-match]
 runs: 2
+plugins: ["../..", "../../../easel-core"]
 max_turns: 10
 allowed_tools: [Skill, Read, Glob, Write]
 ---

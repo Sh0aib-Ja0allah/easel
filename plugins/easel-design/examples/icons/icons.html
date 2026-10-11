@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tallyboard icons - review sheet</title>
+<style>
+/* clean-product system: Inter, one blue accent, text #14171F, surface #F5F7FA */
+html, body { margin:0; }
+body { background:#F5F7FA; }
+.page { width:960px; height:540px; overflow:hidden; box-sizing:border-box; padding:20px 24px; background:#F5F7FA; color:#14171F; font-family:"Inter", sans-serif; display:grid; grid-template-columns:552px 1fr; grid-template-rows:auto 1fr; column-gap:20px; row-gap:14px; }
+header { grid-column:1 / 3; display:flex; align-items:baseline; gap:16px; }
+h1 { margin:0; font-size:20px; font-weight:700; letter-spacing:-0.02em; }
+header p { margin:0; font-size:12px; color:#5B6472; }
+header code { font-family:"JetBrains Mono", monospace; font-size:11.5px; }
+.left { display:grid; grid-template-rows:1fr 1fr; gap:10px; }
+.panel { display:grid; grid-template-columns:40px repeat(8, 1fr); align-items:center; border-radius:12px; padding:6px 12px 8px; border:1px solid #DFE3EA; }
+.panel.light { background:#FFFFFF; color:#14171F; }
+.panel.dark { background:#14171F; color:#F5F7FA; border-color:#14171F; }
+.nm { font-size:10.5px; text-align:center; color:#5B6472; padding-bottom:2px; white-space:nowrap; }
+.dark .nm, .dark .sz { color:#A9B1BE; }
+.sz { font-family:"JetBrains Mono", monospace; font-size:11px; color:#5B6472; }
+.cell { display:flex; align-items:center; justify-content:center; }
+.ic { display:block; flex-shrink:0; }
+.right { display:grid; grid-template-rows:auto auto 1fr; gap:10px; }
+.card { border-radius:12px; padding:14px 16px; background:#FFFFFF; border:1px solid #DFE3EA; }
+.card.dark { background:#14171F; color:#F5F7FA; border-color:#14171F; }
+.k { margin:0 0 10px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#5B6472; }
+.card.dark .k { color:#A9B1BE; }
+.btns { display:flex; gap:8px; flex-wrap:wrap; }
+.btn { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 14px; border-radius:8px; font-size:14px; font-weight:500; }
+.btn .ic { width:20px; height:20px; margin-left:-2px; }
+.btn.icon-only { width:40px; padding:0; justify-content:center; }
+.btn.icon-only .ic { margin:0; }
+.btn.primary { background:#2F5BEA; color:#FFFFFF; }
+.btn.quiet { box-shadow:inset 0 0 0 1px #DFE3EA; color:#14171F; background:#FFFFFF; }
+.card.dark .btn.quiet { box-shadow:inset 0 0 0 1px #3A404C; color:#F5F7FA; background:#14171F; }
+.card.dark .btn.primary { background:#7C9BFF; color:#0B1020; }
+.nav { display:flex; justify-content:space-between; }
+.nav span { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11.5px; font-weight:500; color:#5B6472; width:56px; }
+.nav span.on { color:#2F5BEA; }
+.card.dark .nav span { color:#A9B1BE; }
+.card.dark .nav span.on { color:#7C9BFF; }
+.inline { font-size:14px; line-height:1.5; margin:10px 0 0; display:flex; align-items:center; gap:6px; }
+.inline .ic { width:16px; height:16px; color:#1F8A5B; }
+.card.dark .inline .ic { color:#5FD39A; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11a6 6 0 0 1 12 0v3.5l2 2.5H4l2-2.5z"/><path d="M10 21h4M12 3v2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.83 2.83 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/></symbol>
+</svg>
+<div class="page">
+  <header>
+    <h1>Tallyboard icons</h1>
+    <p>8 icons &middot; 24 &times; 24 grid, 2 px padding &middot; one 2 px stroke, round caps and joins &middot; <code>stroke="currentColor"</code> &middot; shown at 16 / 24 / 32 / 48</p>
+  </header>
+  <div class="left">
+    <div class="panel light"><div class="sz"></div><div class="nm">search</div><div class="nm">home</div><div class="nm">calendar</div><div class="nm">bell</div><div class="nm">user</div><div class="nm">download</div><div class="nm">edit</div><div class="nm">check-circle</div><div class="sz">16</div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div><div class="sz">24</div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div><div class="sz">32</div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div><div class="sz">48</div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div></div>
+    <div class="panel dark"><div class="sz"></div><div class="nm">search</div><div class="nm">home</div><div class="nm">calendar</div><div class="nm">bell</div><div class="nm">user</div><div class="nm">download</div><div class="nm">edit</div><div class="nm">check-circle</div><div class="sz">16</div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:28px"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div><div class="sz">24</div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:36px"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div><div class="sz">32</div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:44px"><svg class="ic" width="32" height="32" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div><div class="sz">48</div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-home"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></div><div class="cell" style="height:60px"><svg class="ic" width="48" height="48" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg></div></div>
+  </div>
+  <div class="right">
+    <div class="card">
+      <p class="k">In buttons, 20 px with label</p>
+      <div class="btns">
+        <span class="btn primary"><svg class="ic" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Export CSV</span>
+        <span class="btn quiet"><svg class="ic" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>Rename</span>
+        <span class="btn quiet icon-only" role="button" aria-label="Find in ledger"><svg class="ic" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></span>
+      </div>
+      <p class="inline"><svg class="ic" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Ledger saved 2 minutes ago</p>
+    </div>
+    <div class="card">
+      <p class="k">Tab bar, 24 px</p>
+      <div class="nav">
+        <span class="on"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg>Today</span>
+        <span><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg>Month</span>
+        <span><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg>Alerts</span>
+        <span><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>Account</span>
+      </div>
+    </div>
+    <div class="card dark">
+      <p class="k">Dark, same markup</p>
+      <div class="nav">
+        <span class="on"><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg>Today</span>
+        <span><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg>Month</span>
+        <span><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg>Alerts</span>
+        <span><svg class="ic" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>Account</span>
+      </div>
+      <div class="btns" style="margin-top:12px">
+        <span class="btn primary"><svg class="ic" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Export CSV</span>
+        <span class="btn quiet"><svg class="ic" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>Rename</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

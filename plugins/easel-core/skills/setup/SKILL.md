@@ -3,10 +3,12 @@ name: setup
 description: >-
   Check and install what Easel needs to render: Node, the Playwright Chromium headless shell and
   pinned npm packages (installed into the plugin data folder), ffmpeg and ffprobe, plus optional
-  Python, Aseprite and provider API keys. Use when the user installs Easel, says "set up easel",
-  "easel doctor", "is everything installed", or when any Easel render fails with a missing
-  dependency. For brand colours and fonts use easel-core:brand instead.
-when_to_use: First run of Easel, render errors that mention Playwright, Chromium, ffmpeg or a missing package, or the user asking whether Easel works on their machine.
+  Python, Aseprite and provider API keys, with the exact install command for the user's OS. Use
+  this skill rather than calling the doctor tool on its own whenever the user installs Easel, says
+  "set up easel", "easel doctor", "is everything installed", asks whether ffmpeg, Chromium or
+  Playwright is set up, or an Easel render fails with a missing dependency ("playwright-core is
+  not installed", "ffmpeg not found"). For brand colours and fonts use easel-core:brand instead.
+when_to_use: First run of Easel; any question about whether Easel, ffmpeg, Chromium or Playwright is installed or working; render errors that mention Playwright, Chromium, ffmpeg or a missing package.
 allowed-tools: mcp__plugin_easel-core_easel__doctor mcp__plugin_easel-core_easel__render_still mcp__plugin_easel-core_easel__ping
 ---
 

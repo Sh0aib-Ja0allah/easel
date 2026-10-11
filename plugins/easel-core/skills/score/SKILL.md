@@ -9,7 +9,8 @@ when_to_use: >-
   The user asks to "add music", "add sound", "sound effects", "score this", "sync it to the beat",
   or a render has no audio. For an easel-motion animate piece, its own in-piece score is used by
   default (render_video audio "page"); use this skill for any other video, or when the user wants
-  a score built from a cue sheet. A user's own music track is muxed as is.
+  a score built from a cue sheet. Also when the user wants their own music file put on a video
+  ("put my track on this render"): the track is muxed as is and its loudness checked.
 argument-hint: "[video or piece] [mood: warm | bright | retro]"
 allowed-tools: mcp__plugin_easel-core_easel__audio_score mcp__plugin_easel-core_easel__validate mcp__plugin_easel-core_easel__render_video mcp__plugin_easel-core_easel__mux_audio mcp__plugin_easel-core_easel__qa Read Write Edit Glob
 ---

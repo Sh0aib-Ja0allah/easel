@@ -1,6 +1,6 @@
 {
   "name": "easel-engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Easel render engine: MCP server and CLI (zero-dependency core; Playwright and GSAP are installed by doctor into the plugin data folder)",
   "license": "MIT",

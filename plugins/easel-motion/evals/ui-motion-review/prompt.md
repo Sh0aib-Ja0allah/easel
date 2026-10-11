@@ -2,6 +2,7 @@
 description: Routing - a motion review of UI CSS flags linear easing, too-long durations and animating all properties.
 tags: [routing, ui-motion, review]
 runs: 2
+plugins: ["../..", "../../../easel-core"]
 max_turns: 10
 allowed_tools: [Skill, Read, Glob]
 ---

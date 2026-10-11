@@ -1,7 +1,8 @@
 ---
-description: Routing - a button press animation starts ui-motion: CSS transform/opacity, a short duration, reduced motion.
+description: "Routing - a button press animation starts ui-motion: CSS transform/opacity, a short duration, reduced motion."
 tags: [routing, ui-motion]
 runs: 2
+plugins: ["../..", "../../../easel-core"]
 max_turns: 10
 allowed_tools: [Skill, Read, Glob, Write, Edit]
 ---

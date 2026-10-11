@@ -1,7 +1,8 @@
 ---
-description: Routing - scroll reveals in React with GSAP: ScrollTrigger with useGSAP cleanup and reduced motion.
+description: "Routing - scroll reveals in React with GSAP: ScrollTrigger with useGSAP cleanup and reduced motion."
 tags: [routing, ui-motion, gsap]
 runs: 2
+plugins: ["../..", "../../../easel-core"]
 max_turns: 10
 allowed_tools: [Skill, Read, Glob, Write, Edit]
 ---

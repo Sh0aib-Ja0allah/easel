@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hollowbrook Home Physio: physiotherapy at home after joint surgery</title>
+<style>
+  /* ---- Tokens (calm-care system) ---- */
+  :root {
+    --primary: #20706B; --primary-hover: #185955; --secondary: #5E8FD0;
+    --bg: #F7FAF9; --surface: #FFFFFF; --tint: #E6F1EF;
+    --text: #16302E; --muted: #4C6260; --border: #CFDDDA;
+    --display: "Space Grotesk"; --sans: "Inter";
+    --gutter: 32px; --max: 1200px;
+  }
+  html, body { margin: 0; background: var(--bg); }
+  * { box-sizing: border-box; }
+  body { font: 400 18px/1.65 var(--sans); color: var(--text); }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0; }
+  p { margin: 0; }
+  a { color: var(--primary); }
+  .wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 56px; padding: 0 28px; border-radius: 10px;
+    font: 600 18px/1 var(--sans); text-decoration: none; white-space: nowrap;
+    transition: background-color 250ms ease-out;
+  }
+  .btn-primary { background: var(--primary); color: #FFFFFF; min-width: 240px; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn:focus-visible { outline: 3px solid var(--secondary); outline-offset: 3px; }
+  .link-quiet { font: 600 18px/1.4 var(--sans); color: var(--primary); text-underline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+  /* ---- Hero: fills the first screen at every size ---- */
+  .hero-screen { min-height: 100svh; display: flex; flex-direction: column; background: var(--bg); }
+  .nav { height: 80px; flex: none; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 12px; font: 600 20px/1 var(--display); color: var(--text); text-decoration: none; }
+  .nav .phone { font: 500 16px/1.3 var(--sans); color: var(--text); text-decoration: none; }
+  .nav .phone b { color: var(--primary); font-weight: 600; }
+  .nav .phone .short { display: none; }
+  .hero { flex: 1; display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px; align-items: center; padding-top: 0; padding-bottom: 56px; }
+  .eyebrow { display: inline-block; font: 600 15px/1 var(--sans); color: var(--primary); background: var(--tint); padding: 10px 14px; border-radius: 999px; margin-bottom: 24px; }
+  .hero h1 { font-size: 56px; line-height: 1.08; margin-bottom: 24px; max-width: 13ch; }
+  .hero .lede { font-size: 20px; line-height: 1.6; color: var(--muted); max-width: 34ch; margin-bottom: 36px; }
+  .actions { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+  .trust { list-style: none; padding: 0; margin: 32px 0 0; display: flex; flex-wrap: wrap; gap: 12px 28px; font-size: 16px; color: var(--muted); }
+  .trust li { display: flex; align-items: center; gap: 8px; }
+  .art { width: 100%; height: auto; display: block; }
+
+  /* ---- Sections ---- */
+  section.band { padding: 112px 0; }
+  section.band.white { background: var(--surface); }
+  .section-head { max-width: 640px; margin-bottom: 56px; }
+  .section-head h2 { font-size: 40px; line-height: 1.15; margin-bottom: 16px; }
+  .section-head p { color: var(--muted); }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; counter-reset: step; }
+  .steps li { border-top: 3px solid var(--primary); padding-top: 24px; }
+  .steps .n { font: 600 16px/1 var(--sans); color: var(--primary); display: block; margin-bottom: 12px; }
+  .steps h3 { font-size: 24px; line-height: 1.25; margin-bottom: 8px; }
+  .steps p { color: var(--muted); }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .feature { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px; }
+  .feature .ic { width: 48px; height: 48px; border-radius: 12px; background: var(--tint); display: grid; place-items: center; margin-bottom: 20px; }
+  .feature h3 { font-size: 22px; line-height: 1.3; margin-bottom: 8px; }
+  .feature p { color: var(--muted); }
+  .final { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+  .final h2 { font-size: 40px; line-height: 1.15; margin-bottom: 16px; }
+  .final .lead { color: var(--muted); margin-bottom: 32px; max-width: 36ch; }
+  .final .small { margin-top: 16px; font-size: 16px; color: var(--muted); }
+  .faq { margin: 0; display: grid; gap: 0; }
+  .faq div { border-top: 1px solid var(--border); padding: 20px 0; }
+  .faq div:last-child { border-bottom: 1px solid var(--border); }
+  .faq dt { font: 600 18px/1.4 var(--sans); margin-bottom: 6px; }
+  .faq dd { margin: 0; color: var(--muted); }
+  footer { padding: 40px 0 48px; font-size: 15px; color: var(--muted); border-top: 1px solid var(--border); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+
+  /* ---- Tablet ---- */
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; }
+    .art { max-width: 520px; }
+    .steps, .features { grid-template-columns: 1fr 1fr; }
+    .final { grid-template-columns: 1fr; gap: 48px; }
+  }
+  /* ---- Phone ---- */
+  @media (max-width: 640px) {
+    :root { --gutter: 20px; }
+    .nav { height: 64px; }
+    .nav .phone { min-height: 44px; display: inline-flex; align-items: center; }
+    .nav .phone .long { display: none; }
+    .nav .phone .short { display: inline; }
+    .brand { font-size: 18px; gap: 10px; }
+    .hero { padding-top: 16px; padding-bottom: 32px; gap: 0; align-items: start; }
+    .hero .art-col { display: none; }       /* decorative: hidden so headline + CTA sit above the fold */
+    .eyebrow { margin-bottom: 20px; font-size: 14px; }
+    .hero h1 { font-size: 38px; line-height: 1.12; margin-bottom: 16px; }
+    .hero .lede { font-size: 18px; margin-bottom: 28px; }
+    .actions { flex-direction: column; align-items: stretch; gap: 16px; }
+    .actions .btn { width: 100%; }
+    .actions .link-quiet { text-align: center; }
+    .trust { flex-direction: column; gap: 10px; margin-top: 28px; }
+    section.band { padding: 72px 0; }
+    .section-head { margin-bottom: 36px; }
+    .section-head h2, .final h2 { font-size: 32px; }
+    .steps, .features { grid-template-columns: 1fr; }
+    .final .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero-screen">
+  <header class="wrap nav">
+    <a class="brand" href="#top" aria-label="Hollowbrook Home Physio, home">
+      <svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="36" height="36" rx="10" fill="#20706B"/><path d="M9 26c3-9 6-13 9-13s6 4 9 13" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><circle cx="18" cy="9.5" r="2.6" fill="#FFFFFF"/></svg>
+      <span>Hollowbrook Home Physio</span>
+    </a>
+    <a class="phone" href="#call"><span class="long">Questions? Call <b>0161 496 0732</b></span><b class="short">Call us</b></a>
+  </header>
+
+  <main class="wrap hero" id="top">
+    <div>
+      <span class="eyebrow">After a knee or hip replacement</span>
+      <h1>Get walking again, from your own living room.</h1>
+      <p class="lede">A chartered physiotherapist guides your recovery on a video call, three times a week, with exercises planned around your home and your surgery.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#book">Book a free first call</a>
+        <a class="link-quiet" href="#how">See how it works</a>
+      </div>
+      <ul class="trust">
+        <li><svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 9.5l3 3 7-7" fill="none" stroke="#20706B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>No referral needed</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 9.5l3 3 7-7" fill="none" stroke="#20706B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>The same physio every session</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 9.5l3 3 7-7" fill="none" stroke="#20706B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Cancel any week</li>
+      </ul>
+    </div>
+    <div class="art-col">
+      <!-- Decorative scene: a chair, a tablet on a stand showing the physio, a resistance band. -->
+      <svg class="art" viewBox="0 0 560 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="0" y="0" width="560" height="520" rx="32" fill="#E6F1EF"/>
+        <rect x="56" y="56" width="176" height="208" rx="12" fill="#FFFFFF"/>
+        <path d="M144 56v208M56 160h176" stroke="#CFDDDA" stroke-width="6"/>
+        <circle cx="440" cy="110" r="40" fill="#5E8FD0" opacity="0.35"/>
+        <rect x="0" y="420" width="560" height="100" fill="#CFDDDA"/>
+        <!-- tablet on stand -->
+        <rect x="300" y="196" width="196" height="140" rx="14" fill="#16302E"/>
+        <rect x="310" y="206" width="176" height="120" rx="8" fill="#FFFFFF"/>
+        <circle cx="398" cy="248" r="20" fill="#20706B"/>
+        <path d="M362 326c6-28 20-42 36-42s30 14 36 42z" fill="#20706B"/>
+        <rect x="390" y="336" width="16" height="84" fill="#16302E"/>
+        <rect x="356" y="412" width="84" height="12" rx="6" fill="#16302E"/>
+        <!-- chair -->
+        <rect x="70" y="300" width="150" height="24" rx="10" fill="#20706B"/>
+        <rect x="70" y="236" width="24" height="88" rx="10" fill="#20706B"/>
+        <rect x="84" y="324" width="12" height="96" fill="#16302E"/>
+        <rect x="196" y="324" width="12" height="96" fill="#16302E"/>
+        <!-- person seated, leg raised with band -->
+        <circle cx="130" cy="214" r="22" fill="#16302E"/>
+        <path d="M112 300c-4-36 4-58 18-64s30 6 30 30v34z" fill="#5E8FD0"/>
+        <path d="M150 304h52l58-28" fill="none" stroke="#16302E" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M150 312l10 100" stroke="#16302E" stroke-width="20" stroke-linecap="round"/>
+        <path d="M268 272c-30 20-70 30-112 22" fill="none" stroke="#20706B" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </main>
+</div>
+
+<section class="band white" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How it works</h2>
+      <p>From the first call to walking without a stick, you always know what happens next.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="n">Step 1</span><h3>A free 20-minute call</h3><p>We ask about your operation, your home and what you want to get back to doing.</p></li>
+      <li><span class="n">Step 2</span><h3>Your plan, by post and online</h3><p>A printed exercise plan and a resistance band arrive within two working days.</p></li>
+      <li><span class="n">Step 3</span><h3>Sessions three times a week</h3><p>Your physio watches each movement on video and adjusts the plan as you get stronger.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="includes">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>What every session includes</h2>
+      <p>Thirty to forty-five minutes, at a time that suits you, on a phone, tablet or laptop.</p>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2" fill="none" stroke="#20706B" stroke-width="1.8"/><path d="M8 20h8" stroke="#20706B" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3>Exercises checked live</h3><p>Your physio sees how you move and corrects it there and then, so you never practise a habit that slows healing.</p>
+      </article>
+      <article class="feature">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 18l5-6 4 3 7-9" fill="none" stroke="#20706B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Progress you can see</h3><p>Knee bend, walking distance and pain scores are measured each week and shared with you and, if you wish, your surgeon.</p>
+      </article>
+      <article class="feature">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 4h14v12H9l-4 4z" fill="none" stroke="#20706B" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+        <h3>Help between sessions</h3><p>Send a message about swelling or a sore step on the stairs and your physio replies the same working day.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band white" id="book">
+  <div class="wrap final">
+    <div>
+      <h2>Talk to a physio before you decide.</h2>
+      <p class="lead">The first call is free and there is nothing to sign. If home sessions are not right for you, we will tell you what is.</p>
+      <a class="btn btn-primary" href="#book-form">Book a free first call</a>
+      <p class="small" id="call">Or phone 0161 496 0732, Monday to Friday, 8 am to 6 pm.</p>
+    </div>
+    <dl class="faq">
+      <div><dt>How soon after surgery can I start?</dt><dd>Usually the week you come home. We follow the instructions from your hospital team.</dd></div>
+      <div><dt>What if I am not good with computers?</dt><dd>We post simple instructions and stay on the phone with you for the first video call.</dd></div>
+      <div><dt>What does it cost?</dt><dd>£42 a session, paid weekly. Many private health plans cover it; we can check yours on the first call.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>Hollowbrook Home Physio · Chartered physiotherapists working across the North West</span><span>Privacy · Accessibility · Complaints</span></div>
+</footer>
+</body>
+</html>

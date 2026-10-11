@@ -21,7 +21,9 @@ export function svgWrapper(svg) {
     const w = open[0].match(/\bwidth=["']?([\d.]+)/i), h = open[0].match(/\bheight=["']?([\d.]+)/i);
     if (w && h) body = body.replace(open[0], open[0].replace(/<svg\b/i, `<svg viewBox="0 0 ${w[1]} ${h[1]}"`));
   }
-  return `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:100%;height:100%;background:transparent;}
+  // currentColor follows the theme: dark ink on light, light ink on dark (icons and mono logos on a dark contact-sheet cell)
+  return `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:100%;height:100%;background:transparent;color:#111;}
+@media (prefers-color-scheme: dark){html,body{color:#f2f2f2;}}
 body>svg{display:block;width:100%;height:100%;}</style></head><body>${body}</body></html>`;
 }
 

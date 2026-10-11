@@ -39,8 +39,8 @@ Task IDs are `T<phase>.<n>` and stay the same even if tasks are reordered. **Don
 | T2.3 | ✅ Done (`51a0b2a`; example: 3 reference sheets -> `blueprint` style -> piece in 9:16 + 16:9 -> comparison sheets). `style-match` (new-style procedure + reference breakdown) | Builds a style from 3 reference images; comparison sheet output | T2.1 |
 | T2.4 | ✅ Done (`1411085`; D16: JS synth, no Python; `audio_score` + `score` skill, -14 LUFS, deterministic within 8 LSB). Audio decision + `score` skill: port mgaudio to Node **or** a JS synth with optional Python | Cue sheet → mastered WAV in the −16 to −12 LUFS range | T1.5 |
 | T2.5 | ✅ Done (`1411085`; 10 recipes in `recipes/`, 9 grammars in `grammars/`, test checks names and English). Translate and rename the first ~10 huashu styles + the 9 grammars | English `STYLE.md` + grammar files; no creator names in style names | T2.1 |
-| T2.6 | Port the mg-styles recipes that only exist there: liquid, aurora-glass, synthwave, HUD | Each renders on the engine | T2.1 |
-| T2.7 | `ui-motion` from greensock/gsap-skills + designskills motion-design | Routing + output evals pass | T1.8 |
+| T2.6 | ✅ Done (`2a6c11e`; D17: Easel's own Canvas kits, demos in 9:16 + 16:9, goldens rendered on Windows). Port the mg-styles recipes that only exist there: liquid, aurora-glass, synthwave, HUD | Each renders on the engine | T2.1 |
+| T2.7 | ✅ Done (`2a6c11e`; 8 gsap-skills references + designskills patterns, `reducedMotion` render, example `card-reveal.html`; QA D-1 fixed in the same commit). `ui-motion` from greensock/gsap-skills + designskills motion-design | Routing + output evals pass | T1.8 |
 | T2.8 | Evals for easel-motion + release v0.2.0 | Evals ≥ threshold; tag pushed | T2.2–T2.7 |
 
 ## Phase 3: easel-design and easel-illustrate v1

@@ -1,0 +1,54 @@
+<!--
+  Direction A: "The query is the headline"
+  Breaks: the hero headline + product screenshot convention. There is no marketing headline and no
+  screenshot; the command a user would type is set as the headline, and its output is the proof.
+  Axes: composition asymmetric, left-anchored | type: one mono voice at a huge scale | density sparse.
+  System: dark-tech. Product: Grepwell (fictional).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Grepwell - direction A, the query is the headline</title>
+<style>
+html, body { margin:0; }
+body { background:#0E1116; }
+.page { width:1440px; height:900px; overflow:hidden; box-sizing:border-box; background:#0E1116; color:#E6EAF0; font-family:"Inter", sans-serif; padding:40px 96px 72px; display:grid; grid-template-rows:auto 1fr auto; }
+nav { display:flex; align-items:center; gap:32px; font-size:15px; color:#9AA4B2; }
+nav .brand { font-family:"JetBrains Mono", monospace; font-weight:700; color:#E6EAF0; font-size:17px; margin-right:auto; }
+nav a { color:#9AA4B2; text-decoration:none; }
+main { align-self:center; }
+.prompt { font-family:"JetBrains Mono", monospace; font-size:92px; line-height:1.08; letter-spacing:-0.035em; font-weight:500; margin:0; }
+.prompt .sig { color:#6B7685; }
+.prompt .arg { color:#4CC2FF; }
+.prompt .flag { color:#9AA4B2; }
+.cursor { display:inline-block; width:0.55em; height:0.9em; background:#E6EAF0; vertical-align:-0.08em; margin-left:0.1em; }
+.out { margin:48px 0 0 0; font-family:"JetBrains Mono", monospace; font-size:17px; line-height:1.75; color:#9AA4B2; border-left:2px solid #2A313C; padding-left:24px; }
+.out .hit { color:#E6EAF0; }
+.out mark { background:#B8F25C; color:#0E1116; padding:0 3px; border-radius:2px; }
+.out .sum { color:#B8F25C; margin-top:10px; }
+footer { display:grid; grid-template-columns:1fr auto; align-items:end; gap:48px; }
+footer p { margin:0; font-size:20px; line-height:1.5; color:#C3CAD5; max-width:60ch; }
+.install { font-family:"JetBrains Mono", monospace; font-size:16px; background:#161B22; border:1px solid #2A313C; border-radius:6px; padding:14px 18px; color:#E6EAF0; }
+.install span { color:#9AA4B2; }
+</style>
+</head>
+<body>
+<div class="page">
+  <nav><span class="brand">grepwell</span><a>Docs</a><a>Changelog</a><a>Download</a></nav>
+  <main>
+    <p class="prompt"><span class="sig">$</span> grepwell <span class="arg">"timeout"</span><br><span class="flag">--since</span> 7d<span class="cursor"></span></p>
+    <div class="out">
+      <div class="hit"><span>api-03 &nbsp;Tue 14:02:11 &nbsp;POST /checkout &nbsp;</span><span>payment </span><mark>timeout</mark><span> after 30000 ms (order 88412)</span></div>
+      <div class="hit"><span>api-01 &nbsp;Thu 09:47:53 &nbsp;POST /checkout &nbsp;</span><span>payment </span><mark>timeout</mark><span> after 30000 ms (order 90127)</span></div>
+      <div><span>worker-2 Sat 22:15:40 &nbsp;retry 3/3 gave up: </span><span>payment </span><mark>timeout</mark><span> from provider sandbox</span></div>
+      <div class="sum">3 matches in 7 days of logs, searched on this laptop.</div>
+    </div>
+  </main>
+  <footer>
+    <p>Grepwell indexes the log files already on your disk and answers in the time it takes to look up. One binary. No agent, no server, no account.</p>
+    <div class="install"><span>$</span> install grepwell &nbsp;<span># macOS, Linux</span></div>
+  </footer>
+</div>
+</body>
+</html>

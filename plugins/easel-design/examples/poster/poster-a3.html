@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Press &amp; Paper small-press fair - A3 poster with 3 mm bleed</title>
+<style>
+  /* A3 trim (297 x 420 mm) + 3 mm bleed on every side = 303 x 426 mm.
+     Proof at 1145 x 1610 px (the page at 96 px/in). The trim line sits 11 px in from each edge;
+     every word stays at least 64 px (about 14 mm) inside the trim. The paper colour, grain and
+     shapes run into the bleed.
+     System: retro-print (cream paper, pink / teal / yellow inks, multiply, grain, misregistration). */
+  @page { size: 303mm 426mm; margin: 0; }
+  :root {
+    --pink: #E8457C;
+    --teal: #1E8C93;
+    --yellow: #F6C543;
+    --paper: #F3ECDD;
+    --ink: #1E2A3A;
+    --muted: #4F5868;
+  }
+  html, body { margin: 0; padding: 0; background: var(--paper); }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .poster {
+    position: relative;
+    width: 303mm;
+    height: 426mm;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .poster > * { position: absolute; margin: 0; }
+  .grain {
+    inset: 0; opacity: 0.1; mix-blend-mode: multiply; z-index: 1;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="240" height="240" filter="url(%23n)"/></svg>');
+    background-size: 240px 240px;
+  }
+  .art { left: 0; top: 742px; width: 1145px; height: 470px; z-index: 2; overflow: visible; }
+  .text { z-index: 3; }
+
+  /* Top line */
+  .kicker {
+    left: 64px; right: 64px; top: 60px;
+    display: flex; justify-content: space-between;
+    font-family: "Inter"; font-weight: 700; font-size: 20px; line-height: 1;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding-bottom: 18px; border-bottom: 4px solid var(--ink);
+  }
+
+  /* Level 1: the title, overprinted with a teal plate a few px out of register */
+  .title {
+    left: 56px; top: 112px;
+    font-family: "Space Grotesk"; font-weight: 700; font-size: 268px;
+    line-height: 0.86; letter-spacing: -0.04em; text-transform: uppercase;
+    text-shadow: 7px 6px 0 rgba(30, 140, 147, 0.85);
+    white-space: nowrap;
+  }
+  .title .amp { margin-left: 0.04em; color: var(--pink); text-shadow: 7px 6px 0 rgba(246, 197, 67, 0.95); }
+
+  /* Level 2 */
+  .sub {
+    left: 64px; top: 600px; width: 900px;
+    font-family: "Space Grotesk"; font-weight: 700; font-size: 46px; line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+
+  /* Level 2b: the date, as a stamped label */
+  .stamp {
+    left: 64px; top: 1180px;
+    padding: 20px 34px 22px;
+    background: var(--yellow);
+    border: 5px solid var(--ink);
+    transform: rotate(-3deg);
+    transform-origin: left top;
+  }
+  .stamp .day {
+    display: block;
+    font-family: "Space Grotesk"; font-weight: 700; font-size: 108px; line-height: 0.95;
+    letter-spacing: -0.03em; text-transform: uppercase; white-space: nowrap;
+  }
+  .stamp .time {
+    display: block; margin-top: 10px;
+    font-family: "Inter"; font-weight: 700; font-size: 30px; line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .note {
+    left: 700px; top: 1214px; width: 380px;
+    font-family: "Caveat"; font-weight: 700; font-size: 54px; line-height: 1;
+    transform: rotate(-4deg);
+  }
+
+  /* Level 3: the facts */
+  .facts {
+    left: 64px; right: 64px; top: 1388px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: 36px;
+    padding-top: 22px; border-top: 4px solid var(--ink);
+  }
+  .facts .label {
+    display: block;
+    font-family: "Inter"; font-weight: 700; font-size: 18px; line-height: 1;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+  }
+  .facts .value {
+    display: block; margin-top: 12px;
+    font-family: "Space Grotesk"; font-weight: 700; font-size: 34px; line-height: 1.1;
+    white-space: nowrap;
+  }
+  .facts .more {
+    display: block; margin-top: 8px;
+    font-family: "Inter"; font-weight: 400; font-size: 22px; line-height: 1.35;
+  }
+</style>
+</head>
+<body>
+<main class="poster" aria-label="Press and Paper small-press fair poster">
+
+  <!-- Grain: a 240 px noise tile repeated over the paper and multiplied (behind the type so it never
+       dirties the text). A tile, not a full-page filter, keeps the print PDF about 1 MB instead of 35 MB. -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- Art: sheets fresh off the drum, three inks overprinting, slightly out of register -->
+  <svg class="art" viewBox="0 0 1145 470" aria-hidden="true">
+    <defs>
+      <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(15)">
+        <circle cx="8" cy="8" r="3.4" fill="#1E2A3A"/>
+      </pattern>
+      <pattern id="lines" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+        <rect width="14" height="5" fill="#1E8C93"/>
+      </pattern>
+    </defs>
+    <g style="mix-blend-mode: multiply">
+      <circle cx="905" cy="222" r="214" fill="#F6C543"/>
+      <circle cx="905" cy="222" r="214" fill="url(#lines)" opacity="0.35"/>
+      <rect x="120" y="54" width="430" height="300" fill="#1E8C93" transform="rotate(-7 335 204)"/>
+      <rect x="126" y="60" width="430" height="300" fill="none" stroke="#E8457C" stroke-width="5" transform="rotate(-7 335 204)"/>
+      <rect x="330" y="104" width="440" height="300" fill="#E8457C" transform="rotate(6 550 254)"/>
+      <rect x="380" y="150" width="210" height="200" fill="url(#dots)" opacity="0.55" transform="rotate(6 550 254)"/>
+      <rect x="610" y="248" width="260" height="170" fill="#F6C543" transform="rotate(-3 740 333)"/>
+      <rect x="616" y="253" width="260" height="170" fill="none" stroke="#1E8C93" stroke-width="5" transform="rotate(-3 740 333)"/>
+    </g>
+    <!-- registration marks -->
+    <g fill="none" stroke="#1E2A3A" stroke-width="3">
+      <circle cx="78" cy="38" r="16"/><path d="M50 38 H106 M78 10 V66"/>
+      <circle cx="1060" cy="440" r="16"/><path d="M1032 440 H1088 M1060 412 V468"/>
+    </g>
+  </svg>
+
+  <!-- EDIT: copy -->
+  <div class="text kicker"><span>Port Elden Small Press Society presents</span><span>7th edition</span></div>
+
+  <h1 class="text title">Press<span class="amp">&amp;</span><br>Paper</h1>
+
+  <p class="text sub">A one-day fair of zines, risograph prints and hand-bound books</p>
+
+  <p class="text stamp"><span class="day">Sat 21 Nov</span><span class="time">11:00–18:00 · 2026</span></p>
+
+  <p class="text note">60 tables of things made by hand!</p>
+
+  <div class="text facts">
+    <p><span class="label">Where</span><span class="value">The Ropewalk Hall</span><span class="more">9 Quay Lane, Port Elden</span></p>
+    <p><span class="label">Entry</span><span class="value">Free, all day</span><span class="more">Bring a tote bag</span></p>
+    <p><span class="label">Workshop</span><span class="value">Riso print-in</span><span class="more">Print your own poster<br>14:00 · £5 paper &amp; ink</span></p>
+  </div>
+</main>
+</body>
+</html>

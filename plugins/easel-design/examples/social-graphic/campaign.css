@@ -1,0 +1,79 @@
+/* Lantern Street Ceramics - "Open studio weekend" campaign.
+   One layout family shared by the feed post and the story; each page sets only positions and sizes.
+   System: warm-minimal (paper, ink blue, one terracotta accent). Bundled faces only. */
+:root {
+  --ink: #1D3557;
+  --accent: #C8553D;
+  --paper: #F4EFE6;
+  --surface: #EBE4D8;
+  --muted: #5A6478;
+}
+html, body { margin: 0; padding: 0; background: var(--paper); }
+* { box-sizing: border-box; }
+
+.post {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+}
+.post > * { position: absolute; margin: 0; }
+
+/* Brand row */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: "Inter";
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+.brand svg { width: 44px; height: 44px; flex: none; }
+
+/* The hook */
+.headline {
+  font-family: "Space Grotesk";
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+}
+.lede {
+  font-family: "Newsreader";
+  font-weight: 400;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+/* Facts */
+.when {
+  font-family: "Space Grotesk";
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.where {
+  font-family: "Inter";
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: "Inter";
+  font-weight: 700;
+  line-height: 1;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.vessels { display: block; }
+
+/* Layout guide: switch to display:block while building to see the safe zone */
+.safe-guide { display: none; border: 3px dashed var(--accent); pointer-events: none; }
