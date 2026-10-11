@@ -116,12 +116,14 @@ export function reservePath(dir, base, ext) {
 // remuxed, with bytes appended or digital silence added at the ends gives the same hash. A lossy
 // re-encode, a resample or any change to the sound gives another. Null when there is no audio,
 // nothing audible, no ffmpeg, or it cannot be decoded within a minute. Bounded: the first 30 min.
+// No -xerror: ffmpeg 8 stops with an error at bytes appended after the last frame, which is just the
+// copy this must still recognise (seen on CI's macOS ffmpeg).
 const PCM_MAX_SECONDS = 1800, PCM_SILENCE = 32; // |sample| <= 32 of 32767 is below -60 dBFS
 const AV_EXT = new Set(['.wav', '.mp3', '.m4a', '.ogg', '.oga', '.flac', '.webm', '.aac', '.opus', '.mp4', '.mov', '.mkv', '.m4v']);
 export function pcmSha256(file) {
   const ffmpeg = findBinary('ffmpeg');
   if (!ffmpeg) return null;
-  const r = spawnSync(ffmpeg.path, ['-hide_banner', '-nostdin', '-v', 'error', '-xerror', '-i', file, '-map', '0:a:0', '-vn', '-af', 'aformat=sample_fmts=s16,aresample=16000,aformat=sample_fmts=s16:channel_layouts=mono', '-t', String(PCM_MAX_SECONDS), '-f', 's16le', '-'],
+  const r = spawnSync(ffmpeg.path, ['-hide_banner', '-nostdin', '-v', 'error', '-i', file, '-map', '0:a:0', '-vn', '-af', 'aformat=sample_fmts=s16,aresample=16000,aformat=sample_fmts=s16:channel_layouts=mono', '-t', String(PCM_MAX_SECONDS), '-f', 's16le', '-'],
     { windowsHide: true, timeout: 60000, maxBuffer: PCM_MAX_SECONDS * 32000 + 65536 });
   if (r.error || r.status !== 0 || !r.stdout) return null;
   const b = r.stdout, n = b.length >> 1;

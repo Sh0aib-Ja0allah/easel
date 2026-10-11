@@ -85,7 +85,8 @@ test('assemble masters loud narration and music alone too, and takes a lufs targ
 test('narration as a list: each file starts at its clip or at its time, mixed and ducked like one file', { skip }, () => {
   const a = clip('a.mp4', 2), b = clip('b.mp4', 2), c = clip('c.mp4', 2);
   const line1 = source('line1.wav', 'sine=frequency=600:sample_rate=48000', 1), line2 = source('line2.wav', 'sine=frequency=1000:sample_rate=48000', 1);
-  const music = source('bed.wav', 'sine=frequency=2500:sample_rate=48000', 8, -14);
+  // 2.4 kHz, not 2.5: ffmpeg 8's probe reads a 2.5 kHz sine at this level as MPEG-TS (CI on macOS)
+  const music = source('bed.wav', 'sine=frequency=2400:sample_rate=48000', 8, -14);
   const narration = [{ file: line1, clip: 1 }, { file: line2, start: 4.5 }];
   assert.deepEqual(validateArgs(tools.assemble.inputSchema, { clips: [{ file: a }], narration }), []);
   assert.deepEqual(validateArgs(tools.assemble.inputSchema, { clips: [{ file: a }], narration: 'vo.wav' }), []);
@@ -95,8 +96,8 @@ test('narration as a list: each file starts at its clip or at its time, mixed an
   const l1 = [bandDb(r.file, 0.2, 1.5, 600), bandDb(r.file, 2.2, 0.6, 600)], l2 = [bandDb(r.file, 2.2, 1.5, 1000), bandDb(r.file, 4.7, 0.6, 1000)];
   assert.ok(l1[1] - l1[0] >= 20, `line 1 at its clip: ${l1}`);
   assert.ok(l2[1] - l2[0] >= 20, `line 2 at 4.5 s: ${l2}`);
-  // the music (2.5 kHz) ducks under each line and comes back between them
-  const under = bandDb(r.file, 2.2, 0.6, 2500), between = bandDb(r.file, 3.4, 0.8, 2500);
+  // the music (2.4 kHz) ducks under each line and comes back between them
+  const under = bandDb(r.file, 2.2, 0.6, 2400), between = bandDb(r.file, 3.4, 0.8, 2400);
   assert.ok(between - under >= 6, `music under a line ${under.toFixed(1)} dB vs between lines ${between.toFixed(1)} dB`);
   // overlapping lines are reported
   const o = assemble({ clips: [{ file: a, seconds: 2 }], size: '320x240', narration: [{ file: line1, start: 0 }, { file: line2, start: 0.5 }], outDir: join(root, 'out'), name: 'overlap', preset: 'ultrafast' });
